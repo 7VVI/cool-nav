@@ -55,15 +55,18 @@ async function handleExport() {
       throw new Error('Export failed');
     }
 
-    const markdownContent = await res.text();
-    const blob = new Blob([markdownContent], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = getExportFilename();
-    a.click();
-    URL.revokeObjectURL(url);
-    emit('close');
+    const data = await res.json();
+
+    if (data.success) {
+      const blob = new Blob([data.data.content], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = data.data.filename || getExportFilename();
+      a.click();
+      URL.revokeObjectURL(url);
+      emit('close');
+    }
   } catch (e) {
     console.error('Export failed:', e);
     alert('导出失败');
@@ -77,45 +80,61 @@ async function handleExport() {
     class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
     @click.self="emit('close')"
   >
-    <div class="bg-white rounded-xl w-[400px]">
-      <div class="p-4 border-b border-border-main flex items-center justify-between">
-        <h3 class="font-semibold">导出 Markdown</h3>
-        <button @click="emit('close')" class="text-text-sub hover:text-text-main">✕</button>
+    <div class="bg-white rounded-xl shadow-xl w-[400px]">
+      <!-- Header -->
+      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <h3 class="text-lg font-semibold text-gray-800">导出 Markdown</h3>
+        <button @click="emit('close')" class="text-gray-400 hover:text-gray-600">✕</button>
       </div>
 
-      <div class="p-4">
-        <div class="flex gap-2 mb-3">
-          <button @click="selectAll" class="text-xs text-primary hover:underline">全选</button>
-          <button @click="clearAll" class="text-xs text-text-sub hover:underline">清空</button>
+      <!-- Content -->
+      <div class="px-6 py-4">
+        <!-- Select actions -->
+        <div class="flex gap-4 mb-4">
+          <button @click="selectAll" class="text-sm text-blue-500 hover:text-blue-600">
+            全选
+          </button>
+          <button @click="clearAll" class="text-sm text-gray-500 hover:text-gray-600">
+            清空
+          </button>
         </div>
 
+        <!-- Group list -->
         <div class="space-y-2 max-h-[300px] overflow-y-auto">
           <label
             v-for="group in store.groups"
             :key="group.id"
-            class="flex items-center gap-2 p-2 rounded-md hover:bg-gray-50 cursor-pointer"
+            class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
           >
             <input
               type="checkbox"
               :checked="selectedGroups.includes(group.id)"
               @change="toggleGroup(group.id)"
-              class="w-4 h-4 text-primary rounded border-border-main focus:ring-primary"
+              class="w-4 h-4 text-blue-500 rounded border-gray-300 focus:ring-blue-500"
             />
-            <span class="text-sm">{{ group.name }}</span>
-            <span class="text-xs text-text-sub">({{ group.serviceCount || 0 }})</span>
+            <span class="flex-1 text-sm text-gray-700">{{ group.name }}</span>
+            <span class="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
+              {{ group.serviceCount || 0 }}
+            </span>
           </label>
         </div>
 
-        <div class="flex gap-2 mt-4">
+        <!-- Empty state -->
+        <div v-if="store.groups.length === 0" class="text-center py-8 text-gray-400 text-sm">
+          暂无可导出的分组
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex gap-3 mt-6">
           <button
             @click="emit('close')"
-            class="flex-1 px-4 py-2 bg-gray-100 text-text-main rounded-md text-sm hover:bg-gray-200"
+            class="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition-colors"
           >
             取消
           </button>
           <button
             @click="handleExport"
-            class="flex-1 px-4 py-2 bg-primary text-white rounded-md text-sm hover:bg-blue-600"
+            class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
           >
             导出
           </button>

@@ -10,7 +10,7 @@ import GroupModal from '@/components/GroupModal.vue';
 import ExportModal from '@/components/ExportModal.vue';
 import type { Group, Service } from '@/types';
 
-const navStore = useNavStore();
+const store = useNavStore();
 
 // Modal states
 const showServiceModal = ref(false);
@@ -35,19 +35,9 @@ const displayServices = computed(() => {
   return localServices.value;
 });
 
-// Computed: current group name
-const currentGroupName = computed(() => {
-  return navStore.currentGroup?.name || 'All Services';
-});
-
-// Computed: service count
-const serviceCount = computed(() => {
-  return displayServices.value.length;
-});
-
 // Watch current services to sync with local
 watch(
-  () => navStore.currentServices,
+  () => store.currentServices,
   (newServices) => {
     if (!searchKeyword.value.trim()) {
       localServices.value = [...newServices];
@@ -93,15 +83,9 @@ function handleAddService() {
   showServiceModal.value = true;
 }
 
-// Handle export button
-function handleExport() {
-  showExportModal.value = true;
-}
-
 // Handle drag end - update sort order
 async function handleDragEnd() {
   if (searchKeyword.value.trim()) {
-    // Don't reorder when searching
     return;
   }
 
@@ -115,108 +99,79 @@ async function handleDragEnd() {
     await servicesApi.reorder(items.map(({ id, group_id }) => ({ id, group_id })));
   } catch (error) {
     console.error('Failed to update sort order:', error);
-    // Revert to original order
-    localServices.value = [...navStore.currentServices];
+    localServices.value = [...store.currentServices];
   }
-}
-
-// Handle service modal close
-function handleServiceModalClose() {
-  showServiceModal.value = false;
-  editingService.value = null;
-}
-
-// Handle service modal save
-function handleServiceModalSaved() {
-  navStore.fetchServices();
-}
-
-// Handle group modal close
-function handleGroupModalClose() {
-  showGroupModal.value = false;
-  editingGroup.value = null;
-}
-
-// Handle group modal save
-function handleGroupModalSaved() {
-  navStore.fetchGroups();
 }
 
 // Initialize data on mount
 onMounted(() => {
-  navStore.fetchGroups();
+  store.fetchGroups();
 });
 </script>
 
 <template>
-  <div class="dashboard">
+  <div class="flex h-screen bg-gray-50">
     <!-- Sidebar -->
     <Sidebar
-      @edit-group="handleEditGroup"
-      @search-services="handleSearchServices"
+      @editGroup="handleEditGroup"
+      @searchServices="handleSearchServices"
     />
 
     <!-- Main Content -->
-    <main class="main-content">
+    <main class="flex-1 flex flex-col overflow-hidden">
       <!-- Header -->
-      <header class="content-header">
-        <div class="header-left">
-          <h1 class="page-title">
-            {{ searchKeyword.trim() ? 'Search Results' : currentGroupName }}
+      <header class="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200">
+        <div class="flex items-center gap-4">
+          <h1 class="text-xl font-semibold text-gray-800">
+            {{ searchKeyword.trim() ? `搜索: ${searchKeyword}` : (store.currentGroup?.name || '请选择分组') }}
           </h1>
-          <span class="service-count">{{ serviceCount }} services</span>
+          <span class="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+            {{ displayServices.length }} 个服务
+          </span>
         </div>
-        <div class="header-actions">
+        <div class="flex gap-3">
           <button
-            class="btn btn-primary"
+            v-if="store.currentGroupId && !searchKeyword"
             @click="handleAddService"
-            :disabled="!navStore.currentGroupId && !searchKeyword.trim()"
+            class="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            Add Service
+            <span>+</span>
+            <span>添加服务</span>
           </button>
-          <button class="btn btn-secondary" @click="handleExport">
-            <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            Export
+          <button
+            @click="showExportModal = true"
+            class="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
+          >
+            <span>📤</span>
+            <span>导出</span>
           </button>
         </div>
       </header>
 
       <!-- Content Area -->
-      <div class="content-body">
+      <div class="flex-1 p-6 overflow-y-auto">
         <!-- Loading State -->
-        <div v-if="navStore.loading || isSearching" class="loading-state">
-          <div class="spinner"></div>
-          <p>Loading...</p>
+        <div v-if="store.loading || isSearching" class="flex flex-col items-center justify-center py-20 text-gray-400">
+          <div class="w-8 h-8 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-3"></div>
+          <p>加载中...</p>
         </div>
 
         <!-- Empty State -->
         <div
           v-else-if="displayServices.length === 0"
-          class="empty-state"
+          class="flex flex-col items-center justify-center py-20 text-center"
         >
-          <div class="empty-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-            </svg>
-          </div>
-          <h3 class="empty-title">No services found</h3>
-          <p class="empty-description">
-            {{ searchKeyword.trim() ? 'Try a different search term' : 'Add your first service to get started' }}
+          <div class="text-6xl mb-4">📭</div>
+          <h3 class="text-lg font-medium text-gray-700 mb-2">暂无服务</h3>
+          <p class="text-gray-500 mb-4">
+            {{ searchKeyword.trim() ? '未找到匹配的服务' : '点击"添加服务"开始' }}
           </p>
           <button
-            v-if="!searchKeyword.trim() && navStore.currentGroupId"
-            class="btn btn-primary"
+            v-if="!searchKeyword.trim() && store.currentGroupId"
             @click="handleAddService"
+            class="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors"
           >
-            Add Service
+            添加服务
           </button>
         </div>
 
@@ -225,8 +180,9 @@ onMounted(() => {
           v-else
           v-model="localServices"
           item-key="id"
-          class="service-grid"
-          ghost-class="ghost-card"
+          class="grid gap-4"
+          style="grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));"
+          ghost-class="opacity-50"
           animation="200"
           :disabled="!!searchKeyword.trim()"
           @end="handleDragEnd"
@@ -245,15 +201,15 @@ onMounted(() => {
     <ServiceModal
       :show="showServiceModal"
       :service="editingService"
-      @close="handleServiceModalClose"
-      @saved="handleServiceModalSaved"
+      @close="showServiceModal = false"
+      @saved="store.fetchServices()"
     />
 
     <GroupModal
       :show="showGroupModal"
       :group="editingGroup"
-      @close="handleGroupModalClose"
-      @saved="handleGroupModalSaved"
+      @close="showGroupModal = false"
+      @saved="store.fetchGroups"
     />
 
     <ExportModal
@@ -262,193 +218,3 @@ onMounted(() => {
     />
   </div>
 </template>
-
-<style scoped>
-.dashboard {
-  display: flex;
-  min-height: 100vh;
-  background: #11111b;
-}
-
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.content-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 24px;
-  background: #1e1e2e;
-  border-bottom: 1px solid #313244;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.page-title {
-  font-size: 24px;
-  font-weight: 600;
-  color: #cdd6f4;
-  margin: 0;
-}
-
-.service-count {
-  font-size: 14px;
-  color: #6c7086;
-  background: #313244;
-  padding: 4px 10px;
-  border-radius: 12px;
-}
-
-.header-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-}
-
-.btn-icon {
-  width: 16px;
-  height: 16px;
-}
-
-.btn-primary {
-  background: #89b4fa;
-  color: #1e1e2e;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: #b4befe;
-}
-
-.btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-secondary {
-  background: #313244;
-  color: #cdd6f4;
-}
-
-.btn-secondary:hover {
-  background: #45475a;
-}
-
-.content-body {
-  flex: 1;
-  padding: 24px;
-  overflow-y: auto;
-}
-
-.service-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
-}
-
-.ghost-card {
-  opacity: 0.5;
-  background: #89b4fa;
-  border-radius: 8px;
-}
-
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80px 20px;
-  color: #6c7086;
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid #313244;
-  border-top-color: #89b4fa;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80px 20px;
-  text-align: center;
-}
-
-.empty-icon {
-  width: 80px;
-  height: 80px;
-  color: #45475a;
-  margin-bottom: 24px;
-}
-
-.empty-icon svg {
-  width: 100%;
-  height: 100%;
-}
-
-.empty-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: #cdd6f4;
-  margin: 0 0 8px;
-}
-
-.empty-description {
-  font-size: 14px;
-  color: #6c7086;
-  margin: 0 0 24px;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .content-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-
-  .header-actions {
-    width: 100%;
-  }
-
-  .header-actions .btn {
-    flex: 1;
-    justify-content: center;
-  }
-
-  .service-grid {
-    grid-template-columns: 1fr;
-  }
-}
-</style>

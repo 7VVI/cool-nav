@@ -13,7 +13,7 @@ const emit = defineEmits<{
   saved: [];
 }>();
 
-const navStore = useNavStore();
+const store = useNavStore();
 const groupName = ref('');
 const saving = ref(false);
 
@@ -29,9 +29,9 @@ async function handleSubmit() {
   saving.value = true;
   try {
     if (props.group) {
-      await navStore.updateGroup(props.group.id, { name: groupName.value.trim() });
+      await store.updateGroup(props.group.id, { name: groupName.value.trim() });
     } else {
-      await navStore.addGroup({ name: groupName.value.trim() });
+      await store.addGroup({ name: groupName.value.trim() });
     }
     emit('saved');
     emit('close');
@@ -39,36 +39,32 @@ async function handleSubmit() {
     saving.value = false;
   }
 }
-
-function handleClose() {
-  emit('close');
-}
 </script>
 
 <template>
   <div
     v-if="show"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-    @click.self="handleClose"
+    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+    @click.self="emit('close')"
   >
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-      <div class="px-6 py-4 border-b border-border-main">
-        <h3 class="text-lg font-medium text-text-main">
-          {{ group ? 'Edit Group' : 'Add Group' }}
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4">
+      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <h3 class="text-lg font-semibold text-gray-800">
+          {{ group ? '编辑分组' : '新建分组' }}
         </h3>
+        <button @click="emit('close')" class="text-gray-400 hover:text-gray-600">✕</button>
       </div>
 
       <form @submit.prevent="handleSubmit" class="px-6 py-4">
         <div class="mb-4">
-          <label for="groupName" class="block text-sm font-medium text-text-main mb-1">
-            Group Name <span class="text-red-500">*</span>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            分组名称 <span class="text-red-500">*</span>
           </label>
           <input
-            id="groupName"
             v-model="groupName"
             type="text"
-            class="w-full px-3 py-2 border border-border-main rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            placeholder="Enter group name"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="如：运维系统"
             :disabled="saving"
           />
         </div>
@@ -76,18 +72,18 @@ function handleClose() {
         <div class="flex justify-end gap-3">
           <button
             type="button"
-            class="px-4 py-2 text-sm text-text-sub hover:text-text-main transition-colors"
-            @click="handleClose"
+            class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+            @click="emit('close')"
             :disabled="saving"
           >
-            Cancel
+            取消
           </button>
           <button
             type="submit"
-            class="px-4 py-2 text-sm bg-primary text-white rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            class="px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             :disabled="!groupName.trim() || saving"
           >
-            {{ saving ? 'Saving...' : 'Save' }}
+            {{ saving ? '保存中...' : (group ? '保存' : '创建') }}
           </button>
         </div>
       </form>

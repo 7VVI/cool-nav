@@ -9,11 +9,11 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'close'): void;
-  (e: 'saved'): void;
+  close: [];
+  saved: [];
 }>();
 
-const navStore = useNavStore();
+const store = useNavStore();
 
 const formData = ref({
   group_id: 0,
@@ -26,9 +26,7 @@ const formData = ref({
 });
 
 const isEditing = computed(() => !!props.service?.id);
-const modalTitle = computed(() => isEditing.value ? 'Edit Service' : 'Add Service');
-
-const groups = computed(() => navStore.groups);
+const modalTitle = computed(() => isEditing.value ? '编辑服务' : '添加服务');
 
 watch(() => props.show, (newVal) => {
   if (newVal) {
@@ -44,7 +42,7 @@ watch(() => props.show, (newVal) => {
       };
     } else {
       formData.value = {
-        group_id: navStore.currentGroupId || (groups.value[0]?.id ?? 0),
+        group_id: store.currentGroupId || (store.groups[0]?.id ?? 0),
         name: '',
         url: '',
         username: '',
@@ -55,10 +53,6 @@ watch(() => props.show, (newVal) => {
     }
   }
 });
-
-function closeModal() {
-  emit('close');
-}
 
 async function handleSubmit() {
   if (!formData.value.name.trim() || !formData.value.url.trim()) {
@@ -77,183 +71,146 @@ async function handleSubmit() {
 
   try {
     if (isEditing.value && props.service?.id) {
-      await navStore.updateService(props.service.id, data);
+      await store.updateService(props.service.id, data);
     } else {
-      await navStore.addService(data);
+      await store.addService(data);
     }
     emit('saved');
-    closeModal();
+    emit('close');
   } catch (error) {
     console.error('Failed to save service:', error);
-  }
-}
-
-function handleOverlayClick(e: MouseEvent) {
-  if (e.target === e.currentTarget) {
-    closeModal();
   }
 }
 </script>
 
 <template>
-  <Teleport to="body">
-    <Transition name="modal">
-      <div
-        v-if="show"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-        @click="handleOverlayClick"
-      >
-        <div class="w-full max-w-md rounded-lg bg-white shadow-xl">
-          <!-- Header -->
-          <div class="flex items-center justify-between border-b border-border-main px-6 py-4">
-            <h2 class="text-lg font-semibold text-text-main">{{ modalTitle }}</h2>
-            <button
-              type="button"
-              class="text-text-sub hover:text-text-main transition-colors"
-              @click="closeModal"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
-          <!-- Form -->
-          <form @submit.prevent="handleSubmit" class="px-6 py-4 space-y-4">
-            <!-- Group Selector -->
-            <div>
-              <label for="group" class="block text-sm font-medium text-text-main mb-1">
-                Group <span class="text-red-500">*</span>
-              </label>
-              <select
-                id="group"
-                v-model="formData.group_id"
-                class="w-full px-3 py-2 border border-border-main rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-main bg-white"
-                required
-              >
-                <option v-for="group in groups" :key="group.id" :value="group.id">
-                  {{ group.name }}
-                </option>
-              </select>
-            </div>
-
-            <!-- Service Name -->
-            <div>
-              <label for="name" class="block text-sm font-medium text-text-main mb-1">
-                Service Name <span class="text-red-500">*</span>
-              </label>
-              <input
-                id="name"
-                v-model="formData.name"
-                type="text"
-                class="w-full px-3 py-2 border border-border-main rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-main"
-                placeholder="Enter service name"
-                required
-              />
-            </div>
-
-            <!-- URL -->
-            <div>
-              <label for="url" class="block text-sm font-medium text-text-main mb-1">
-                URL <span class="text-red-500">*</span>
-              </label>
-              <input
-                id="url"
-                v-model="formData.url"
-                type="url"
-                class="w-full px-3 py-2 border border-border-main rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-main"
-                placeholder="https://example.com"
-                required
-              />
-            </div>
-
-            <!-- Username -->
-            <div>
-              <label for="username" class="block text-sm font-medium text-text-main mb-1">
-                Username
-              </label>
-              <input
-                id="username"
-                v-model="formData.username"
-                type="text"
-                class="w-full px-3 py-2 border border-border-main rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-main"
-                placeholder="Enter username (optional)"
-              />
-            </div>
-
-            <!-- Password -->
-            <div>
-              <label for="password" class="block text-sm font-medium text-text-main mb-1">
-                Password
-              </label>
-              <input
-                id="password"
-                v-model="formData.password"
-                type="password"
-                class="w-full px-3 py-2 border border-border-main rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-main"
-                placeholder="Enter password (optional)"
-              />
-            </div>
-
-            <!-- Description -->
-            <div>
-              <label for="description" class="block text-sm font-medium text-text-main mb-1">
-                Description
-              </label>
-              <textarea
-                id="description"
-                v-model="formData.description"
-                rows="2"
-                class="w-full px-3 py-2 border border-border-main rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-main resize-none"
-                placeholder="Enter description (optional)"
-              />
-            </div>
-
-            <!-- Icon (Emoji) -->
-            <div>
-              <label for="icon" class="block text-sm font-medium text-text-main mb-1">
-                Icon
-              </label>
-              <input
-                id="icon"
-                v-model="formData.icon"
-                type="text"
-                class="w-full px-3 py-2 border border-border-main rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-main"
-                placeholder="Enter emoji icon (optional)"
-              />
-            </div>
-
-            <!-- Buttons -->
-            <div class="flex justify-end gap-3 pt-2">
-              <button
-                type="button"
-                class="px-4 py-2 text-sm font-medium text-text-sub hover:text-text-main transition-colors"
-                @click="closeModal"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-blue-600 transition-colors"
-              >
-                {{ isEditing ? 'Update' : 'Create' }}
-              </button>
-            </div>
-          </form>
-        </div>
+  <div
+    v-if="show"
+    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+    @click.self="emit('close')"
+  >
+    <div class="w-full max-w-md bg-white rounded-xl shadow-xl max-h-[90vh] overflow-y-auto">
+      <!-- Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-semibold text-gray-800">{{ modalTitle }}</h2>
+        <button @click="emit('close')" class="text-gray-400 hover:text-gray-600">✕</button>
       </div>
-    </Transition>
-  </Teleport>
+
+      <!-- Form -->
+      <form @submit.prevent="handleSubmit" class="px-6 py-4 space-y-4">
+        <!-- Group Selector -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            所属分组 <span class="text-red-500">*</span>
+          </label>
+          <select
+            v-model="formData.group_id"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-800"
+            required
+          >
+            <option v-for="group in store.groups" :key="group.id" :value="group.id">
+              {{ group.name }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Service Name -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            服务名称 <span class="text-red-500">*</span>
+          </label>
+          <input
+            v-model="formData.name"
+            type="text"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="如：Jenkins"
+            required
+          />
+        </div>
+
+        <!-- URL -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            URL <span class="text-red-500">*</span>
+          </label>
+          <input
+            v-model="formData.url"
+            type="url"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="https://example.com"
+            required
+          />
+        </div>
+
+        <!-- Username -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            用户名（可选）
+          </label>
+          <input
+            v-model="formData.username"
+            type="text"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="登录用户名"
+          />
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            密码（可选）
+          </label>
+          <input
+            v-model="formData.password"
+            type="password"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="登录密码"
+          />
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            描述（可选）
+          </label>
+          <input
+            v-model="formData.description"
+            type="text"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="简短描述"
+          />
+        </div>
+
+        <!-- Icon -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            图标（可选）
+          </label>
+          <input
+            v-model="formData.icon"
+            type="text"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="emoji 如：🔧"
+          />
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-end gap-3 pt-2">
+          <button
+            type="button"
+            class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+            @click="emit('close')"
+          >
+            取消
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            {{ isEditing ? '保存' : '添加' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </template>
-
-<style scoped>
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-</style>
