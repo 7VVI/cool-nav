@@ -34,13 +34,7 @@ router.post('/', (req, res) => {
     markdown += '\n';
   });
 
-  res.json({
-    success: true,
-    data: {
-      content: markdown,
-      filename: `internal-nav-${new Date().toISOString().split('T')[0]}.md`
-    }
-  });
+  res.type('text/markdown').send(markdown);
 });
 
 export default router;

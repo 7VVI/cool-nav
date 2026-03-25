@@ -1,0 +1,198 @@
+<h2>简化布局：左侧分组列表 + 右侧卡片</h2>
+<p class="subtitle">左侧只显示分组，点击后右侧展示该分组的所有服务</p>
+
+<div class="mockup" style="background: #fff;">
+  <div class="mockup-header">主界面布局</div>
+  <div class="mockup-body" style="background: #f8fafc; min-height: 400px; display: flex;">
+    <!-- 左侧分组列表 -->
+    <div style="width: 200px; background: white; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column;">
+      <!-- 搜索框 -->
+      <div style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
+        <div style="background: #f1f5f9; border-radius: 6px; padding: 8px 12px; font-size: 12px; color: #94a3b8; display: flex; align-items: center; gap: 6px;">
+          <span>🔍</span> 搜索...
+        </div>
+      </div>
+      <!-- 分组列表 -->
+      <div style="flex: 1; padding: 8px; overflow-y: auto;">
+        <div style="font-size: 11px; color: #94a3b8; padding: 8px 0 4px 0;">分组</div>
+        <!-- 选中的分组 -->
+        <div style="padding: 10px 12px; font-size: 13px; color: #3b82f6; background: #eff6ff; border-radius: 6px; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+          <span>📁 运维系统</span>
+          <span style="background: #dbeafe; color: #3b82f6; font-size: 10px; padding: 2px 6px; border-radius: 10px;">5</span>
+        </div>
+        <!-- 未选中的分组 -->
+        <div style="padding: 10px 12px; font-size: 13px; color: #64748b; border-radius: 6px; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+          <span>📁 开发工具</span>
+          <span style="background: #f1f5f9; color: #94a3b8; font-size: 10px; padding: 2px 6px; border-radius: 10px;">3</span>
+        </div>
+        <div style="padding: 10px 12px; font-size: 13px; color: #64748b; border-radius: 6px; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+          <span>📁 内部服务</span>
+          <span style="background: #f1f5f9; color: #94a3b8; font-size: 10px; padding: 2px 6px; border-radius: 10px;">4</span>
+        </div>
+        <div style="padding: 10px 12px; font-size: 13px; color: #64748b; border-radius: 6px; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+          <span>📁 测试环境</span>
+          <span style="background: #f1f5f9; color: #94a3b8; font-size: 10px; padding: 2px 6px; border-radius: 10px;">2</span>
+        </div>
+      </div>
+      <!-- 底部操作 -->
+      <div style="padding: 12px; border-top: 1px solid #e2e8f0;">
+        <div style="font-size: 12px; color: #64748b; display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 6px 8px; border-radius: 4px;">
+          <span>➕</span> 新建分组
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧卡片区域 -->
+    <div style="flex: 1; padding: 20px; overflow-y: auto;">
+      <!-- 标题栏 -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+        <div>
+          <div style="font-size: 18px; font-weight: 600; color: #1e293b;">运维系统</div>
+          <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">5 个服务</div>
+        </div>
+        <button style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 12px; display: flex; align-items: center; gap: 6px;">
+          <span>+</span> 添加服务
+        </button>
+      </div>
+
+      <!-- 卡片网格 -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px;">
+        <!-- Jenkins 卡片 -->
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px;">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px;">
+            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+              🔥
+            </div>
+            <div style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%;" title="在线"></div>
+          </div>
+          <div style="font-size: 14px; font-weight: 600; color: #1e293b; margin-bottom: 4px;">Jenkins</div>
+          <div style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">CI/CD 持续集成</div>
+          <div style="display: flex; gap: 8px;">
+            <button style="flex: 1; padding: 8px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 12px;">打开</button>
+            <button style="padding: 8px 10px; background: #f1f5f9; color: #64748b; border: none; border-radius: 6px; font-size: 12px;">✏️</button>
+          </div>
+        </div>
+
+        <!-- Grafana 卡片 -->
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px;">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px;">
+            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #f97316 0%, #f59e0b 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+              📊
+            </div>
+            <div style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%;"></div>
+          </div>
+          <div style="font-size: 14px; font-weight: 600; color: #1e293b; margin-bottom: 4px;">Grafana</div>
+          <div style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">监控可视化</div>
+          <div style="display: flex; gap: 8px;">
+            <button style="flex: 1; padding: 8px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 12px;">打开</button>
+            <button style="padding: 8px 10px; background: #f1f5f9; color: #64748b; border: none; border-radius: 6px; font-size: 12px;">✏️</button>
+          </div>
+        </div>
+
+        <!-- Prometheus 卡片 -->
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px;">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px;">
+            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #e11d48 0%, #be123c 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+              📈
+            </div>
+            <div style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%;"></div>
+          </div>
+          <div style="font-size: 14px; font-weight: 600; color: #1e293b; margin-bottom: 4px;">Prometheus</div>
+          <div style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">时序数据库</div>
+          <div style="display: flex; gap: 8px;">
+            <button style="flex: 1; padding: 8px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 12px;">打开</button>
+            <button style="padding: 8px 10px; background: #f1f5f9; color: #64748b; border: none; border-radius: 6px; font-size: 12px;">✏️</button>
+          </div>
+        </div>
+
+        <!-- GitLab 卡片 -->
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px;">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px;">
+            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+              🦊
+            </div>
+            <div style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%;"></div>
+          </div>
+          <div style="font-size: 14px; font-weight: 600; color: #1e293b; margin-bottom: 4px;">GitLab</div>
+          <div style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">代码仓库</div>
+          <div style="display: flex; gap: 8px;">
+            <button style="flex: 1; padding: 8px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 12px;">打开</button>
+            <button style="padding: 8px 10px; background: #f1f5f9; color: #64748b; border: none; border-radius: 6px; font-size: 12px;">✏️</button>
+          </div>
+        </div>
+
+        <!-- Nexus 卡片 -->
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px;">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px;">
+            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+              📦
+            </div>
+            <div style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%;"></div>
+          </div>
+          <div style="font-size: 14px; font-weight: 600; color: #1e293b; margin-bottom: 4px;">Nexus</div>
+          <div style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">制品仓库</div>
+          <div style="display: flex; gap: 8px;">
+            <button style="flex: 1; padding: 8px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 12px;">打开</button>
+            <button style="padding: 8px 10px; background: #f1f5f9; color: #64748b; border: none; border-radius: 6px; font-size: 12px;">✏️</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3 style="margin-top: 24px;">交互流程</h3>
+
+<div class="mockup" style="background: #fff; margin-top: 12px;">
+  <div class="mockup-header">点击"打开"按钮</div>
+  <div class="mockup-body" style="background: #f8fafc; padding: 16px;">
+    <div style="display: flex; align-items: center; gap: 16px; justify-content: center;">
+      <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; text-align: center;">
+        <div style="font-size: 24px; margin-bottom: 8px;">1️⃣</div>
+        <div style="font-size: 13px; font-weight: 500; color: #1e293b;">复制凭据</div>
+        <div style="font-size: 11px; color: #94a3b8;">用户名+密码复制到剪贴板</div>
+      </div>
+      <div style="color: #94a3b8;">→</div>
+      <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; text-align: center;">
+        <div style="font-size: 24px; margin-bottom: 8px;">2️⃣</div>
+        <div style="font-size: 13px; font-weight: 500; color: #1e293b;">打开页面</div>
+        <div style="font-size: 11px; color: #94a3b8;">新标签页跳转登录页</div>
+      </div>
+      <div style="color: #94a3b8;">→</div>
+      <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; text-align: center;">
+        <div style="font-size: 24px; margin-bottom: 8px;">3️⃣</div>
+        <div style="font-size: 13px; font-weight: 500; color: #1e293b;">粘贴登录</div>
+        <div style="font-size: 11px; color: #94a3b8;">Ctrl+V 粘贴凭据</div>
+      </div>
+    </div>
+
+    <!-- Toast提示 -->
+    <div style="margin-top: 20px; text-align: center;">
+      <div style="display: inline-block; background: #1e293b; color: white; padding: 10px 20px; border-radius: 8px; font-size: 12px;">
+        ✓ 已复制 Jenkins 的用户名和密码到剪贴板
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>这个简化布局如何？</h3>
+  <p class="subtitle">左侧只显示分组，点击分组右侧展示卡片</p>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="approve" onclick="toggleSelect(this)">
+    <div class="letter">✓</div>
+    <div class="content">
+      <h3>可以，继续下一步</h3>
+      <p>接受这个布局设计</p>
+    </div>
+  </div>
+  <div class="option" data-choice="adjust" onclick="toggleSelect(this)">
+    <div class="letter">↻</div>
+    <div class="content">
+      <h3>还需要调整</h3>
+      <p>告诉我需要修改的地方</p>
+    </div>
+  </div>
+</div>

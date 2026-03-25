@@ -1,0 +1,199 @@
+<h2>导航页布局方案</h2>
+<p class="subtitle">点击选择你偏好的布局风格（白色简洁主题）</p>
+
+<div class="split">
+  <div class="mockup" style="background: #fff;">
+    <div class="mockup-header">方案 A: 卡片网格布局</div>
+    <div class="mockup-body" style="background: #f8fafc; min-height: 300px; padding: 16px;">
+      <div style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
+        <span style="padding: 6px 12px; background: #3b82f6; color: white; border-radius: 6px; font-size: 12px;">运维系统</span>
+        <span style="padding: 6px 12px; background: #f1f5f9; border-radius: 6px; font-size: 12px; color: #64748b;">开发工具</span>
+        <span style="padding: 6px 12px; background: #f1f5f9; border-radius: 6px; font-size: 12px; color: #64748b;">内部服务</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; text-align: center;">
+          <div style="width: 32px; height: 32px; background: #dbeafe; border-radius: 8px; margin: 0 auto 8px;"></div>
+          <div style="font-size: 13px; font-weight: 500; color: #1e293b;">Jenkins</div>
+          <div style="font-size: 11px; color: #94a3b8;">CI/CD</div>
+        </div>
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; text-align: center;">
+          <div style="width: 32px; height: 32px; background: #fef3c7; border-radius: 8px; margin: 0 auto 8px;"></div>
+          <div style="font-size: 13px; font-weight: 500; color: #1e293b;">Grafana</div>
+          <div style="font-size: 11px; color: #94a3b8;">监控</div>
+        </div>
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; text-align: center;">
+          <div style="width: 32px; height: 32px; background: #dcfce7; border-radius: 8px; margin: 0 auto 8px;"></div>
+          <div style="font-size: 13px; font-weight: 500; color: #1e293b;">GitLab</div>
+          <div style="font-size: 11px; color: #94a3b8;">代码仓库</div>
+        </div>
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; text-align: center;">
+          <div style="width: 32px; height: 32px; background: #fce7f3; border-radius: 8px; margin: 0 auto 8px;"></div>
+          <div style="font-size: 13px; font-weight: 500; color: #1e293b;">Nexus</div>
+          <div style="font-size: 11px; color: #94a3b8;">制品库</div>
+        </div>
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; text-align: center;">
+          <div style="width: 32px; height: 32px; background: #e0e7ff; border-radius: 8px; margin: 0 auto 8px;"></div>
+          <div style="font-size: 13px; font-weight: 500; color: #1e293b;">Nacos</div>
+          <div style="font-size: 11px; color: #94a3b8;">配置中心</div>
+        </div>
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; text-align: center; border: 2px dashed #cbd5e1;">
+          <div style="font-size: 20px; color: #94a3b8;">+</div>
+          <div style="font-size: 11px; color: #94a3b8;">添加</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup" style="background: #fff;">
+    <div class="mockup-header">方案 B: 侧边栏树形布局</div>
+    <div class="mockup-body" style="background: #f8fafc; min-height: 300px; display: flex;">
+      <div style="width: 200px; background: white; border-right: 1px solid #e2e8f0; padding: 12px;">
+        <div style="font-size: 11px; color: #94a3b8; padding: 8px 0;">导航</div>
+        <div style="padding: 6px 8px; font-size: 12px; color: #1e293b; background: #eff6ff; border-radius: 4px; margin-bottom: 2px;">▼ 运维系统</div>
+        <div style="padding: 6px 8px 6px 24px; font-size: 12px; color: #3b82f6;">Jenkins</div>
+        <div style="padding: 6px 8px 6px 24px; font-size: 12px; color: #64748b;">Grafana</div>
+        <div style="padding: 6px 8px 6px 24px; font-size: 12px; color: #64748b;">Prometheus</div>
+        <div style="padding: 6px 8px; font-size: 12px; color: #64748b;">▶ 开发工具</div>
+        <div style="padding: 6px 8px; font-size: 12px; color: #64748b;">▶ 内部服务</div>
+      </div>
+      <div style="flex: 1; padding: 16px;">
+        <div style="font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 4px;">Jenkins</div>
+        <div style="font-size: 12px; color: #64748b; margin-bottom: 16px;">https://jenkins.internal.com</div>
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px;">
+          <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">账号信息</div>
+          <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <span style="font-size: 12px; color: #1e293b;">用户名:</span>
+            <span style="font-size: 12px; color: #64748b; font-family: monospace;">admin</span>
+            <span style="font-size: 11px; color: #3b82f6; cursor: pointer;">复制</span>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <span style="font-size: 12px; color: #1e293b;">密码:</span>
+            <span style="font-size: 12px; color: #64748b; font-family: monospace;">••••••••</span>
+            <span style="font-size: 11px; color: #3b82f6; cursor: pointer;">复制</span>
+          </div>
+          <button style="margin-top: 16px; width: 100%; padding: 8px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 13px;">打开并复制凭据</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="split" style="margin-top: 16px;">
+  <div class="mockup" style="background: #fff;">
+    <div class="mockup-header">方案 C: 简洁列表布局</div>
+    <div class="mockup-body" style="background: #f8fafc; min-height: 300px; padding: 16px;">
+      <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <div style="padding: 12px 16px; border-bottom: 1px solid #e2e8f0; font-size: 13px; font-weight: 500; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+          <span style="color: #94a3b8;">▼</span> 运维系统
+        </div>
+        <div style="padding: 10px 16px 10px 32px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%;"></div>
+            <span style="font-size: 13px; color: #1e293b;">Jenkins</span>
+            <span style="font-size: 11px; color: #94a3b8;">jenkins.internal.com</span>
+          </div>
+          <button style="padding: 4px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; font-size: 11px;">打开</button>
+        </div>
+        <div style="padding: 10px 16px 10px 32px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%;"></div>
+            <span style="font-size: 13px; color: #1e293b;">Grafana</span>
+            <span style="font-size: 11px; color: #94a3b8;">grafana.internal.com</span>
+          </div>
+          <button style="padding: 4px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; font-size: 11px;">打开</button>
+        </div>
+        <div style="padding: 10px 16px 10px 32px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%;"></div>
+            <span style="font-size: 13px; color: #1e293b;">Prometheus</span>
+            <span style="font-size: 11px; color: #94a3b8;">prom.internal.com</span>
+          </div>
+          <button style="padding: 4px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; font-size: 11px;">打开</button>
+        </div>
+        <div style="padding: 12px 16px; border-top: 1px solid #e2e8f0; font-size: 13px; font-weight: 500; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+          <span style="color: #94a3b8;">▶</span> 开发工具
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup" style="background: #fff;">
+    <div class="mockup-header">方案 D: 看板式布局</div>
+    <div class="mockup-body" style="background: #f8fafc; min-height: 300px; padding: 16px; display: flex; gap: 12px; overflow-x: auto;">
+      <div style="min-width: 180px; background: white; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <div style="padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; font-weight: 500; color: #1e293b;">运维系统</div>
+        <div style="padding: 8px;">
+          <div style="background: #f8fafc; border-radius: 6px; padding: 10px; margin-bottom: 6px; border: 1px solid #e2e8f0;">
+            <div style="font-size: 12px; font-weight: 500; color: #1e293b;">Jenkins</div>
+            <div style="font-size: 10px; color: #94a3b8;">jenkins.internal.com</div>
+          </div>
+          <div style="background: #f8fafc; border-radius: 6px; padding: 10px; margin-bottom: 6px; border: 1px solid #e2e8f0;">
+            <div style="font-size: 12px; font-weight: 500; color: #1e293b;">Grafana</div>
+            <div style="font-size: 10px; color: #94a3b8;">grafana.internal.com</div>
+          </div>
+          <div style="background: #f8fafc; border-radius: 6px; padding: 10px; border: 1px solid #e2e8f0;">
+            <div style="font-size: 12px; font-weight: 500; color: #1e293b;">Prometheus</div>
+            <div style="font-size: 10px; color: #94a3b8;">prom.internal.com</div>
+          </div>
+        </div>
+      </div>
+      <div style="min-width: 180px; background: white; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <div style="padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; font-weight: 500; color: #1e293b;">开发工具</div>
+        <div style="padding: 8px;">
+          <div style="background: #f8fafc; border-radius: 6px; padding: 10px; margin-bottom: 6px; border: 1px solid #e2e8f0;">
+            <div style="font-size: 12px; font-weight: 500; color: #1e293b;">GitLab</div>
+            <div style="font-size: 10px; color: #94a3b8;">git.internal.com</div>
+          </div>
+          <div style="background: #f8fafc; border-radius: 6px; padding: 10px; border: 1px solid #e2e8f0;">
+            <div style="font-size: 12px; font-weight: 500; color: #1e293b;">VS Code Server</div>
+            <div style="font-size: 10px; color: #94a3b8;">vscode.internal.com</div>
+          </div>
+        </div>
+      </div>
+      <div style="min-width: 180px; background: white; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <div style="padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; font-weight: 500; color: #1e293b;">内部服务</div>
+        <div style="padding: 8px;">
+          <div style="background: #f8fafc; border-radius: 6px; padding: 10px; margin-bottom: 6px; border: 1px solid #e2e8f0;">
+            <div style="font-size: 12px; font-weight: 500; color: #1e293b;">Nexus</div>
+            <div style="font-size: 10px; color: #94a3b8;">nexus.internal.com</div>
+          </div>
+          <div style="background: #f8fafc; border-radius: 6px; padding: 10px; border: 1px solid #e2e8f0;">
+            <div style="font-size: 12px; font-weight: 500; color: #1e293b;">Nacos</div>
+            <div style="font-size: 10px; color: #94a3b8;">nacos.internal.com</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="options" style="margin-top: 20px;">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>卡片网格布局</h3>
+      <p>顶部Tab切换分组，内容区网格卡片展示，适合服务数量较多的场景</p>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>侧边栏树形布局</h3>
+      <p>左侧树形导航，右侧详情面板，适合需要展示详细信息的场景</p>
+    </div>
+  </div>
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>简洁列表布局</h3>
+      <p>折叠式分组列表，结构清晰操作简单，适合快速导航</p>
+    </div>
+  </div>
+  <div class="option" data-choice="d" onclick="toggleSelect(this)">
+    <div class="letter">D</div>
+    <div class="content">
+      <h3>看板式布局</h3>
+      <p>多列看板，分组横向排列，拖拽直观，适合服务频繁调整</p>
+    </div>
+  </div>
+</div>
