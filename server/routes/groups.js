@@ -42,6 +42,16 @@ router.post('/', (req, res) => {
   res.status(201).json({ success: true, data: group });
 });
 
+// 批量更新排序
+router.put('/reorder', (req, res) => {
+  const { items } = req.body;
+  if (!Array.isArray(items)) {
+    return res.status(400).json({ success: false, message: '参数错误' });
+  }
+  groupOps.reorder(items);
+  res.json({ success: true, message: '排序更新成功' });
+});
+
 // 更新分组
 router.put('/:id', (req, res) => {
   const { name, parent_id, sort_order } = req.body;
@@ -56,16 +66,6 @@ router.put('/:id', (req, res) => {
 router.delete('/:id', (req, res) => {
   groupOps.delete(parseInt(req.params.id));
   res.json({ success: true, message: '删除成功' });
-});
-
-// 批量更新排序
-router.put('/reorder', (req, res) => {
-  const { items } = req.body;
-  if (!Array.isArray(items)) {
-    return res.status(400).json({ success: false, message: '参数错误' });
-  }
-  groupOps.reorder(items);
-  res.json({ success: true, message: '排序更新成功' });
 });
 
 export default router;
