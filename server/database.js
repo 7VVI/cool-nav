@@ -14,6 +14,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS groups (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
+    color TEXT DEFAULT '#3b6ef8',
     parent_id INTEGER REFERENCES groups(id),
     sort_order INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -40,22 +41,70 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_services_sort ON services(sort_order);
 `);
 
+// 添加 color 列（如果不存在）
+try {
+  db.exec('ALTER TABLE groups ADD COLUMN color TEXT DEFAULT "#3b6ef8"');
+} catch (e) {
+  // 列已存在，忽略错误
+}
+
+// 添加 tags 列到 services 表（如果不存在）
+try {
+  db.exec('ALTER TABLE services ADD COLUMN tags TEXT DEFAULT "[]"');
+} catch (e) {
+  // 列已存在，忽略错误
+}
+
+// 创建标签表
+db.exec(`
+  CREATE TABLE IF NOT EXISTS tags (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    value TEXT NOT NULL UNIQUE,
+    color TEXT NOT NULL DEFAULT '#3b6ef8',
+    sort_order INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
+// 插入默认标签（如果不存在）
+const defaultTags = [
+  { name: '生产', value: 'production', color: '#059669', sort_order: 1 },
+  { name: '预生产', value: 'staging', color: '#7c3aed', sort_order: 2 },
+  { name: '开发', value: 'development', color: '#2563eb', sort_order: 3 },
+  { name: '测试', value: 'testing', color: '#d97706', sort_order: 4 },
+  { name: '重要', value: 'important', color: '#dc2626', sort_order: 5 },
+  { name: '内网', value: 'internal', color: '#0891b2', sort_order: 6 }
+];
+
+const insertTag = db.prepare('INSERT OR IGNORE INTO tags (name, value, color, sort_order) VALUES (?, ?, ?, ?)');
+defaultTags.forEach(tag => {
+  insertTag.run(tag.name, tag.value, tag.color, tag.sort_order);
+});
+
 // 分组操作
 export const groupOps = {
   getAll: () => db.prepare('SELECT * FROM groups ORDER BY sort_order, id').all(),
 
   getById: (id) => db.prepare('SELECT * FROM groups WHERE id = ?').get(id),
 
+  getByName: (name, excludeId = null) => {
+    if (excludeId) {
+      return db.prepare('SELECT * FROM groups WHERE name = ? AND id != ?').get(name, excludeId);
+    }
+    return db.prepare('SELECT * FROM groups WHERE name = ?').get(name);
+  },
+
   create: (data) => {
-    const stmt = db.prepare('INSERT INTO groups (name, parent_id, sort_order) VALUES (?, ?, ?)');
-    const result = stmt.run(data.name, data.parent_id || null, data.sort_order || 0);
-    return { id: result.lastInsertRowid, ...data };
+    const stmt = db.prepare('INSERT INTO groups (name, color, parent_id, sort_order) VALUES (?, ?, ?, ?)');
+    const result = stmt.run(data.name, data.color || '#3b6ef8', data.parent_id || null, data.sort_order || 0);
+    return { id: result.lastInsertRowid, color: data.color || '#3b6ef8', ...data };
   },
 
   update: (id, data) => {
-    const stmt = db.prepare('UPDATE groups SET name = ?, parent_id = ?, sort_order = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?');
-    stmt.run(data.name, data.parent_id || null, data.sort_order || 0, id);
-    return { id, ...data };
+    const stmt = db.prepare('UPDATE groups SET name = ?, color = ?, parent_id = ?, sort_order = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?');
+    stmt.run(data.name, data.color || '#3b6ef8', data.parent_id || null, data.sort_order || 0, id);
+    return { id, color: data.color || '#3b6ef8', ...data };
   },
 
   delete: (id) => {
@@ -84,18 +133,35 @@ export const groupOps = {
 // 服务操作
 export const serviceOps = {
   getAll: (groupId = null) => {
+    let services;
     if (groupId) {
-      return db.prepare('SELECT * FROM services WHERE group_id = ? ORDER BY sort_order, id').all(groupId);
+      services = db.prepare('SELECT * FROM services WHERE group_id = ? ORDER BY sort_order, id').all(groupId);
+    } else {
+      services = db.prepare('SELECT * FROM services ORDER BY sort_order, id').all();
     }
-    return db.prepare('SELECT * FROM services ORDER BY sort_order, id').all();
+    // 解析 tags JSON
+    return services.map(s => ({
+      ...s,
+      tags: s.tags ? JSON.parse(s.tags) : []
+    }));
   },
 
-  getById: (id) => db.prepare('SELECT * FROM services WHERE id = ?').get(id),
+  getById: (id) => {
+    const service = db.prepare('SELECT * FROM services WHERE id = ?').get(id);
+    if (service) {
+      return {
+        ...service,
+        tags: service.tags ? JSON.parse(service.tags) : []
+      };
+    }
+    return service;
+  },
 
   create: (data) => {
+    const tagsJson = JSON.stringify(data.tags || []);
     const stmt = db.prepare(`
-      INSERT INTO services (group_id, name, url, username, password, description, icon, sort_order)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO services (group_id, name, url, username, password, description, icon, tags, sort_order)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     const result = stmt.run(
       data.group_id,
@@ -105,15 +171,17 @@ export const serviceOps = {
       data.password || null,
       data.description || null,
       data.icon || null,
+      tagsJson,
       data.sort_order || 0
     );
-    return { id: result.lastInsertRowid, ...data };
+    return { id: result.lastInsertRowid, tags: data.tags || [], ...data };
   },
 
   update: (id, data) => {
+    const tagsJson = JSON.stringify(data.tags || []);
     const stmt = db.prepare(`
       UPDATE services SET group_id = ?, name = ?, url = ?, username = ?, password = ?,
-      description = ?, icon = ?, sort_order = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
+      description = ?, icon = ?, tags = ?, sort_order = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
     `);
     stmt.run(
       data.group_id,
@@ -123,10 +191,11 @@ export const serviceOps = {
       data.password || null,
       data.description || null,
       data.icon || null,
+      tagsJson,
       data.sort_order || 0,
       id
     );
-    return { id, ...data };
+    return { id, tags: data.tags || [], ...data };
   },
 
   delete: (id) => db.prepare('DELETE FROM services WHERE id = ?').run(id),
@@ -141,11 +210,39 @@ export const serviceOps = {
 
   search: (keyword) => {
     const pattern = `%${keyword}%`;
-    return db.prepare(`
+    const services = db.prepare(`
       SELECT * FROM services WHERE name LIKE ? OR url LIKE ? OR description LIKE ?
       ORDER BY sort_order, id
     `).all(pattern, pattern, pattern);
+    // 解析 tags JSON
+    return services.map(s => ({
+      ...s,
+      tags: s.tags ? JSON.parse(s.tags) : []
+    }));
   }
 };
 
 export default db;
+
+// 标签操作
+export const tagOps = {
+  getAll: () => db.prepare('SELECT * FROM tags ORDER BY sort_order, id').all(),
+
+  getById: (id) => db.prepare('SELECT * FROM tags WHERE id = ?').get(id),
+
+  getByValue: (value) => db.prepare('SELECT * FROM tags WHERE value = ?').get(value),
+
+  create: (data) => {
+    const stmt = db.prepare('INSERT INTO tags (name, value, color, sort_order) VALUES (?, ?, ?, ?)');
+    const result = stmt.run(data.name, data.value, data.color || '#3b6ef8', data.sort_order || 0);
+    return { id: result.lastInsertRowid, ...data };
+  },
+
+  update: (id, data) => {
+    const stmt = db.prepare('UPDATE tags SET name = ?, value = ?, color = ?, sort_order = ? WHERE id = ?');
+    stmt.run(data.name, data.value, data.color || '#3b6ef8', data.sort_order || 0, id);
+    return { id, ...data };
+  },
+
+  delete: (id) => db.prepare('DELETE FROM tags WHERE id = ?').run(id)
+};

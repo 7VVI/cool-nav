@@ -38,22 +38,22 @@ router.get('/:id', (req, res) => {
 
 // 创建服务
 router.post('/', (req, res) => {
-  const { group_id, name, url, username, password, description, icon } = req.body;
+  const { group_id, name, url, username, password, description, icon, tags } = req.body;
   if (!group_id || !name || !url) {
     return res.status(400).json({ success: false, message: '分组、名称和URL不能为空' });
   }
-  const service = serviceOps.create({ group_id, name, url, username, password, description, icon });
+  const service = serviceOps.create({ group_id, name, url, username, password, description, icon, tags });
   res.status(201).json({ success: true, data: service });
 });
 
 // 更新服务
 router.put('/:id', (req, res) => {
-  const { group_id, name, url, username, password, description, icon, sort_order } = req.body;
+  const { group_id, name, url, username, password, description, icon, tags, sort_order } = req.body;
   if (!group_id || !name || !url) {
     return res.status(400).json({ success: false, message: '分组、名称和URL不能为空' });
   }
   const service = serviceOps.update(parseInt(req.params.id), {
-    group_id, name, url, username, password, description, icon, sort_order
+    group_id, name, url, username, password, description, icon, tags, sort_order
   });
   res.json({ success: true, data: service });
 });

@@ -77,64 +77,98 @@ async function handleExport() {
 <template>
   <div
     v-if="show"
-    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+    class="fixed inset-0 flex items-center justify-center z-50"
+    style="background: rgba(0,0,0,.4); backdrop-filter: blur(6px)"
     @click.self="emit('close')"
   >
-    <div class="bg-white rounded-xl shadow-xl w-[400px]">
+    <div
+      class="w-[400px] rounded-2xl shadow-lg overflow-hidden"
+      style="background: var(--surface); animation: modalIn 0.2s ease"
+    >
       <!-- Header -->
-      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-        <h3 class="text-lg font-semibold text-gray-800">导出 Markdown</h3>
-        <button @click="emit('close')" class="text-gray-400 hover:text-gray-600">✕</button>
+      <div class="px-6 py-5 border-b flex items-center justify-between" style="border-color: var(--border)">
+        <h3 class="text-[15px] font-bold" style="color: var(--text)">导出 Markdown</h3>
+        <button
+          @click="emit('close')"
+          class="w-7 h-7 rounded-md flex items-center justify-center transition-colors"
+          style="color: var(--text3)"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
 
       <!-- Content -->
       <div class="px-6 py-4">
         <!-- Select actions -->
         <div class="flex gap-4 mb-4">
-          <button @click="selectAll" class="text-sm text-blue-500 hover:text-blue-600">
+          <button
+            @click="selectAll"
+            class="text-xs font-medium transition-colors"
+            style="color: var(--accent)"
+          >
             全选
           </button>
-          <button @click="clearAll" class="text-sm text-gray-500 hover:text-gray-600">
+          <button
+            @click="clearAll"
+            class="text-xs font-medium transition-colors"
+            style="color: var(--text3)"
+          >
             清空
           </button>
         </div>
 
         <!-- Group list -->
-        <div class="space-y-2 max-h-[300px] overflow-y-auto">
+        <div class="space-y-1 max-h-[300px] overflow-y-auto">
           <label
             v-for="group in store.groups"
             :key="group.id"
-            class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+            class="flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors"
+            style="color: var(--text2)"
+            onmouseenter="this.style.background='var(--surface2)'"
+            onmouseleave="this.style.background='transparent'"
           >
             <input
               type="checkbox"
               :checked="selectedGroups.includes(group.id)"
               @change="toggleGroup(group.id)"
-              class="w-4 h-4 text-blue-500 rounded border-gray-300 focus:ring-blue-500"
+              class="w-4 h-4 rounded border"
+              style="accent-color: var(--accent)"
             />
-            <span class="flex-1 text-sm text-gray-700">{{ group.name }}</span>
-            <span class="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
+            <span
+              class="w-1.5 h-1.5 rounded-full flex-shrink-0"
+              :style="{ background: group.color || '#3b6ef8' }"
+            ></span>
+            <span class="flex-1 text-[13px]">{{ group.name }}</span>
+            <span
+              class="text-[11px] font-medium px-2 py-0.5 rounded-full"
+              style="background: var(--surface2); color: var(--text3)"
+            >
               {{ group.serviceCount || 0 }}
             </span>
           </label>
         </div>
 
         <!-- Empty state -->
-        <div v-if="store.groups.length === 0" class="text-center py-8 text-gray-400 text-sm">
+        <div v-if="store.groups.length === 0" class="text-center py-8 text-[13px]" style="color: var(--text3)">
           暂无可导出的分组
         </div>
 
         <!-- Buttons -->
-        <div class="flex gap-3 mt-6">
+        <div class="flex gap-2 mt-6">
           <button
             @click="emit('close')"
-            class="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition-colors"
+            class="flex-1 px-4 py-2.5 rounded-lg text-[13px] font-medium border transition-colors"
+            style="border-color: var(--border); color: var(--text2)"
           >
             取消
           </button>
           <button
             @click="handleExport"
-            class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
+            class="flex-1 px-4 py-2.5 rounded-lg text-[13px] font-medium transition-colors"
+            style="background: var(--accent); color: white"
           >
             导出
           </button>

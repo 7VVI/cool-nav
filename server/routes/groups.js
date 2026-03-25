@@ -34,11 +34,18 @@ router.get('/:id', (req, res) => {
 
 // 创建分组
 router.post('/', (req, res) => {
-  const { name, parent_id } = req.body;
-  if (!name) {
+  const { name, color, parent_id } = req.body;
+  if (!name || !name.trim()) {
     return res.status(400).json({ success: false, message: '分组名称不能为空' });
   }
-  const group = groupOps.create({ name, parent_id });
+
+  // 检查名称唯一性
+  const existingGroup = groupOps.getByName(name.trim());
+  if (existingGroup) {
+    return res.status(400).json({ success: false, message: '分组名称已存在' });
+  }
+
+  const group = groupOps.create({ name: name.trim(), color, parent_id });
   res.status(201).json({ success: true, data: group });
 });
 
@@ -54,11 +61,18 @@ router.put('/reorder', (req, res) => {
 
 // 更新分组
 router.put('/:id', (req, res) => {
-  const { name, parent_id, sort_order } = req.body;
-  if (!name) {
+  const { name, color, parent_id, sort_order } = req.body;
+  if (!name || !name.trim()) {
     return res.status(400).json({ success: false, message: '分组名称不能为空' });
   }
-  const group = groupOps.update(parseInt(req.params.id), { name, parent_id, sort_order });
+
+  // 检查名称唯一性（排除当前分组）
+  const existingGroup = groupOps.getByName(name.trim(), parseInt(req.params.id));
+  if (existingGroup) {
+    return res.status(400).json({ success: false, message: '分组名称已存在' });
+  }
+
+  const group = groupOps.update(parseInt(req.params.id), { name: name.trim(), color, parent_id, sort_order });
   res.json({ success: true, data: group });
 });
 

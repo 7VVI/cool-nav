@@ -9,12 +9,16 @@ const emit = defineEmits<{
   editGroup: [group: Group | null];
   searchServices: [keyword: string];
   deleteGroup: [group: Group];
+  showExport: [];
+  importData: [file: File];
 }>();
 
 const store = useNavStore();
 const searchKeyword = ref('');
 const localGroups = ref<Group[]>([]);
-const expandedGroups = ref<Set<number>>(new Set());
+
+// 侧边栏折叠状态
+const isCollapsed = ref(false);
 
 // 同步分组数据
 watch(() => store.groups, (newGroups) => {
@@ -26,22 +30,35 @@ const rootGroups = computed(() => {
   return localGroups.value.filter(g => !g.parent_id).sort((a, b) => a.sort_order - b.sort_order);
 });
 
-// 获取子分组
-function getChildGroups(parentId: number) {
-  return localGroups.value.filter(g => g.parent_id === parentId).sort((a, b) => a.sort_order - b.sort_order);
-}
+// 根据搜索关键词过滤分组
+const filteredGroups = computed(() => {
+  const keyword = searchKeyword.value.trim().toLowerCase();
+  if (!keyword) return rootGroups.value;
 
-// 切换展开状态
-function toggleExpand(id: number) {
-  if (expandedGroups.value.has(id)) {
-    expandedGroups.value.delete(id);
-  } else {
-    expandedGroups.value.add(id);
+  return rootGroups.value.filter(group => {
+    // 分组名称匹配
+    if (group.name.toLowerCase().includes(keyword)) return true;
+    // 分组下的服务名称匹配
+    const groupServices = store.services.filter(s => s.group_id === group.id);
+    return groupServices.some(s => s.name.toLowerCase().includes(keyword));
+  });
+});
+
+// 获取第一个分组（折叠状态显示）
+const firstGroup = computed(() => rootGroups.value[0] || null);
+
+// 选择分组
+function selectGroup(id: number) {
+  store.selectGroup(id);
+  // 折叠状态下点击分组自动展开
+  if (isCollapsed.value) {
+    isCollapsed.value = false;
   }
 }
 
-function isExpanded(id: number) {
-  return expandedGroups.value.has(id);
+// 切换侧边栏折叠
+function toggleSidebar() {
+  isCollapsed.value = !isCollapsed.value;
 }
 
 // 拖拽排序后保存
@@ -55,7 +72,7 @@ async function onDragEnd() {
   }
 }
 
-// 搜索
+// 搜索 - 同时过滤分组和服务
 watch(searchKeyword, (keyword) => {
   emit('searchServices', keyword);
 });
@@ -66,150 +83,565 @@ function handleDeleteGroup(group: Group) {
     emit('deleteGroup', group);
   }
 }
+
+// 导入数据
+function handleImport(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (file) {
+    emit('importData', file);
+  }
+  input.value = '';
+}
 </script>
 
 <template>
-  <aside class="w-[240px] bg-white border-r border-gray-200 flex flex-col h-screen flex-shrink-0">
-    <!-- 搜索框 -->
-    <div class="p-4 border-b border-gray-200">
-      <input
-        v-model="searchKeyword"
-        type="text"
-        placeholder="搜索分组或服务..."
-        class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-      />
+  <aside
+    class="sidebar"
+    :class="{ collapsed: isCollapsed }"
+  >
+    <!-- Logo -->
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7"/>
+          <rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/>
+        </svg>
+      </div>
+      <span class="logo-text">Nav Portal</span>
     </div>
 
-    <!-- 分组列表 -->
-    <div class="flex-1 overflow-y-auto p-2">
-      <div class="text-xs text-gray-400 font-medium px-3 py-2 uppercase tracking-wider">分组</div>
-
-      <draggable
-        v-model="localGroups"
-        item-key="id"
-        @end="onDragEnd"
-        class="space-y-1"
+    <!-- 折叠状态：只显示第一个分组的点 -->
+    <div v-if="isCollapsed && firstGroup" class="collapsed-group">
+      <div
+        :class="['group-dot-btn', { active: store.currentGroupId === firstGroup.id }]"
+        @click="selectGroup(firstGroup.id)"
+        :title="firstGroup.name"
       >
-        <template #item="{ element: group }">
-          <!-- 只渲染根分组 -->
-          <div v-if="!group.parent_id" :key="group.id">
-            <!-- 根分组项 -->
-            <div
-              :class="[
-                'group px-3 py-2 rounded-lg cursor-pointer flex items-center gap-2 transition-colors',
-                store.currentGroupId === group.id
-                  ? 'bg-blue-50 text-blue-600'
-                  : 'text-gray-700 hover:bg-gray-50'
-              ]"
-              @click="store.selectGroup(group.id)"
-            >
-              <!-- 展开/折叠按钮 -->
-              <button
-                v-if="getChildGroups(group.id).length > 0"
-                @click.stop="toggleExpand(group.id)"
-                class="w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-600"
-              >
-                <span class="text-xs">{{ isExpanded(group.id) ? '▼' : '▶' }}</span>
-              </button>
-              <span v-else class="w-4"></span>
-
-              <!-- 文件夹图标 -->
-              <span class="text-base">📁</span>
-
-              <!-- 分组名称 -->
-              <span class="flex-1 text-sm font-medium truncate">{{ group.name }}</span>
-
-              <!-- 服务数量 -->
-              <span
-                v-if="group.serviceCount"
-                :class="[
-                  'text-xs px-1.5 py-0.5 rounded-full',
-                  store.currentGroupId === group.id
-                    ? 'bg-blue-100 text-blue-600'
-                    : 'bg-gray-100 text-gray-500'
-                ]"
-              >
-                {{ group.serviceCount }}
-              </span>
-
-              <!-- 编辑按钮 -->
-              <button
-                @click.stop="emit('editGroup', group)"
-                class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-blue-500 transition-opacity p-1"
-              >
-                ✏️
-              </button>
-              <!-- 删除按钮 -->
-              <button
-                @click.stop="handleDeleteGroup(group)"
-                class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity p-1"
-              >
-                🗑️
-              </button>
-            </div>
-
-            <!-- 子分组列表 -->
-            <div
-              v-if="isExpanded(group.id) && getChildGroups(group.id).length > 0"
-              class="ml-6 mt-1 space-y-1 border-l-2 border-gray-100 pl-2"
-            >
-              <div
-                v-for="child in getChildGroups(group.id)"
-                :key="child.id"
-                :class="[
-                  'group px-3 py-2 rounded-lg cursor-pointer flex items-center gap-2 transition-colors',
-                  store.currentGroupId === child.id
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'text-gray-600 hover:bg-gray-50'
-                ]"
-                @click="store.selectGroup(child.id)"
-              >
-                <span class="text-sm">📁</span>
-                <span class="flex-1 text-sm truncate">{{ child.name }}</span>
-                <span
-                  v-if="child.serviceCount"
-                  :class="[
-                    'text-xs px-1.5 py-0.5 rounded-full',
-                    store.currentGroupId === child.id
-                      ? 'bg-blue-100 text-blue-600'
-                      : 'bg-gray-100 text-gray-500'
-                  ]"
-                >
-                  {{ child.serviceCount }}
-                </span>
-                <button
-                  @click.stop="emit('editGroup', child)"
-                  class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-blue-500 transition-opacity p-1"
-                >
-                  ✏️
-                </button>
-                <button
-                  @click.stop="handleDeleteGroup(child)"
-                  class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity p-1"
-                >
-                  🗑️
-                </button>
-              </div>
-            </div>
-          </div>
-        </template>
-      </draggable>
-
-      <!-- 空状态 -->
-      <div v-if="rootGroups.length === 0" class="text-center py-8 text-gray-400 text-sm">
-        暂无分组
+        <span class="group-dot" :style="{ background: firstGroup.color || '#3b6ef8' }"></span>
       </div>
     </div>
 
+    <!-- 搜索框 -->
+    <div class="sidebar-search">
+      <div class="search-wrapper">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input
+          v-model="searchKeyword"
+          type="text"
+          placeholder="搜索分组或服务…"
+          class="search-input"
+        />
+      </div>
+    </div>
+
+    <!-- 分组列表 -->
+    <div class="sidebar-content">
+      <!-- 展开状态：显示分组 -->
+      <template v-if="!isCollapsed">
+        <div class="sidebar-header">
+          <span>分组</span>
+          <button @click="toggleSidebar" class="collapse-btn" title="最小化">−</button>
+        </div>
+
+        <!-- 搜索状态：显示过滤后的分组（不可拖拽） -->
+        <div v-if="searchKeyword.trim()" class="group-list">
+          <div
+            v-for="group in filteredGroups"
+            :key="group.id"
+            class="group-item"
+            :class="{ active: store.currentGroupId === group.id }"
+            @click="selectGroup(group.id)"
+          >
+            <span class="group-dot" :style="{ background: group.color || '#3b6ef8' }"></span>
+            <span class="group-name">{{ group.name }}</span>
+            <span v-if="group.serviceCount !== undefined" class="group-count">{{ group.serviceCount }}</span>
+          </div>
+          <div v-if="filteredGroups.length === 0" class="empty-state">未找到匹配的分组</div>
+        </div>
+
+        <!-- 非搜索状态：可拖拽的分组列表 -->
+        <draggable
+          v-else
+          v-model="localGroups"
+          item-key="id"
+          @end="onDragEnd"
+          class="group-list"
+        >
+          <template #item="{ element: group }">
+            <div v-if="!group.parent_id" :key="group.id" class="group-item-wrapper">
+              <div
+                :class="['group-item', { active: store.currentGroupId === group.id }]"
+                @click="selectGroup(group.id)"
+              >
+                <span class="group-dot" :style="{ background: group.color || '#3b6ef8' }"></span>
+                <span class="group-name">{{ group.name }}</span>
+                <span v-if="group.serviceCount !== undefined" class="group-count">{{ group.serviceCount }}</span>
+                <div class="group-actions">
+                  <button @click.stop="emit('editGroup', group)" class="action-btn" title="编辑">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                  </button>
+                  <button @click.stop="handleDeleteGroup(group)" class="action-btn delete" title="删除">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </template>
+        </draggable>
+      </template>
+
+      <!-- 空状态 -->
+      <div v-if="rootGroups.length === 0 && !isCollapsed && !searchKeyword.trim()" class="empty-state">暂无分组</div>
+    </div>
+
     <!-- 新建分组按钮 -->
-    <div class="p-3 border-t border-gray-200">
-      <button
-        @click="emit('editGroup', null)"
-        class="w-full px-3 py-2 text-sm text-gray-600 hover:text-blue-500 hover:bg-gray-50 rounded-lg flex items-center justify-center gap-2 transition-colors"
-      >
-        <span>➕</span>
+    <div class="sidebar-add">
+      <button @click="emit('editGroup', null)" class="add-btn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
         <span>新建分组</span>
+      </button>
+    </div>
+
+    <!-- 底部栏 -->
+    <div class="sidebar-footer">
+      <label class="footer-btn import-btn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <span>导入</span>
+        <input type="file" accept=".json" style="display: none" @change="handleImport">
+      </label>
+      <button @click="$emit('showExport')" class="footer-btn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span>导出</span>
+      </button>
+      <!-- 折叠状态的展开按钮 -->
+      <button @click="toggleSidebar" class="expand-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
       </button>
     </div>
   </aside>
 </template>
+
+<style scoped>
+.sidebar {
+  width: 220px;
+  min-width: 220px;
+  height: 100vh;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  transition: width 0.25s ease, min-width 0.25s ease;
+  overflow: hidden;
+}
+
+.sidebar.collapsed {
+  width: 52px;
+  min-width: 52px;
+}
+
+/* Logo */
+.sidebar-logo {
+  height: 52px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.logo-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #3b6ef8, #5585fa);
+}
+
+.logo-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  opacity: 1;
+  transition: opacity 0.15s ease;
+}
+
+.sidebar.collapsed .logo-text {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 折叠状态的分组点 */
+.collapsed-group {
+  display: none;
+  justify-content: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar.collapsed .collapsed-group {
+  display: flex;
+}
+
+.group-dot-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.group-dot-btn:hover {
+  background: var(--surface2);
+}
+
+.group-dot-btn.active {
+  background: var(--accent-bg);
+}
+
+.group-dot-btn .group-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* Search */
+.sidebar-search {
+  padding: 12px;
+  flex-shrink: 0;
+}
+
+.search-wrapper {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: var(--text3);
+}
+
+.search-input {
+  width: 100%;
+  padding: 6px 10px 6px 32px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+  background: var(--surface2);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.search-input:focus {
+  border-color: var(--accent);
+}
+
+.sidebar.collapsed .sidebar-search {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Header */
+.sidebar-header {
+  padding: 8px 16px;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.collapse-btn {
+  font-size: 12px;
+  color: var(--text3);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.collapse-btn:hover {
+  background: var(--surface2);
+  color: var(--text2);
+}
+
+.sidebar.collapsed .sidebar-header {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Content */
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 8px 12px;
+}
+
+.group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.group-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text2);
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.group-item:hover {
+  background: var(--surface2);
+}
+
+.group-item.active {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+.group-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.group-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.group-item.active .group-name {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.group-count {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--surface2);
+  color: var(--text3);
+}
+
+.group-item.active .group-count {
+  background: rgba(59, 110, 248, 0.15);
+  color: var(--accent);
+}
+
+.group-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.group-item:hover .group-actions {
+  opacity: 1;
+}
+
+.action-btn {
+  padding: 4px;
+  border: none;
+  background: none;
+  color: var(--text3);
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.action-btn:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.action-btn.delete:hover {
+  background: var(--red-bg);
+  color: var(--red);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 32px;
+  font-size: 13px;
+  color: var(--text3);
+}
+
+/* Add button */
+.sidebar-add {
+  padding: 8px 12px;
+  display: flex;
+  justify-content: center;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.add-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: none;
+  background: none;
+  color: var(--text3);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.add-btn:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.sidebar.collapsed .sidebar-add {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Footer */
+.sidebar-footer {
+  height: 52px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 0 8px;
+  background: rgba(240, 241, 244, 0.85);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+}
+
+.footer-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border: none;
+  background: none;
+  color: var(--text3);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.footer-btn:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.import-btn {
+  cursor: pointer;
+}
+
+.expand-btn {
+  display: none;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: var(--text3);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.expand-btn:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.sidebar.collapsed .footer-btn {
+  display: none;
+}
+
+.sidebar.collapsed .expand-btn {
+  display: flex;
+}
+
+/* Scrollbar */
+.sidebar-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+  background: var(--border2);
+  border-radius: 4px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+  background: #c4c7d0;
+}
+</style>

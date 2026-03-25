@@ -3,6 +3,7 @@
 export interface Group {
   id: number;
   name: string;
+  color: string;
   parent_id: number | null;
   sort_order: number;
   created_at: string;
@@ -19,6 +20,7 @@ export interface Service {
   password: string | null;
   description: string | null;
   icon: string | null;
+  tags: string[] | null;
   sort_order: number;
   created_at: string;
   updated_at: string;

@@ -6,6 +6,8 @@ import { dirname, join } from 'path';
 import groupsRouter from './routes/groups.js';
 import servicesRouter from './routes/services.js';
 import exportRouter from './routes/export.js';
+import importRouter from './routes/import.js';
+import tagsRouter from './routes/tags.js';
 import errorHandler from './middleware/errorHandler.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -22,6 +24,8 @@ app.use(express.json());
 app.use('/api/groups', groupsRouter);
 app.use('/api/services', servicesRouter);
 app.use('/api/export', exportRouter);
+app.use('/api/import', importRouter);
+app.use('/api/tags', tagsRouter);
 
 // 静态文件托管（生产环境）
 app.use(express.static(join(__dirname, '..', 'dist')));
