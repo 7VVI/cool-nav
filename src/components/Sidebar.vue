@@ -96,7 +96,7 @@ function handleDeleteGroup(group: Group) {
             <!-- 根分组项 -->
             <div
               :class="[
-                'px-3 py-2 rounded-lg cursor-pointer flex items-center gap-2 transition-colors',
+                'group px-3 py-2 rounded-lg cursor-pointer flex items-center gap-2 transition-colors',
                 store.currentGroupId === group.id
                   ? 'bg-blue-50 text-blue-600'
                   : 'text-gray-700 hover:bg-gray-50'
@@ -157,7 +157,7 @@ function handleDeleteGroup(group: Group) {
                 v-for="child in getChildGroups(group.id)"
                 :key="child.id"
                 :class="[
-                  'px-3 py-2 rounded-lg cursor-pointer flex items-center gap-2 transition-colors',
+                  'group px-3 py-2 rounded-lg cursor-pointer flex items-center gap-2 transition-colors',
                   store.currentGroupId === child.id
                     ? 'bg-blue-50 text-blue-600'
                     : 'text-gray-600 hover:bg-gray-50'
