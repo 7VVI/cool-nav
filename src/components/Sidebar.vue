@@ -8,6 +8,7 @@ import type { Group } from '@/types';
 const emit = defineEmits<{
   editGroup: [group: Group | null];
   searchServices: [keyword: string];
+  deleteGroup: [group: Group];
 }>();
 
 const store = useNavStore();
@@ -58,6 +59,13 @@ async function onDragEnd() {
 watch(searchKeyword, (keyword) => {
   emit('searchServices', keyword);
 });
+
+// 删除分组（二次确认）
+function handleDeleteGroup(group: Group) {
+  if (confirm(`确定删除分组「${group.name}」？分组下的所有服务也会被删除。`)) {
+    emit('deleteGroup', group);
+  }
+}
 </script>
 
 <template>
@@ -127,9 +135,16 @@ watch(searchKeyword, (keyword) => {
               <!-- 编辑按钮 -->
               <button
                 @click.stop="emit('editGroup', group)"
-                class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-blue-500 transition-opacity"
+                class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-blue-500 transition-opacity p-1"
               >
                 ✏️
+              </button>
+              <!-- 删除按钮 -->
+              <button
+                @click.stop="handleDeleteGroup(group)"
+                class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity p-1"
+              >
+                🗑️
               </button>
             </div>
 
@@ -164,9 +179,15 @@ watch(searchKeyword, (keyword) => {
                 </span>
                 <button
                   @click.stop="emit('editGroup', child)"
-                  class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-blue-500 transition-opacity"
+                  class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-blue-500 transition-opacity p-1"
                 >
                   ✏️
+                </button>
+                <button
+                  @click.stop="handleDeleteGroup(child)"
+                  class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity p-1"
+                >
+                  🗑️
                 </button>
               </div>
             </div>

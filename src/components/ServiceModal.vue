@@ -6,6 +6,7 @@ import type { Service } from '@/types';
 const props = defineProps<{
   show: boolean;
   service?: Service | null;
+  currentGroupId?: number | null;
 }>();
 
 const emit = defineEmits<{
@@ -28,6 +29,11 @@ const formData = ref({
 const isEditing = computed(() => !!props.service?.id);
 const modalTitle = computed(() => isEditing.value ? '编辑服务' : '添加服务');
 
+// 是否显示分组选择框：编辑时显示，或没有选中分组时显示
+const showGroupSelector = computed(() => {
+  return isEditing.value || !props.currentGroupId;
+});
+
 watch(() => props.show, (newVal) => {
   if (newVal) {
     if (props.service) {
@@ -41,8 +47,9 @@ watch(() => props.show, (newVal) => {
         icon: props.service.icon || ''
       };
     } else {
+      // 新增服务时，如果有当前分组则使用当前分组
       formData.value = {
-        group_id: store.currentGroupId || (store.groups[0]?.id ?? 0),
+        group_id: props.currentGroupId || (store.groups[0]?.id ?? 0),
         name: '',
         url: '',
         username: '',
@@ -98,8 +105,8 @@ async function handleSubmit() {
 
       <!-- Form -->
       <form @submit.prevent="handleSubmit" class="px-6 py-4 space-y-4">
-        <!-- Group Selector -->
-        <div>
+        <!-- Group Selector - 仅在编辑时或没有选中分组时显示 -->
+        <div v-if="showGroupSelector">
           <label class="block text-sm font-medium text-gray-700 mb-2">
             所属分组 <span class="text-red-500">*</span>
           </label>

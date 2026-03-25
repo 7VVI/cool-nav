@@ -52,6 +52,15 @@ function handleEditGroup(group: Group | null) {
   showGroupModal.value = true;
 }
 
+// Handle delete group from Sidebar
+async function handleDeleteGroup(group: Group) {
+  try {
+    await store.deleteGroup(group.id);
+  } catch (error) {
+    console.error('Failed to delete group:', error);
+  }
+}
+
 // Handle search from Sidebar
 async function handleSearchServices(query: string) {
   searchKeyword.value = query;
@@ -115,6 +124,7 @@ onMounted(() => {
     <Sidebar
       @editGroup="handleEditGroup"
       @searchServices="handleSearchServices"
+      @deleteGroup="handleDeleteGroup"
     />
 
     <!-- Main Content -->
@@ -201,6 +211,7 @@ onMounted(() => {
     <ServiceModal
       :show="showServiceModal"
       :service="editingService"
+      :current-group-id="store.currentGroupId"
       @close="showServiceModal = false"
       @saved="store.fetchServices()"
     />
