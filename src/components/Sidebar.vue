@@ -3,6 +3,7 @@ import { ref, watch, computed } from 'vue';
 import draggable from 'vuedraggable';
 import { groupsApi } from '@/api/groups';
 import { useNavStore } from '@/stores/navStore';
+import { useAuthStore } from '@/stores/authStore';
 import type { Group } from '@/types';
 
 const emit = defineEmits<{
@@ -14,6 +15,7 @@ const emit = defineEmits<{
 }>();
 
 const store = useNavStore();
+const authStore = useAuthStore();
 const searchKeyword = ref('');
 const localGroups = ref<Group[]>([]);
 
@@ -92,6 +94,14 @@ function handleImport(event: Event) {
     emit('importData', file);
   }
   input.value = '';
+}
+
+// 退出登录
+function handleLogout() {
+  if (confirm('确定退出登录吗？')) {
+    authStore.logout();
+    window.location.reload();
+  }
 }
 </script>
 
@@ -235,6 +245,14 @@ function handleImport(event: Event) {
           <line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
         <span>导出</span>
+      </button>
+      <button @click="handleLogout" class="footer-btn logout-btn" title="退出登录">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        <span>退出</span>
       </button>
       <!-- 折叠状态的展开按钮 -->
       <button @click="toggleSidebar" class="expand-btn">
@@ -598,6 +616,11 @@ function handleImport(event: Event) {
 
 .import-btn {
   cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: var(--red-bg);
+  color: var(--red);
 }
 
 .expand-btn {

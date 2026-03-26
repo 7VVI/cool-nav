@@ -8,6 +8,8 @@ import servicesRouter from './routes/services.js';
 import exportRouter from './routes/export.js';
 import importRouter from './routes/import.js';
 import tagsRouter from './routes/tags.js';
+import authRouter from './routes/auth.js';
+import { authMiddleware } from './middleware/auth.js';
 import errorHandler from './middleware/errorHandler.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -20,12 +22,15 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// API 路由
-app.use('/api/groups', groupsRouter);
-app.use('/api/services', servicesRouter);
-app.use('/api/export', exportRouter);
-app.use('/api/import', importRouter);
-app.use('/api/tags', tagsRouter);
+// 鉴权路由（无需验证）
+app.use('/api/auth', authRouter);
+
+// 受保护的 API 路由
+app.use('/api/groups', authMiddleware, groupsRouter);
+app.use('/api/services', authMiddleware, servicesRouter);
+app.use('/api/export', authMiddleware, exportRouter);
+app.use('/api/import', authMiddleware, importRouter);
+app.use('/api/tags', authMiddleware, tagsRouter);
 
 // 静态文件托管（生产环境）
 app.use(express.static(join(__dirname, '..', 'dist')));

@@ -49,6 +49,34 @@ npm start
 
 服务将在 `http://localhost:3000` 启动。
 
+## 安全机制
+
+系统内置鉴权机制，首次访问需要输入鉴权秘钥：
+
+- **默认秘钥**: `cool-nav-2024`（生产环境请通过环境变量修改）
+- **有效期**: 30 天，过期后需重新输入
+- **退出登录**: 点击侧边栏底部的「退出」按钮
+
+### 配置环境变量
+
+```bash
+# 设置自定义鉴权秘钥（推荐）
+export AUTH_SECRET_KEY="your-secret-key"
+
+# 设置认证加密密钥
+export AUTH_SECRET="your-auth-secret"
+```
+
+### Docker 部署时配置
+
+```bash
+docker run -d \
+  -p 3000:3000 \
+  -e AUTH_SECRET_KEY="your-secret-key" \
+  -v internal-nav-data:/app/data \
+  internal-nav:latest
+```
+
 ## Docker 部署
 
 ### 构建镜像
@@ -99,6 +127,14 @@ docker run -d \
 ```
 
 ## API 接口
+
+### 鉴权接口
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/auth/login` | 登录验证（body: `{ secret: string }`） |
+| POST | `/api/auth/verify` | 验证 token |
+| GET | `/api/auth/check` | 检查登录状态 |
 
 ### 分组管理
 
@@ -171,6 +207,8 @@ cool-bav/
 |--------|--------|------|
 | `PORT` | 3000 | 服务端口 |
 | `NODE_ENV` | development | 运行环境 |
+| `AUTH_SECRET_KEY` | cool-nav-2024 | 鉴权秘钥（首次登录需要输入） |
+| `AUTH_SECRET` | cool-nav-secret-key-2024 | Token 加密密钥 |
 
 ## License
 
