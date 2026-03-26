@@ -42,6 +42,7 @@ const newTagColor = ref('#3b6ef8');
 const editingTag = ref<Tag | null>(null);
 const showDeleteConfirm = ref(false);
 const tagToDelete = ref<Tag | null>(null);
+const tagValidationError = ref('');
 
 const isEditing = computed(() => !!props.service?.id);
 const modalTitle = computed(() => isEditing.value ? '编辑服务' : '添加服务');
@@ -117,6 +118,7 @@ function openAddTag() {
   newTagValue.value = '';
   newTagColor.value = '#3b6ef8';
   editingTag.value = null;
+  tagValidationError.value = '';
   showTagManager.value = true;
 }
 
@@ -126,12 +128,31 @@ function openEditTag(tag: Tag) {
   newTagValue.value = tag.value;
   newTagColor.value = tag.color;
   editingTag.value = tag;
+  tagValidationError.value = '';
   showTagManager.value = true;
 }
 
 // 保存标签（新增或编辑）
 async function saveTag() {
-  if (!newTagName.value.trim() || !newTagValue.value.trim()) {
+  // 清除之前的错误
+  tagValidationError.value = '';
+
+  // 验证标签名称
+  if (!newTagName.value.trim()) {
+    tagValidationError.value = '请输入标签名称';
+    return;
+  }
+
+  // 验证标签值
+  if (!newTagValue.value.trim()) {
+    tagValidationError.value = '请输入标签值';
+    return;
+  }
+
+  // 验证标签值格式（只允许英文、数字、下划线、连字符）
+  const valuePattern = /^[a-zA-Z0-9_-]+$/;
+  if (!valuePattern.test(newTagValue.value.trim())) {
+    tagValidationError.value = '标签值只能包含英文、数字、下划线和连字符';
     return;
   }
 
@@ -153,6 +174,7 @@ async function saveTag() {
     showTagManager.value = false;
   } catch (error) {
     console.error('Failed to save tag:', error);
+    tagValidationError.value = '保存失败，请重试';
   }
 }
 
@@ -528,6 +550,13 @@ async function handleSubmit() {
           >
             保存
           </button>
+        </div>
+
+        <!-- Validation Error -->
+        <div v-if="tagValidationError" class="px-5 pb-3">
+          <div class="text-[12px] px-3 py-2 rounded-lg" style="background: var(--red-bg); color: var(--red)">
+            {{ tagValidationError }}
+          </div>
         </div>
       </div>
     </div>
