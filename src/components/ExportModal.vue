@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useNavStore } from '@/stores/navStore';
+import { useAuthStore } from '@/stores/authStore';
 
 const props = defineProps<{
   show: boolean;
@@ -11,6 +12,7 @@ const emit = defineEmits<{
 }>();
 
 const store = useNavStore();
+const authStore = useAuthStore();
 const selectedGroups = ref<number[]>([]);
 
 function toggleGroup(id: number) {
@@ -47,7 +49,10 @@ async function handleExport() {
   try {
     const res = await fetch('/api/export', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authStore.token}`
+      },
       body: JSON.stringify({ groupIds: selectedGroups.value })
     });
 

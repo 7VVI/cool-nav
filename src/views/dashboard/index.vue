@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import draggable from 'vuedraggable';
 import { useNavStore } from '@/stores/navStore';
+import { useAuthStore } from '@/stores/authStore';
 import { servicesApi } from '@/api/services';
 import Sidebar from '@/components/Sidebar.vue';
 import ServiceCard from '@/components/ServiceCard.vue';
@@ -11,6 +12,7 @@ import ExportModal from '@/components/ExportModal.vue';
 import type { Group, Service } from '@/types';
 
 const store = useNavStore();
+const authStore = useAuthStore();
 
 // Modal states
 const showServiceModal = ref(false);
@@ -96,7 +98,10 @@ async function exportSelectedServices() {
   try {
     const res = await fetch('/api/export', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authStore.token}`
+      },
       body: JSON.stringify({ serviceIds: Array.from(selectedServices.value) })
     });
 
@@ -215,7 +220,10 @@ function handleImport(file: File) {
         // Call import API
         const res = await fetch('/api/import', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authStore.token}`
+          },
           body: JSON.stringify(data)
         });
         const result = await res.json();
