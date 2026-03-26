@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  cool-nav:
+    image: cool-nav:latest
+    container_name: cool-nav
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      # 鉴权秘钥（首次登录需要输入，生产环境请修改）
+      - AUTH_SECRET_KEY=cool-nav-2024
+      # Token 加密密钥（生产环境请修改）
+      - AUTH_SECRET=your-auth-secret-key
+    volumes:
+      # 数据持久化
+      - cool-nav-data:/app/data
+
+volumes:
+  cool-nav-data:
+    driver: local
