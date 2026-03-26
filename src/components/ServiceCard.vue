@@ -218,7 +218,7 @@ function handleCardClick() {
       </div>
 
       <!-- Description -->
-      <div class="text-[12.5px] leading-relaxed min-h-[18px]" style="color: var(--text2)">
+      <div class="text-[12.5px] leading-relaxed min-h-[18px] line-clamp-2" style="color: var(--text2)">
         {{ service.description || '' }}
       </div>
 
@@ -435,5 +435,14 @@ function handleCardClick() {
 
 .card-hover:hover button[style*="opacity: 0"] {
   opacity: 1 !important;
+}
+
+/* 简介文本截断 - 最多显示2行 */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
