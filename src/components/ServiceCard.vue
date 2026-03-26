@@ -217,8 +217,8 @@ function handleCardClick() {
         </button>
       </div>
 
-      <!-- Description -->
-      <div class="text-[12.5px] leading-relaxed min-h-[18px] line-clamp-2" style="color: var(--text2)">
+      <!-- Description - 固定高度保持卡片大小一致 -->
+      <div class="text-[12.5px] leading-[1.4] h-[35px] line-clamp-2" style="color: var(--text2)">
         {{ service.description || '' }}
       </div>
 
