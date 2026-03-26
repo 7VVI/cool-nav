@@ -42,7 +42,8 @@ const newTagColor = ref('#3b6ef8');
 const editingTag = ref<Tag | null>(null);
 const showDeleteConfirm = ref(false);
 const tagToDelete = ref<Tag | null>(null);
-const tagValidationError = ref('');
+const tagNameError = ref('');
+const tagValueError = ref('');
 
 const isEditing = computed(() => !!props.service?.id);
 const modalTitle = computed(() => isEditing.value ? '编辑服务' : '添加服务');
@@ -118,7 +119,8 @@ function openAddTag() {
   newTagValue.value = '';
   newTagColor.value = '#3b6ef8';
   editingTag.value = null;
-  tagValidationError.value = '';
+  tagNameError.value = '';
+  tagValueError.value = '';
   showTagManager.value = true;
 }
 
@@ -128,33 +130,39 @@ function openEditTag(tag: Tag) {
   newTagValue.value = tag.value;
   newTagColor.value = tag.color;
   editingTag.value = tag;
-  tagValidationError.value = '';
+  tagNameError.value = '';
+  tagValueError.value = '';
   showTagManager.value = true;
 }
 
 // 保存标签（新增或编辑）
 async function saveTag() {
   // 清除之前的错误
-  tagValidationError.value = '';
+  tagNameError.value = '';
+  tagValueError.value = '';
+
+  let hasError = false;
 
   // 验证标签名称
   if (!newTagName.value.trim()) {
-    tagValidationError.value = '请输入标签名称';
-    return;
+    tagNameError.value = '请输入标签名称';
+    hasError = true;
   }
 
   // 验证标签值
   if (!newTagValue.value.trim()) {
-    tagValidationError.value = '请输入标签值';
-    return;
+    tagValueError.value = '请输入标签值';
+    hasError = true;
+  } else {
+    // 验证标签值格式（只允许英文、数字、下划线、连字符）
+    const valuePattern = /^[a-zA-Z0-9_-]+$/;
+    if (!valuePattern.test(newTagValue.value.trim())) {
+      tagValueError.value = '只能包含英文、数字、下划线和连字符';
+      hasError = true;
+    }
   }
 
-  // 验证标签值格式（只允许英文、数字、下划线、连字符）
-  const valuePattern = /^[a-zA-Z0-9_-]+$/;
-  if (!valuePattern.test(newTagValue.value.trim())) {
-    tagValidationError.value = '标签值只能包含英文、数字、下划线和连字符';
-    return;
-  }
+  if (hasError) return;
 
   try {
     if (editingTag.value) {
@@ -174,7 +182,6 @@ async function saveTag() {
     showTagManager.value = false;
   } catch (error) {
     console.error('Failed to save tag:', error);
-    tagValidationError.value = '保存失败，请重试';
   }
 }
 
@@ -455,7 +462,6 @@ async function handleSubmit() {
       v-if="showTagManager"
       class="fixed inset-0 flex items-center justify-center z-[60] p-4"
       style="background: rgba(0,0,0,.5)"
-      @click.self="showTagManager = false"
     >
       <div
         class="w-full max-w-md rounded-2xl shadow-lg overflow-hidden"
@@ -484,9 +490,15 @@ async function handleSubmit() {
               v-model="newTagName"
               type="text"
               class="w-full px-2.5 py-2 border rounded-lg text-[13px] outline-none"
-              style="border-color: var(--border); color: var(--text); background: var(--surface)"
+              :style="{
+                borderColor: tagNameError ? 'var(--red)' : 'var(--border)',
+                color: 'var(--text)',
+                background: 'var(--surface)'
+              }"
               placeholder="如：生产、测试"
+              @input="tagNameError = ''"
             />
+            <div v-if="tagNameError" class="text-[11px] mt-1" style="color: var(--red)">{{ tagNameError }}</div>
           </div>
           <div>
             <label class="block text-xs font-medium mb-1" style="color: var(--text2)">标签值（英文）</label>
@@ -494,9 +506,15 @@ async function handleSubmit() {
               v-model="newTagValue"
               type="text"
               class="w-full px-2.5 py-2 border rounded-lg text-[13px] outline-none"
-              style="border-color: var(--border); color: var(--text); background: var(--surface)"
+              :style="{
+                borderColor: tagValueError ? 'var(--red)' : 'var(--border)',
+                color: 'var(--text)',
+                background: 'var(--surface)'
+              }"
               placeholder="如：production、testing"
+              @input="tagValueError = ''"
             />
+            <div v-if="tagValueError" class="text-[11px] mt-1" style="color: var(--red)">{{ tagValueError }}</div>
           </div>
           <div>
             <label class="block text-xs font-medium mb-1" style="color: var(--text2)">颜色</label>
@@ -550,13 +568,6 @@ async function handleSubmit() {
           >
             保存
           </button>
-        </div>
-
-        <!-- Validation Error -->
-        <div v-if="tagValidationError" class="px-5 pb-3">
-          <div class="text-[12px] px-3 py-2 rounded-lg" style="background: var(--red-bg); color: var(--red)">
-            {{ tagValidationError }}
-          </div>
         </div>
       </div>
     </div>
