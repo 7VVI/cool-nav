@@ -9,7 +9,7 @@ RUN apk add --no-cache python3 make g++
 # 复制 package 文件
 COPY package*.json ./
 
-# 安装依赖
+# 安装所有依赖（包括 devDependencies 用于构建）
 RUN npm ci
 
 # 复制源代码
@@ -23,14 +23,14 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# 安装运行时依赖
+# 安装运行时依赖（better-sqlite3 需要）
 RUN apk add --no-cache python3 make g++
 
 # 复制 package 文件
 COPY package*.json ./
 
-# 只安装生产依赖
-RUN npm ci --only=production
+# 安装生产依赖并重新构建原生模块
+RUN npm ci --only=production && npm rebuild better-sqlite3
 
 # 从构建阶段复制构建产物
 COPY --from=builder /app/dist ./dist
