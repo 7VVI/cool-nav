@@ -95,8 +95,28 @@ function openUrl() {
 
 async function copyToClipboard(text: string, label: string) {
   try {
-    await navigator.clipboard.writeText(text);
-    showToast(`${label}已复制到剪贴板`, 'success');
+    // 优先使用现代 Clipboard API
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      showToast(`${label}已复制到剪贴板`, 'success');
+      return;
+    }
+    // Fallback: 使用 execCommand 方法（兼容 HTTP 环境）
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-9999px';
+    textArea.style.top = '-9999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    const successful = document.execCommand('copy');
+    document.body.removeChild(textArea);
+    if (successful) {
+      showToast(`${label}已复制到剪贴板`, 'success');
+    } else {
+      showToast('复制失败', 'error');
+    }
   } catch {
     showToast('复制失败', 'error');
   }
