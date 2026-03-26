@@ -189,12 +189,10 @@ function handleEditService(service: Service) {
 
 // Handle delete service
 async function handleDeleteService(service: Service) {
-  if (confirm(`确定删除「${service.name}」吗？此操作不可撤销。`)) {
-    try {
-      await store.deleteService(service.id);
-    } catch (error) {
-      console.error('Failed to delete service:', error);
-    }
+  try {
+    await store.deleteService(service.id);
+  } catch (error) {
+    console.error('Failed to delete service:', error);
   }
 }
 

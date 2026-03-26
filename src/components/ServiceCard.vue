@@ -18,6 +18,7 @@ const emit = defineEmits<{
 
 const store = useNavStore();
 const showLoginModal = ref(false);
+const showDeleteConfirm = ref(false);
 const showPassword = ref(false);
 const allTags = ref<Tag[]>([]);
 
@@ -261,7 +262,7 @@ function handleCardClick() {
         </button>
 
         <button
-          @click.stop="emit('delete', service)"
+          @click.stop="showDeleteConfirm = true"
           class="w-9 h-9 rounded-lg border flex items-center justify-center transition-colors"
           style="border-color: var(--border); color: var(--text3)"
           title="删除"
@@ -383,6 +384,47 @@ function handleCardClick() {
             style="background: var(--accent); color: white"
           >
             打开登录页
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirm Modal -->
+    <div
+      v-if="showDeleteConfirm"
+      class="fixed inset-0 flex items-center justify-center z-50 p-4"
+      style="background: rgba(0,0,0,.4); backdrop-filter: blur(6px)"
+      @click.self="showDeleteConfirm = false"
+    >
+      <div
+        class="w-full max-w-sm rounded-2xl shadow-lg overflow-hidden"
+        style="background: var(--surface); animation: modalIn 0.2s ease"
+      >
+        <div class="px-5 py-6 text-center">
+          <div class="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center" style="background: #fef2f2">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <div class="text-[15px] font-semibold mb-1" style="color: var(--text)">删除服务</div>
+          <div class="text-[13px]" style="color: var(--text3)">确定删除「{{ service.name }}」吗？此操作不可撤销。</div>
+        </div>
+        <div class="px-5 py-3 border-t flex justify-center gap-3" style="border-color: var(--border)">
+          <button
+            @click="showDeleteConfirm = false"
+            class="flex-1 py-2 rounded-lg text-[13px] font-medium border transition-colors"
+            style="border-color: var(--border); color: var(--text2)"
+          >
+            取消
+          </button>
+          <button
+            @click="showDeleteConfirm = false; emit('delete', service)"
+            class="flex-1 py-2 rounded-lg text-[13px] font-medium transition-colors"
+            style="background: #ef4444; color: white"
+          >
+            删除
           </button>
         </div>
       </div>
