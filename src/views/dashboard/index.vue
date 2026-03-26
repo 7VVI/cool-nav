@@ -26,6 +26,9 @@ const searchKeyword = ref('');
 const searchResults = ref<Service[]>([]);
 const isSearching = ref(false);
 
+// Tag filter state
+const tagFilter = ref<string | null>(null);
+
 // Selection mode
 const selectMode = ref(false);
 const selectedServices = ref<Set<number>>(new Set());
@@ -33,12 +36,22 @@ const selectedServices = ref<Set<number>>(new Set());
 // Local draggable list for services
 const localServices = ref<Service[]>([]);
 
-// Computed: display services (search results or current group services)
+// Computed: display services (search results or current group services, filtered by tag)
 const displayServices = computed(() => {
+  let services: Service[];
+
   if (searchKeyword.value.trim()) {
-    return searchResults.value;
+    services = searchResults.value;
+  } else {
+    services = localServices.value;
   }
-  return localServices.value;
+
+  // Filter by tag if selected
+  if (tagFilter.value) {
+    services = services.filter(s => s.tags && s.tags.includes(tagFilter.value!));
+  }
+
+  return services;
 });
 
 // Watch current services to sync with local
@@ -58,8 +71,14 @@ watch(
   () => {
     selectedServices.value.clear();
     selectMode.value = false;
+    tagFilter.value = null;
   }
 );
+
+// Handle tag filter from Sidebar
+function handleFilterByTag(tagValue: string | null) {
+  tagFilter.value = tagValue;
+}
 
 // Toggle selection mode
 function toggleSelectMode() {
@@ -254,6 +273,7 @@ function handleImport(file: File) {
       @deleteGroup="handleDeleteGroup"
       @showExport="showExportModal = true"
       @importData="handleImport"
+      @filterByTag="handleFilterByTag"
     />
 
     <!-- Main Content -->
@@ -265,13 +285,16 @@ function handleImport(file: File) {
       >
         <div class="flex items-center gap-3">
           <h1 class="text-[15px] font-bold" style="color: var(--text); letter-spacing: -0.2px">
-            {{ searchKeyword.trim() ? `搜索: ${searchKeyword}` : (store.currentGroup?.name || '全部服务') }}
+            {{ searchKeyword.trim() ? `搜索: ${searchKeyword}` : (tagFilter ? `标签筛选` : (store.currentGroup?.name || '全部服务')) }}
           </h1>
           <span class="text-xs font-medium px-2.5 py-0.5 rounded-full" style="background: var(--surface2); color: var(--text3)">
             {{ displayServices.length }} 个服务
           </span>
           <span v-if="selectMode && selectedServices.size > 0" class="text-xs font-medium px-2.5 py-0.5 rounded-full" style="background: var(--accent); color: white">
             已选 {{ selectedServices.size }} 项
+          </span>
+          <span v-if="tagFilter" class="text-xs font-medium px-2.5 py-0.5 rounded-full" style="background: var(--accent-bg); color: var(--accent)">
+            {{ tagFilter }}
           </span>
         </div>
         <div class="flex gap-1.5">
@@ -346,55 +369,71 @@ function handleImport(file: File) {
         <div
           v-else-if="!searchKeyword.trim() && store.currentGroupId"
           class="grid gap-3.5"
-          style="grid-template-columns: repeat(auto-fill, minmax(240px, 1fr))"
+          style="grid-template-columns: repeat(auto-fill, minmax(240px, 240px)); align-items: stretch"
         >
-          <draggable
-            v-model="localServices"
-            item-key="id"
-            class="contents"
-            ghost-class="opacity-40"
-            animation="200"
-            @end="handleDragEnd"
-          >
-            <template #item="{ element: service, index }">
-              <div :style="{ animationDelay: `${index * 0.04}s` }">
-                <ServiceCard
-                  :service="service"
-                  :selectable="selectMode"
-                  :selected="selectedServices.has(service.id)"
-                  @edit="handleEditService"
-                  @delete="handleDeleteService"
-                  @toggleSelect="toggleServiceSelection"
-                />
-              </div>
-            </template>
-          </draggable>
+          <!-- Tag filter mode: show filtered services without draggable -->
+          <template v-if="tagFilter">
+            <div v-for="(service, index) in displayServices" :key="service.id" class="card-wrapper" :style="{ animationDelay: `${index * 0.04}s` }">
+              <ServiceCard
+                :service="service"
+                :selectable="selectMode"
+                :selected="selectedServices.has(service.id)"
+                @edit="handleEditService"
+                @delete="handleDeleteService"
+                @toggleSelect="toggleServiceSelection"
+              />
+            </div>
+          </template>
+          <!-- Normal mode: draggable list -->
+          <template v-else>
+            <draggable
+              v-model="localServices"
+              item-key="id"
+              class="contents"
+              ghost-class="opacity-40"
+              animation="200"
+              @end="handleDragEnd"
+            >
+              <template #item="{ element: service, index }">
+                <div class="card-wrapper" :style="{ animationDelay: `${index * 0.04}s` }">
+                  <ServiceCard
+                    :service="service"
+                    :selectable="selectMode"
+                    :selected="selectedServices.has(service.id)"
+                    @edit="handleEditService"
+                    @delete="handleDeleteService"
+                    @toggleSelect="toggleServiceSelection"
+                  />
+                </div>
+              </template>
+            </draggable>
 
-          <!-- Add Service Card - 在网格内显示 -->
-          <button
-            @click="handleAddService"
-            class="add-service-card"
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"/>
-              <line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            <span>添加服务</span>
-          </button>
+            <!-- Add Service Card - 在网格内显示 -->
+            <button
+              @click="handleAddService"
+              class="add-service-card"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              <span>添加服务</span>
+            </button>
+          </template>
         </div>
 
         <!-- Search Results -->
         <div
           v-else-if="searchKeyword.trim()"
           class="grid gap-3.5"
-          style="grid-template-columns: repeat(auto-fill, minmax(240px, 1fr))"
+          style="grid-template-columns: repeat(auto-fill, minmax(240px, 240px)); align-items: stretch"
         >
           <div v-if="displayServices.length === 0" class="col-span-full flex flex-col items-center justify-center py-16 text-center">
             <div class="text-[40px] mb-3">🔍</div>
             <h3 class="text-[15px] font-semibold mb-1" style="color: var(--text2)">未找到匹配的服务</h3>
           </div>
           <template v-else>
-            <div v-for="(service, index) in displayServices" :key="service.id" :style="{ animationDelay: `${index * 0.04}s` }">
+            <div v-for="(service, index) in displayServices" :key="service.id" class="card-wrapper" :style="{ animationDelay: `${index * 0.04}s` }">
               <ServiceCard
                 :service="service"
                 :selectable="selectMode"
@@ -440,6 +479,16 @@ function handleImport(file: File) {
 </template>
 
 <style scoped>
+.card-wrapper {
+  display: flex;
+  min-width: 0;
+}
+
+.card-wrapper > :deep(*) {
+  flex: 1;
+  min-width: 0;
+}
+
 .add-service-card {
   border: 2px dashed var(--border2);
   border-radius: 16px;

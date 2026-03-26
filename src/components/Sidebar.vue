@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, onMounted } from 'vue';
 import draggable from 'vuedraggable';
 import { groupsApi } from '@/api/groups';
+import { tagsApi, type Tag } from '@/api/tags';
 import { useNavStore } from '@/stores/navStore';
 import { useAuthStore } from '@/stores/authStore';
 import type { Group } from '@/types';
@@ -12,15 +13,28 @@ const emit = defineEmits<{
   deleteGroup: [group: Group];
   showExport: [];
   importData: [file: File];
+  filterByTag: [tagValue: string | null];
 }>();
 
 const store = useNavStore();
 const authStore = useAuthStore();
 const searchKeyword = ref('');
 const localGroups = ref<Group[]>([]);
+const allTags = ref<Tag[]>([]);
+const selectedTagFilter = ref<string | null>(null);
 
 // 侧边栏折叠状态
 const isCollapsed = ref(false);
+
+// Load tags on mount
+onMounted(async () => {
+  try {
+    const res = await tagsApi.getAll();
+    allTags.value = res.data || [];
+  } catch (error) {
+    console.error('Failed to load tags:', error);
+  }
+});
 
 // 同步分组数据
 watch(() => store.groups, (newGroups) => {
@@ -101,6 +115,17 @@ function handleLogout() {
   if (confirm('确定退出登录吗？')) {
     authStore.logout();
     window.location.reload();
+  }
+}
+
+// Toggle tag filter
+function toggleTagFilter(tagValue: string) {
+  if (selectedTagFilter.value === tagValue) {
+    selectedTagFilter.value = null;
+    emit('filterByTag', null);
+  } else {
+    selectedTagFilter.value = tagValue;
+    emit('filterByTag', tagValue);
   }
 }
 </script>
@@ -225,6 +250,28 @@ function handleLogout() {
         </svg>
         <span>新建分组</span>
       </button>
+    </div>
+
+    <!-- 按标签筛选 -->
+    <div v-if="!isCollapsed && allTags.length > 0" class="tag-filter-section">
+      <div class="tag-filter-header">
+        <span>按标签筛选</span>
+        <button v-if="selectedTagFilter" @click="selectedTagFilter = null; emit('filterByTag', null)" class="clear-filter-btn">
+          清除
+        </button>
+      </div>
+      <div class="tag-filter-list">
+        <button
+          v-for="tag in allTags"
+          :key="tag.value"
+          @click="toggleTagFilter(tag.value)"
+          class="tag-filter-item"
+          :class="{ active: selectedTagFilter === tag.value }"
+        >
+          <span class="tag-color-dot" :style="{ background: tag.color }"></span>
+          <span class="tag-filter-name">{{ tag.name }}</span>
+        </button>
+      </div>
     </div>
 
     <!-- 底部栏 -->
@@ -576,6 +623,85 @@ function handleLogout() {
 .sidebar.collapsed .sidebar-add {
   opacity: 0;
   pointer-events: none;
+}
+
+/* Tag Filter Section */
+.tag-filter-section {
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.tag-filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text3);
+}
+
+.clear-filter-btn {
+  font-size: 11px;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.15s;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.clear-filter-btn:hover {
+  background: var(--accent-bg);
+}
+
+.tag-filter-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag-filter-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text2);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tag-filter-item:hover {
+  background: var(--surface2);
+  border-color: var(--border2);
+}
+
+.tag-filter-item.active {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.tag-color-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tag-filter-name {
+  white-space: nowrap;
 }
 
 /* Footer */

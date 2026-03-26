@@ -42,23 +42,13 @@ onMounted(async () => {
   }
 });
 
-// Get primary tag for card styling (background color only, no display)
-const primaryTag = computed(() => {
+// Get service tags with full info
+const serviceTags = computed(() => {
   const tags = props.service.tags || [];
-  if (tags.length === 0) return null;
-
-  // Find first matching tag from allTags
-  for (const tagValue of tags) {
+  return tags.map(tagValue => {
     const tag = allTags.value.find(t => t.value === tagValue);
-    if (tag) {
-      return {
-        bg: tag.color + '15',
-        border: tag.color + '50',
-        color: tag.color
-      };
-    }
-  }
-  return null;
+    return tag || { value: tagValue, name: tagValue, color: '#6b7280' };
+  });
 });
 
 function hexToRgba(hex: string, alpha: number) {
@@ -159,8 +149,8 @@ function handleCardClick() {
       class="rounded-2xl border p-4 flex flex-col gap-3 cursor-pointer card-hover service-card"
       :class="{ 'card-selected': selected }"
       :style="{
-        background: primaryTag ? primaryTag.bg : 'var(--surface)',
-        borderColor: selected ? 'var(--accent)' : (primaryTag ? primaryTag.border : 'var(--border)'),
+        background: 'var(--surface)',
+        borderColor: selected ? 'var(--accent)' : 'var(--border)',
         animation: 'cardIn 0.25s ease both'
       }"
       @click="handleCardClick"
@@ -217,13 +207,32 @@ function handleCardClick() {
         </button>
       </div>
 
-      <!-- Description - 固定高度保持卡片大小一致 -->
-      <div class="text-[12.5px] leading-[1.4] h-[35px] line-clamp-2" style="color: var(--text2)">
+      <!-- Description -->
+      <div class="text-[12.5px] leading-[1.4] line-clamp-2" style="color: var(--text2); min-height: 35px;">
         {{ service.description || '' }}
       </div>
 
+      <!-- Tags - flex-grow 让它自动扩展 -->
+      <div v-if="serviceTags.length > 0" class="flex flex-wrap gap-1.5 tags-area">
+        <span
+          v-for="tag in serviceTags"
+          :key="tag.value"
+          class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium"
+          :style="{
+            background: tag.color + '20',
+            color: tag.color,
+            border: '1px solid ' + tag.color + '40'
+          }"
+        >
+          {{ tag.name }}
+        </span>
+      </div>
+
+      <!-- Spacer - 当没有标签时占位 -->
+      <div v-else class="flex-grow"></div>
+
       <!-- Meta -->
-      <div class="flex items-center gap-1.5">
+      <div class="flex items-center gap-1.5 mt-auto">
         <div
           class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border"
           :style="{
@@ -422,6 +431,10 @@ function handleCardClick() {
 .service-card {
   position: relative;
   transition: all 0.18s ease;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
 }
 
 .service-card:hover {
@@ -444,5 +457,10 @@ function handleCardClick() {
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* 标签区域 */
+.tags-area {
+  flex-shrink: 0;
 }
 </style>
