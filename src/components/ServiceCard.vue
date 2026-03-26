@@ -17,7 +17,6 @@ const emit = defineEmits<{
 }>();
 
 const store = useNavStore();
-const showDropdown = ref(false);
 const showLoginModal = ref(false);
 const showPassword = ref(false);
 const allTags = ref<Tag[]>([]);
@@ -73,7 +72,6 @@ function trimUrl(url: string) {
 function openLoginModal() {
   showLoginModal.value = true;
   showPassword.value = false;
-  showDropdown.value = false;
 }
 
 function openUrl() {
@@ -136,9 +134,7 @@ function handleCardClick() {
     emit('toggleSelect', props.service);
     return;
   }
-  if (!showDropdown.value) {
-    openLoginModal();
-  }
+  openLoginModal();
 }
 </script>
 
@@ -264,54 +260,21 @@ function handleCardClick() {
           打开
         </button>
 
-        <div class="relative">
-          <button
-            @click.stop="showDropdown = !showDropdown"
-            class="w-9 h-9 rounded-lg border flex items-center justify-center transition-colors"
-            style="border-color: var(--border); color: var(--text3)"
-            title="更多操作"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="5" r="1"/>
-              <circle cx="12" cy="12" r="1"/>
-              <circle cx="12" cy="19" r="1"/>
-            </svg>
-          </button>
-
-          <!-- Dropdown -->
-          <div
-            v-if="showDropdown"
-            class="absolute right-0 top-full mt-1 border rounded-xl shadow-lg min-w-[150px] overflow-hidden z-50"
-            style="background: var(--surface); border-color: var(--border); animation: dropIn 0.12s ease"
-          >
-            <div
-              @click.stop="showDropdown = false; emit('edit', service)"
-              class="px-3.5 py-2 text-[13px] flex items-center gap-2 cursor-pointer transition-colors"
-              style="color: var(--text2)"
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-              </svg>
-              编辑
-            </div>
-            <div
-              @click.stop="showDropdown = false; emit('delete', service)"
-              class="px-3.5 py-2 text-[13px] flex items-center gap-2 cursor-pointer border-t transition-colors"
-              style="color: var(--text2); border-color: var(--border)"
-              onmouseenter="this.style.background='var(--red-bg)';this.style.color='var(--red)'"
-              onmouseleave="this.style.background='var(--surface)';this.style.color='var(--text2)'"
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="3 6 5 6 21 6"/>
-                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                <path d="M10 11v6"/>
-                <path d="M14 11v6"/>
-              </svg>
-              删除
-            </div>
-          </div>
-        </div>
+        <button
+          @click.stop="emit('delete', service)"
+          class="w-9 h-9 rounded-lg border flex items-center justify-center transition-colors"
+          style="border-color: var(--border); color: var(--text3)"
+          title="删除"
+          onmouseenter="this.style.background='var(--red-bg)';this.style.color='var(--red)'"
+          onmouseleave="this.style.background='var(--surface)';this.style.color='var(--text3)'"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6"/>
+            <path d="M14 11v6"/>
+          </svg>
+        </button>
       </div>
     </div>
 
