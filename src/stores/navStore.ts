@@ -23,9 +23,19 @@ export const useNavStore = defineStore('nav', () => {
     try {
       const res = await groupsApi.getAll();
       groups.value = res.data;
-      if (!currentGroupId.value && groups.value.length > 0) {
-        currentGroupId.value = groups.value[0].id;
-        await fetchServices();
+
+      // 检查当前分组是否还有效
+      const currentGroupExists = groups.value.some(g => g.id === currentGroupId.value);
+
+      if (!currentGroupId.value || !currentGroupExists) {
+        // 没有选中分组或当前分组已被删除，选择第一个分组
+        if (groups.value.length > 0) {
+          currentGroupId.value = groups.value[0].id;
+          await fetchServices();
+        } else {
+          currentGroupId.value = null;
+          services.value = [];
+        }
       }
     } finally {
       loading.value = false;
@@ -37,6 +47,13 @@ export const useNavStore = defineStore('nav', () => {
     if (!id) return;
     const res = await servicesApi.getAll(id);
     services.value = res.data;
+  }
+
+  // 刷新当前分组的服务（保持当前分组不变）
+  async function refreshCurrentGroup() {
+    if (currentGroupId.value) {
+      await fetchServices();
+    }
   }
 
   async function addGroup(data: Partial<Group>) {
@@ -97,6 +114,7 @@ export const useNavStore = defineStore('nav', () => {
     loading,
     fetchGroups,
     fetchServices,
+    refreshCurrentGroup,
     addGroup,
     updateGroup,
     deleteGroup,

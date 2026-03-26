@@ -213,7 +213,6 @@ async function handleSubmit() {
     v-if="show"
     class="fixed inset-0 flex items-center justify-center z-50 p-4"
     style="background: rgba(0,0,0,.4); backdrop-filter: blur(6px)"
-    @click.self="emit('close')"
   >
     <div
       class="w-full max-w-lg rounded-2xl shadow-lg overflow-hidden max-h-[90vh] overflow-y-auto"
@@ -278,6 +277,7 @@ async function handleSubmit() {
               <button
                 type="button"
                 @click="toggleTag(tag.value)"
+                @dblclick.stop="openEditTag(tag)"
                 class="tag-btn"
                 :class="{ active: selectedTags.includes(tag.value) }"
                 :style="{
@@ -285,6 +285,7 @@ async function handleSubmit() {
                   background: selectedTags.includes(tag.value) ? tag.color + '15' : 'var(--surface2)',
                   color: selectedTags.includes(tag.value) ? tag.color : 'var(--text2)'
                 }"
+                title="单击选择/取消，双击编辑"
               >
                 <span class="w-2 h-2 rounded-full" :style="{ background: tag.color }"></span>
                 {{ tag.name }}
