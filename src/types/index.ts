@@ -5,6 +5,7 @@ export interface Group {
   name: string;
   color: string;
   parent_id: number | null;
+  view_mode: 'card' | 'list';
   sort_order: number;
   created_at: string;
   updated_at: string;
@@ -21,6 +22,9 @@ export interface Service {
   description: string | null;
   icon: string | null;
   tags: string[] | null;
+  accent_color: string | null;
+  is_online: boolean;
+  last_checked_at: string | null;
   sort_order: number;
   created_at: string;
   updated_at: string;
