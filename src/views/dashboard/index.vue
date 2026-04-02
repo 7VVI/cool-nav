@@ -4,8 +4,10 @@ import draggable from 'vuedraggable';
 import { useNavStore } from '@/stores/navStore';
 import { useAuthStore } from '@/stores/authStore';
 import { servicesApi } from '@/api/services';
+import { groupsApi } from '@/api/groups';
 import Sidebar from '@/components/Sidebar.vue';
 import ServiceCard from '@/components/ServiceCard.vue';
+import ServiceListRow from '@/components/ServiceListRow.vue';
 import ServiceModal from '@/components/ServiceModal.vue';
 import GroupModal from '@/components/GroupModal.vue';
 import ExportModal from '@/components/ExportModal.vue';
@@ -32,6 +34,9 @@ const tagFilter = ref<string | null>(null);
 // Selection mode
 const selectMode = ref(false);
 const selectedServices = ref<Set<number>>(new Set());
+
+// View mode state
+const viewMode = ref<'card' | 'list'>('card');
 
 // Local draggable list for services
 const localServices = ref<Service[]>([]);
@@ -68,12 +73,35 @@ watch(
 // Clear selection when group changes
 watch(
   () => store.currentGroupId,
-  () => {
+  (id) => {
     selectedServices.value.clear();
     selectMode.value = false;
     tagFilter.value = null;
-  }
+    // Read view preference from group
+    if (id) {
+      const group = store.groups.find(g => g.id === id);
+      viewMode.value = (group?.view_mode as 'card' | 'list') || 'card';
+    }
+  },
+  { immediate: true }
 );
+
+// Switch view mode
+async function setViewMode(mode: 'card' | 'list') {
+  viewMode.value = mode;
+  if (store.currentGroupId) {
+    try {
+      await groupsApi.updateViewMode(store.currentGroupId, mode);
+      // Update local store
+      const group = store.groups.find(g => g.id === store.currentGroupId);
+      if (group) {
+        group.view_mode = mode;
+      }
+    } catch (error) {
+      console.error('Failed to update view mode:', error);
+    }
+  }
+}
 
 // Handle tag filter from Sidebar
 function handleFilterByTag(tagValue: string | null) {
@@ -294,6 +322,34 @@ function handleImport(file: File) {
           <span v-if="tagFilter" class="text-xs font-medium px-2.5 py-0.5 rounded-full" style="background: var(--accent-bg); color: var(--accent)">
             {{ tagFilter }}
           </span>
+          <!-- View Toggle -->
+          <div v-if="store.currentGroupId && !searchKeyword.trim()" class="view-toggle">
+            <button
+              @click="setViewMode('card')"
+              class="view-btn"
+              :class="{ active: viewMode === 'card' }"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+              </svg>
+              卡片
+            </button>
+            <button
+              @click="setViewMode('list')"
+              class="view-btn"
+              :class="{ active: viewMode === 'list' }"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <line x1="3" y1="12" x2="21" y2="12"/>
+                <line x1="3" y1="18" x2="21" y2="18"/>
+              </svg>
+              列表
+            </button>
+          </div>
         </div>
         <div class="flex gap-1.5">
           <!-- Selection Mode Toggle -->
@@ -363,9 +419,9 @@ function handleImport(file: File) {
           <p>加载中...</p>
         </div>
 
-        <!-- Service Grid with Add Button -->
+        <!-- Card View: Service Grid with Add Button -->
         <div
-          v-else-if="!searchKeyword.trim() && store.currentGroupId"
+          v-else-if="viewMode === 'card' && !searchKeyword.trim() && store.currentGroupId"
           class="grid gap-3.5"
           style="grid-template-columns: repeat(auto-fill, minmax(240px, 240px)); align-items: stretch"
         >
@@ -418,6 +474,39 @@ function handleImport(file: File) {
               <span>添加服务</span>
             </button>
           </template>
+        </div>
+
+        <!-- List View -->
+        <div v-else-if="viewMode === 'list' && !searchKeyword.trim() && store.currentGroupId" class="list-view-container">
+          <template v-if="displayServices.length > 0">
+            <ServiceListRow
+              v-for="service in displayServices"
+              :key="service.id"
+              :service="service"
+              :selectable="selectMode"
+              :selected="selectedServices.has(service.id)"
+              @edit="handleEditService"
+              @delete="handleDeleteService"
+              @toggleSelect="toggleServiceSelection"
+            />
+          </template>
+
+          <div v-else class="flex flex-col items-center justify-center py-16">
+            <div class="text-4xl mb-3">🔍</div>
+            <h3 class="text-[15px] font-semibold mb-1" style="color: var(--text2)">暂无服务</h3>
+          </div>
+
+          <!-- Add Service Button for List View -->
+          <button
+            @click="handleAddService"
+            class="add-service-list-btn"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            <span>添加服务</span>
+          </button>
         </div>
 
         <!-- Search Results -->
@@ -511,5 +600,64 @@ function handleImport(file: File) {
 .add-service-card span {
   font-size: 13px;
   font-weight: 500;
+}
+
+.view-toggle {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.view-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text3);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.view-btn:hover {
+  background: var(--surface2);
+}
+
+.view-btn.active {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.list-view-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.add-service-list-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 2px dashed var(--border2);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text3);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.add-service-list-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-bg);
 }
 </style>
