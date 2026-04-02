@@ -11,6 +11,7 @@ import tagsRouter from './routes/tags.js';
 import authRouter from './routes/auth.js';
 import { authMiddleware } from './middleware/auth.js';
 import errorHandler from './middleware/errorHandler.js';
+import { startStatusChecker } from './tasks/statusChecker.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -45,4 +46,5 @@ app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
+  startStatusChecker();
 });
