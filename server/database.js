@@ -55,6 +55,34 @@ try {
   // 列已存在，忽略错误
 }
 
+// 添加 accent_color 列到 services 表（如果不存在）
+try {
+  db.exec('ALTER TABLE services ADD COLUMN accent_color TEXT DEFAULT NULL');
+} catch (e) {
+  // 列已存在，忽略错误
+}
+
+// 添加 is_online 列到 services 表（如果不存在）
+try {
+  db.exec('ALTER TABLE services ADD COLUMN is_online INTEGER DEFAULT 1');
+} catch (e) {
+  // 列已存在，忽略错误
+}
+
+// 添加 last_checked_at 列到 services 表（如果不存在）
+try {
+  db.exec('ALTER TABLE services ADD COLUMN last_checked_at DATETIME DEFAULT NULL');
+} catch (e) {
+  // 列已存在，忽略错误
+}
+
+// 添加 view_mode 列到 groups 表（如果不存在）
+try {
+  db.exec('ALTER TABLE groups ADD COLUMN view_mode TEXT DEFAULT "card"');
+} catch (e) {
+  // 列已存在，忽略错误
+}
+
 // 创建标签表
 db.exec(`
   CREATE TABLE IF NOT EXISTS tags (
@@ -127,8 +155,25 @@ export const groupOps = {
       stmt.run(index, item.id);
     });
     return items;
+  },
+
+  updateViewMode: (id, viewMode) => {
+    db.prepare('UPDATE groups SET view_mode = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(viewMode, id);
+    return { id, view_mode: viewMode };
   }
 };
+
+// 颜色池
+const ACCENT_COLORS = [
+  '#4ade80', '#f472b6', '#fbbf24', '#38bdf8',
+  '#a78bfa', '#fb923c', '#34d399', '#f87171',
+  '#22d3ee', '#6366f1', '#ec4899', '#14b8a6'
+];
+
+// 生成 accent_color 的函数
+function generateAccentColor(id) {
+  return ACCENT_COLORS[id % ACCENT_COLORS.length];
+}
 
 // 服务操作
 export const serviceOps = {
@@ -139,10 +184,10 @@ export const serviceOps = {
     } else {
       services = db.prepare('SELECT * FROM services ORDER BY sort_order, id').all();
     }
-    // 解析 tags JSON
     return services.map(s => ({
       ...s,
-      tags: s.tags ? JSON.parse(s.tags) : []
+      tags: s.tags ? JSON.parse(s.tags) : [],
+      is_online: s.is_online === 1
     }));
   },
 
@@ -151,7 +196,8 @@ export const serviceOps = {
     if (service) {
       return {
         ...service,
-        tags: service.tags ? JSON.parse(service.tags) : []
+        tags: service.tags ? JSON.parse(service.tags) : [],
+        is_online: service.is_online === 1
       };
     }
     return service;
@@ -159,9 +205,10 @@ export const serviceOps = {
 
   create: (data) => {
     const tagsJson = JSON.stringify(data.tags || []);
+    const tempColor = data.accent_color || ACCENT_COLORS[Math.floor(Math.random() * ACCENT_COLORS.length)];
     const stmt = db.prepare(`
-      INSERT INTO services (group_id, name, url, username, password, description, icon, tags, sort_order)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO services (group_id, name, url, username, password, description, icon, tags, sort_order, accent_color, is_online)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
     `);
     const result = stmt.run(
       data.group_id,
@@ -172,16 +219,19 @@ export const serviceOps = {
       data.description || null,
       data.icon || null,
       tagsJson,
-      data.sort_order || 0
+      data.sort_order || 0,
+      tempColor
     );
-    return { id: result.lastInsertRowid, tags: data.tags || [], ...data };
+    const finalColor = generateAccentColor(result.lastInsertRowid);
+    db.prepare('UPDATE services SET accent_color = ? WHERE id = ?').run(finalColor, result.lastInsertRowid);
+    return { id: result.lastInsertRowid, tags: data.tags || [], accent_color: finalColor, is_online: true, ...data };
   },
 
   update: (id, data) => {
     const tagsJson = JSON.stringify(data.tags || []);
     const stmt = db.prepare(`
       UPDATE services SET group_id = ?, name = ?, url = ?, username = ?, password = ?,
-      description = ?, icon = ?, tags = ?, sort_order = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
+      description = ?, icon = ?, tags = ?, sort_order = ?, accent_color = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
     `);
     stmt.run(
       data.group_id,
@@ -193,6 +243,7 @@ export const serviceOps = {
       data.icon || null,
       tagsJson,
       data.sort_order || 0,
+      data.accent_color || null,
       id
     );
     return { id, tags: data.tags || [], ...data };
@@ -214,10 +265,10 @@ export const serviceOps = {
       SELECT * FROM services WHERE name LIKE ? OR url LIKE ? OR description LIKE ?
       ORDER BY sort_order, id
     `).all(pattern, pattern, pattern);
-    // 解析 tags JSON
     return services.map(s => ({
       ...s,
-      tags: s.tags ? JSON.parse(s.tags) : []
+      tags: s.tags ? JSON.parse(s.tags) : [],
+      is_online: s.is_online === 1
     }));
   }
 };
@@ -246,3 +297,5 @@ export const tagOps = {
 
   delete: (id) => db.prepare('DELETE FROM tags WHERE id = ?').run(id)
 };
+
+export { generateAccentColor };
