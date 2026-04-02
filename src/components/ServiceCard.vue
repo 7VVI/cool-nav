@@ -32,6 +32,17 @@ const groupColor = computed(() => {
   return group?.color || '#3b6ef8';
 });
 
+// 计算渐变色条
+const accentGradient = computed(() => {
+  const color = props.service.accent_color || '#3b6ef8';
+  // 转换为稍深色
+  const r = parseInt(color.slice(1, 3), 16);
+  const g = parseInt(color.slice(3, 5), 16);
+  const b = parseInt(color.slice(5, 7), 16);
+  const darkerColor = `#${Math.max(0, r - 30).toString(16).padStart(2, '0')}${Math.max(0, g - 30).toString(16).padStart(2, '0')}${Math.max(0, b - 30).toString(16).padStart(2, '0')}`;
+  return `linear-gradient(90deg, ${color}, ${darkerColor})`;
+});
+
 // Load tags
 onMounted(async () => {
   try {
@@ -152,6 +163,12 @@ function handleCardClick() {
       }"
       @click="handleCardClick"
     >
+      <!-- 渐变色条 -->
+      <div
+        class="accent-bar"
+        :style="{ background: accentGradient }"
+      ></div>
+
       <!-- Selection Checkbox -->
       <div v-if="selectable" class="absolute top-3 left-3 z-10">
         <button
@@ -243,6 +260,12 @@ function handleCardClick() {
             <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
           </svg>
           {{ hasCredentials ? '有凭据' : '无凭据' }}
+        </div>
+
+        <!-- 在线状态 -->
+        <div v-if="service.is_online" class="online-badge">
+          <span class="pulse-dot"></span>
+          <span class="online-text">在线</span>
         </div>
       </div>
 
@@ -467,5 +490,52 @@ function handleCardClick() {
 /* 标签区域 */
 .tags-area {
   flex-shrink: 0;
+}
+
+/* 渐变色条 */
+.accent-bar {
+  height: 3px;
+  width: 100%;
+  border-radius: 16px 16px 0 0;
+  flex-shrink: 0;
+  margin: -1px -1px 0 -1px;
+}
+
+/* 在线状态徽章 */
+.online-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--green);
+  flex-shrink: 0;
+}
+
+.online-text {
+  font-weight: 500;
+}
+
+/* 在线状态脉冲动画 */
+.pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 </style>
