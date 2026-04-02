@@ -59,6 +59,16 @@ router.put('/reorder', (req, res) => {
   res.json({ success: true, message: '排序更新成功' });
 });
 
+// 更新分组视图模式
+router.put('/:id/view-mode', (req, res) => {
+  const { view_mode } = req.body;
+  if (!view_mode || !['card', 'list'].includes(view_mode)) {
+    return res.status(400).json({ success: false, message: '视图模式必须是 card 或 list' });
+  }
+  const group = groupOps.updateViewMode(parseInt(req.params.id), view_mode);
+  res.json({ success: true, data: group });
+});
+
 // 更新分组
 router.put('/:id', (req, res) => {
   const { name, color, parent_id, sort_order } = req.body;
