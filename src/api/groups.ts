@@ -13,5 +13,7 @@ export const groupsApi = {
 
   delete: (id: number) => request.delete<any, ApiResponse<void>>(`/groups/${id}`),
 
-  reorder: (items: { id: number }[]) => request.put<any, ApiResponse<void>>('/groups/reorder', { items })
+  reorder: (items: { id: number }[]) => request.put<any, ApiResponse<void>>('/groups/reorder', { items }),
+
+  updateViewMode: (id: number, viewMode: 'card' | 'list') => request.put<any, ApiResponse<Group>>(`/groups/${id}/view-mode`, { view_mode: viewMode })
 };

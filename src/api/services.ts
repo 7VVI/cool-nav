@@ -17,5 +17,7 @@ export const servicesApi = {
 
   reorder: (items: { id: number; group_id: number }[]) => request.put<any, ApiResponse<void>>('/services/reorder', { items }),
 
-  copyCredentials: (id: number) => request.post<any, ApiResponse<{ hasCredentials: boolean; username?: string; password?: string }>>(`/services/${id}/copy`)
+  copyCredentials: (id: number) => request.post<any, ApiResponse<{ hasCredentials: boolean; username?: string; password?: string }>>(`/services/${id}/copy`),
+
+  getStatus: () => request.get<any, ApiResponse<{ id: number; is_online: boolean; last_checked_at: string | null }[]>>('/services/status')
 };
