@@ -4,7 +4,34 @@ import { useNavStore } from '@/stores/navStore';
 import { tagsApi, type Tag } from '@/api/tags';
 import type { Service } from '@/types';
 
-const EMOJIS = ['🖥️','🔧','📊','📦','🔒','🌐','💼','📁','🚀','⚙️','🔗','📋','🗄️','📡','💡','🔑','🏢','📈','🛠️','🎯','🔮','⚡','🧩','🌿'];
+const EMOJIS = [
+  '🖥️','🔧','📊','📦','🔒','🌐','💼','📁','🚀','⚙️',
+  '🔗','📋','🗄️','📡','💡','🔑','🏢','📈','🛠️','🎯',
+  '🔮','⚡','🧩','🌿','🚜','📄','📶','💧','💰','💵',
+  '🗺','📍','🗂','👁','📝','📰','📣','🏭','🧪','💻',
+  '🟢','🟡','🔐'
+];
+
+// Emoji 推荐映射表
+const EMOJI_RECOMMEND_MAP: Record<string, string> = {
+  'crm': '📊', '农机': '🚜', '文档': '📄', 'erp': '🏢',
+  'mqtt': '📶', '物联网': '📡', '水文': '💧', '成本': '💰',
+  '应收': '💵', '售后': '🔧', '平台': '🌐', '后台': '⚙️',
+  'admin': '🔐', 'api': '🔗', '日志': '🗂', '监控': '👁',
+  '地图': '🗺', 'gps': '📍', '定位': '🎯', '博客': '📝',
+  '文章': '📰', '媒体': '📣', 'fms': '📦', '仓库': '🏭',
+  '测试': '🧪', '开发': '💻', '生产': '🟢', '预生产': '🟡',
+};
+
+function recommendEmoji(name: string): string {
+  const lowerName = name.toLowerCase();
+  for (const [keyword, emoji] of Object.entries(EMOJI_RECOMMEND_MAP)) {
+    if (lowerName.includes(keyword.toLowerCase())) {
+      return emoji;
+    }
+  }
+  return '🖥️';
+}
 
 const props = defineProps<{
   show: boolean;
@@ -26,7 +53,8 @@ const formData = ref({
   username: '',
   password: '',
   description: '',
-  icon: ''
+  icon: '',
+  accent_color: ''
 });
 
 const selectedEmoji = ref(EMOJIS[0]);
@@ -82,7 +110,8 @@ watch(() => props.show, (newVal) => {
         username: props.service.username || '',
         password: props.service.password || '',
         description: props.service.description || '',
-        icon: props.service.icon || ''
+        icon: props.service.icon || '',
+        accent_color: props.service.accent_color || ''
       };
       selectedEmoji.value = props.service.icon || EMOJIS[0];
       selectedTags.value = props.service.tags || [];
@@ -95,12 +124,24 @@ watch(() => props.show, (newVal) => {
         username: '',
         password: '',
         description: '',
-        icon: ''
+        icon: '',
+        accent_color: ''
       };
       selectedEmoji.value = EMOJIS[0];
       selectedTags.value = [];
     }
     showPassword.value = false;
+  }
+});
+
+// 监听名称变化，自动推荐 emoji
+watch(() => formData.value.name, (newName) => {
+  if (newName && !isEditing.value) {
+    // 新增服务时，根据名称自动推荐
+    const recommended = recommendEmoji(newName);
+    if (!selectedEmoji.value || selectedEmoji.value === EMOJIS[0]) {
+      selectedEmoji.value = recommended;
+    }
   }
 });
 
@@ -220,7 +261,8 @@ async function handleSubmit() {
     password: formData.value.password.trim() || null,
     description: formData.value.description.trim() || null,
     icon: selectedEmoji.value || null,
-    tags: selectedTags.value
+    tags: selectedTags.value,
+    accent_color: formData.value.accent_color.trim() || null
   };
 
   try {
@@ -332,6 +374,35 @@ async function handleSubmit() {
               </button>
             </div>
           </div>
+        </div>
+
+        <!-- 主题色编辑 -->
+        <div class="mb-4">
+          <label class="block text-xs font-semibold mb-1.5" style="color: var(--text2)">主题色</label>
+          <div class="flex items-center gap-2">
+            <input
+              v-model="formData.accent_color"
+              type="color"
+              class="w-10 h-8 rounded border cursor-pointer"
+              style="border-color: var(--border)"
+            />
+            <input
+              v-model="formData.accent_color"
+              type="text"
+              class="flex-1 px-2.5 py-2 border rounded-lg text-[13px] outline-none font-mono"
+              style="border-color: var(--border); color: var(--text); background: var(--surface)"
+              placeholder="#3b6ef8"
+            />
+            <button
+              type="button"
+              @click="formData.accent_color = ''"
+              class="px-2 py-1.5 rounded text-[11px] border"
+              style="border-color: var(--border); color: var(--text3)"
+            >
+              自动
+            </button>
+          </div>
+          <p class="text-[11px] mt-1" style="color: var(--text3)">留空则自动生成独特颜色</p>
         </div>
 
         <!-- Group Selector -->
