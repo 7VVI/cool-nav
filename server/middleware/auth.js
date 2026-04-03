@@ -6,7 +6,7 @@ const SECRET_KEY = process.env.AUTH_SECRET || 'cool-nav-secret-key-2024';
 const TOKEN_EXPIRY_DAYS = 30;
 
 // 生成鉴权秘钥（首次使用时需要设置）
-let authSecret = process.env.AUTH_SECRET_KEY || 'cool-nav-2024';
+let authSecret = process.env.AUTH_SECRET_KEY || '88888888';
 
 export function setAuthSecret(secret) {
   authSecret = secret;
