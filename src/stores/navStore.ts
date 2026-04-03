@@ -9,11 +9,16 @@ export const useNavStore = defineStore('nav', () => {
   const groups = ref<Group[]>([]);
   const services = ref<Service[]>([]);
   const currentGroupId = ref<number | null>(null);
+  const showAllGroups = ref(false); // 显示所有分组的服务
   const loading = ref(false);
 
   const currentGroup = computed(() => groups.value.find(g => g.id === currentGroupId.value));
 
   const currentServices = computed(() => {
+    if (showAllGroups.value) {
+      // 显示所有分组的服务
+      return services.value;
+    }
     if (!currentGroupId.value) return [];
     return services.value.filter(s => s.group_id === currentGroupId.value);
   });
@@ -27,7 +32,7 @@ export const useNavStore = defineStore('nav', () => {
       // 检查当前分组是否还有效
       const currentGroupExists = groups.value.some(g => g.id === currentGroupId.value);
 
-      if (!currentGroupId.value || !currentGroupExists) {
+      if (!showAllGroups.value && (!currentGroupId.value || !currentGroupExists)) {
         // 没有选中分组或当前分组已被删除，选择第一个分组
         if (groups.value.length > 0) {
           currentGroupId.value = groups.value[0].id;
@@ -36,10 +41,19 @@ export const useNavStore = defineStore('nav', () => {
           currentGroupId.value = null;
           services.value = [];
         }
+      } else if (showAllGroups.value) {
+        // 显示全部时，获取所有服务
+        await fetchAllServices();
       }
     } finally {
       loading.value = false;
     }
+  }
+
+  // 获取所有服务
+  async function fetchAllServices() {
+    const res = await servicesApi.getAll();
+    services.value = res.data;
   }
 
   async function fetchServices(groupId?: number) {
@@ -101,19 +115,28 @@ export const useNavStore = defineStore('nav', () => {
   }
 
   function selectGroup(id: number) {
+    showAllGroups.value = false;
     currentGroupId.value = id;
     fetchServices();
+  }
+
+  function selectAllGroups() {
+    showAllGroups.value = true;
+    currentGroupId.value = null;
+    fetchAllServices();
   }
 
   return {
     groups,
     services,
     currentGroupId,
+    showAllGroups,
     currentGroup,
     currentServices,
     loading,
     fetchGroups,
     fetchServices,
+    fetchAllServices,
     refreshCurrentGroup,
     addGroup,
     updateGroup,
@@ -121,6 +144,7 @@ export const useNavStore = defineStore('nav', () => {
     addService,
     updateService,
     deleteService,
-    selectGroup
+    selectGroup,
+    selectAllGroups
   };
 });

@@ -313,7 +313,7 @@ function handleImport(file: File) {
       >
         <div class="flex items-center gap-3">
           <h1 class="text-[15px] font-bold" style="color: var(--text); letter-spacing: -0.2px">
-            {{ searchKeyword.trim() ? `搜索: ${searchKeyword}` : (tagFilter ? `标签筛选` : (store.currentGroup?.name || '全部服务')) }}
+            {{ searchKeyword.trim() ? `搜索: ${searchKeyword}` : (tagFilter ? `标签筛选` : (store.showAllGroups ? '全部服务' : (store.currentGroup?.name || '请选择分组'))) }}
           </h1>
           <span class="text-xs font-medium px-2.5 py-0.5 rounded-full" style="background: var(--surface2); color: var(--text3)">
             {{ displayServices.length }} 个服务
@@ -325,7 +325,7 @@ function handleImport(file: File) {
             {{ tagFilter }}
           </span>
           <!-- View Toggle -->
-          <div v-if="store.currentGroupId && !searchKeyword.trim()" class="view-toggle">
+          <div v-if="(store.currentGroupId || store.showAllGroups) && !searchKeyword.trim()" class="view-toggle">
             <button
               @click="setViewMode('card')"
               class="view-btn"
@@ -378,7 +378,7 @@ function handleImport(file: File) {
           </button>
           <!-- Selection Mode Toggle -->
           <button
-            v-if="store.currentGroupId && displayServices.length > 0"
+            v-if="(store.currentGroupId || store.showAllGroups) && displayServices.length > 0"
             @click="toggleSelectMode"
             class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors"
             :style="{
@@ -445,12 +445,12 @@ function handleImport(file: File) {
 
         <!-- Card View: Service Grid with Add Button -->
         <div
-          v-else-if="viewMode === 'card' && !searchKeyword.trim() && store.currentGroupId"
+          v-else-if="viewMode === 'card' && !searchKeyword.trim() && (store.currentGroupId || store.showAllGroups)"
           class="grid gap-3.5"
           style="grid-template-columns: repeat(auto-fill, minmax(240px, 240px)); align-items: stretch"
         >
-          <!-- Tag filter mode: show filtered services without draggable -->
-          <template v-if="tagFilter">
+          <!-- Tag filter mode or All Groups mode: show services without draggable -->
+          <template v-if="tagFilter || store.showAllGroups">
             <div v-for="(service, index) in displayServices" :key="service.id" class="card-wrapper" :style="{ animationDelay: `${index * 0.04}s` }">
               <ServiceCard
                 :service="service"
@@ -462,7 +462,7 @@ function handleImport(file: File) {
               />
             </div>
           </template>
-          <!-- Normal mode: draggable list -->
+          <!-- Normal mode: draggable list (only for single group) -->
           <template v-else>
             <draggable
               v-model="localServices"
@@ -488,6 +488,7 @@ function handleImport(file: File) {
 
             <!-- Add Service Card - 在网格内显示 -->
             <button
+              v-if="store.currentGroupId"
               @click="handleAddService"
               class="add-service-card"
             >
@@ -501,7 +502,7 @@ function handleImport(file: File) {
         </div>
 
         <!-- List View -->
-        <div v-else-if="viewMode === 'list' && !searchKeyword.trim() && store.currentGroupId" class="list-view-container">
+        <div v-else-if="viewMode === 'list' && !searchKeyword.trim() && (store.currentGroupId || store.showAllGroups)" class="list-view-container">
           <template v-if="displayServices.length > 0">
             <ServiceListRow
               v-for="service in displayServices"
@@ -522,6 +523,7 @@ function handleImport(file: File) {
 
           <!-- Add Service Button for List View -->
           <button
+            v-if="store.currentGroupId"
             @click="handleAddService"
             class="add-service-list-btn"
           >

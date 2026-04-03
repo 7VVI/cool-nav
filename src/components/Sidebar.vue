@@ -46,6 +46,11 @@ const rootGroups = computed(() => {
   return localGroups.value.filter(g => !g.parent_id).sort((a, b) => a.sort_order - b.sort_order);
 });
 
+// 获取所有服务的总数
+const totalCount = computed(() => {
+  return store.services.length;
+});
+
 // 根据搜索关键词过滤分组
 const filteredGroups = computed(() => {
   const keyword = searchKeyword.value.trim().toLowerCase();
@@ -75,6 +80,15 @@ function selectGroup(id: number) {
 // 切换侧边栏折叠
 function toggleSidebar() {
   isCollapsed.value = !isCollapsed.value;
+}
+
+// 选择全部服务
+function selectAllGroups() {
+  store.selectAllGroups();
+  // 折叠状态下点击自动展开
+  if (isCollapsed.value) {
+    isCollapsed.value = false;
+  }
 }
 
 // 拖拽排序后保存
@@ -203,41 +217,58 @@ function toggleTagFilter(tagValue: string) {
           <div v-if="filteredGroups.length === 0" class="empty-state">未找到匹配的分组</div>
         </div>
 
-        <!-- 非搜索状态：可拖拽的分组列表 -->
-        <draggable
-          v-else
-          v-model="localGroups"
-          item-key="id"
-          @end="onDragEnd"
-          class="group-list"
-        >
-          <template #item="{ element: group }">
-            <div v-if="!group.parent_id" :key="group.id" class="group-item-wrapper">
-              <div
-                :class="['group-item', { active: store.currentGroupId === group.id }]"
-                @click="selectGroup(group.id)"
-              >
-                <span class="group-dot" :style="{ background: group.color || '#3b6ef8' }"></span>
-                <span class="group-name">{{ group.name }}</span>
-                <span v-if="group.serviceCount !== undefined" class="group-count">{{ group.serviceCount }}</span>
-                <div class="group-actions">
-                  <button @click.stop="emit('editGroup', group)" class="action-btn" title="编辑">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                    </svg>
-                  </button>
-                  <button @click.stop="handleDeleteGroup(group)" class="action-btn delete" title="删除">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                    </svg>
-                  </button>
+        <!-- 非搜索状态：显示分组列表 -->
+        <div v-else class="group-list">
+          <!-- 全部服务 -->
+          <div
+            class="group-item all-groups-item"
+            :class="{ active: store.showAllGroups }"
+            @click="selectAllGroups"
+          >
+            <svg class="group-dot-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7"/>
+              <rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/>
+              <rect x="3" y="14" width="7" height="7"/>
+            </svg>
+            <span class="group-name">全部服务</span>
+            <span class="group-count">{{ totalCount }}</span>
+          </div>
+
+          <!-- 分组列表（可拖拽） -->
+          <draggable
+            v-model="localGroups"
+            item-key="id"
+            @end="onDragEnd"
+          >
+            <template #item="{ element: group }">
+              <div v-if="!group.parent_id" :key="group.id" class="group-item-wrapper">
+                <div
+                  :class="['group-item', { active: store.currentGroupId === group.id && !store.showAllGroups }]"
+                  @click="selectGroup(group.id)"
+                >
+                  <span class="group-dot" :style="{ background: group.color || '#3b6ef8' }"></span>
+                  <span class="group-name">{{ group.name }}</span>
+                  <span v-if="group.serviceCount !== undefined" class="group-count">{{ group.serviceCount }}</span>
+                  <div class="group-actions">
+                    <button @click.stop="emit('editGroup', group)" class="action-btn" title="编辑">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </button>
+                    <button @click.stop="handleDeleteGroup(group)" class="action-btn delete" title="删除">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </template>
-        </draggable>
+            </template>
+          </draggable>
+        </div>
       </template>
 
       <!-- 空状态 -->
@@ -539,6 +570,21 @@ function toggleTagFilter(tagValue: string) {
   height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
+}
+
+.group-dot-icon {
+  color: var(--text3);
+  flex-shrink: 0;
+}
+
+.all-groups-item .group-dot-icon {
+  color: var(--accent);
+}
+
+.all-groups-item {
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
 }
 
 .group-name {
