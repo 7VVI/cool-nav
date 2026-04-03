@@ -187,11 +187,6 @@ function toggleTagFilter(tagValue: string) {
     <div class="sidebar-content">
       <!-- 展开状态：显示分组 -->
       <template v-if="!isCollapsed">
-        <div class="sidebar-header">
-          <span>分组</span>
-          <button @click="toggleSidebar" class="collapse-btn" title="最小化">−</button>
-        </div>
-
         <!-- 搜索状态：显示过滤后的分组（不可拖拽） -->
         <div v-if="searchKeyword.trim()" class="group-list">
           <div
@@ -449,42 +444,6 @@ function toggleTagFilter(tagValue: string) {
 }
 
 .sidebar.collapsed .sidebar-search {
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* Header */
-.sidebar-header {
-  padding: 8px 16px;
-  font-size: 10.5px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text3);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-
-.collapse-btn {
-  font-size: 12px;
-  color: var(--text3);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 4px;
-  transition: background 0.15s, color 0.15s;
-}
-
-.collapse-btn:hover {
-  background: var(--surface2);
-  color: var(--text2);
-}
-
-.sidebar.collapsed .sidebar-header {
   opacity: 0;
   pointer-events: none;
 }
