@@ -229,11 +229,12 @@ function toggleTagFilter(tagValue: string) {
             :key="group.id"
             class="group-item"
             :class="{ active: store.currentGroupId === group.id }"
+            :style="store.currentGroupId === group.id ? { background: (group.color || '#3b6ef8') + '12' } : {}"
             @click="selectGroup(group.id)"
           >
             <span class="group-dot" :style="{ background: group.color || '#3b6ef8' }"></span>
-            <span class="group-name">{{ group.name }}</span>
-            <span v-if="group.serviceCount !== undefined" class="group-count">{{ group.serviceCount }}</span>
+            <span class="group-name" :style="store.currentGroupId === group.id ? { color: group.color || '#3b6ef8' } : {}">{{ group.name }}</span>
+            <span v-if="group.serviceCount !== undefined" class="group-count" :style="store.currentGroupId === group.id ? { background: (group.color || '#3b6ef8') + '20', color: group.color || '#3b6ef8' } : {}">{{ group.serviceCount }}</span>
           </div>
           <div v-if="filteredGroups.length === 0" class="empty-state">未找到匹配的分组</div>
         </div>
@@ -266,11 +267,12 @@ function toggleTagFilter(tagValue: string) {
               <div v-if="!group.parent_id" :key="group.id" class="group-item-wrapper">
                 <div
                   :class="['group-item', { active: store.currentGroupId === group.id && !store.showAllGroups }]"
+                  :style="store.currentGroupId === group.id && !store.showAllGroups ? { background: (group.color || '#3b6ef8') + '12' } : {}"
                   @click="selectGroup(group.id)"
                 >
                   <span class="group-dot" :style="{ background: group.color || '#3b6ef8' }"></span>
-                  <span class="group-name">{{ group.name }}</span>
-                  <span v-if="group.serviceCount !== undefined" class="group-count">{{ group.serviceCount }}</span>
+                  <span class="group-name" :style="store.currentGroupId === group.id && !store.showAllGroups ? { color: group.color || '#3b6ef8' } : {}">{{ group.name }}</span>
+                  <span v-if="group.serviceCount !== undefined" class="group-count" :style="store.currentGroupId === group.id && !store.showAllGroups ? { background: (group.color || '#3b6ef8') + '20', color: group.color || '#3b6ef8' } : {}">{{ group.serviceCount }}</span>
                   <div class="group-actions">
                     <button @click.stop="emit('editGroup', group)" class="action-btn" title="编辑">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -322,6 +324,7 @@ function toggleTagFilter(tagValue: string) {
           @click="toggleTagFilter(tag.value)"
           class="tag-filter-item"
           :class="{ active: selectedTagFilter === tag.value }"
+          :style="selectedTagFilter === tag.value ? { background: tag.color + '15', borderColor: tag.color, color: tag.color } : {}"
         >
           <span class="tag-color-dot" :style="{ background: tag.color }"></span>
           <span class="tag-filter-name">{{ tag.name }}</span>
