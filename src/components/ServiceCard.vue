@@ -32,14 +32,26 @@ const groupColor = computed(() => {
   return group?.color || '#3b6ef8';
 });
 
+// 颜色池
+const ACCENT_COLORS = [
+  '#4ade80', '#f472b6', '#fbbf24', '#38bdf8',
+  '#a78bfa', '#fb923c', '#34d399', '#f87171',
+  '#22d3ee', '#6366f1', '#ec4899', '#14b8a6'
+];
+
+// 根据ID生成颜色
+function generateColorFromId(id: number) {
+  return ACCENT_COLORS[id % ACCENT_COLORS.length];
+}
+
 // 计算渐变色条
 const accentGradient = computed(() => {
-  const color = props.service.accent_color || '#3b6ef8';
-  // 转换为稍深色
+  const color = props.service.accent_color || generateColorFromId(props.service.id);
+  // 转换为更深色用于渐变终点
   const r = parseInt(color.slice(1, 3), 16);
   const g = parseInt(color.slice(3, 5), 16);
   const b = parseInt(color.slice(5, 7), 16);
-  const darkerColor = `#${Math.max(0, r - 30).toString(16).padStart(2, '0')}${Math.max(0, g - 30).toString(16).padStart(2, '0')}${Math.max(0, b - 30).toString(16).padStart(2, '0')}`;
+  const darkerColor = `#${Math.max(0, r - 40).toString(16).padStart(2, '0')}${Math.max(0, g - 40).toString(16).padStart(2, '0')}${Math.max(0, b - 40).toString(16).padStart(2, '0')}`;
   return `linear-gradient(90deg, ${color}, ${darkerColor})`;
 });
 
