@@ -465,8 +465,7 @@ function handleImport(file: File) {
         <!-- Card View: Service Grid with Add Button -->
         <div
           v-else-if="viewMode === 'card' && !searchKeyword.trim() && (store.currentGroupId || store.showAllGroups)"
-          class="grid gap-3.5"
-          style="grid-template-columns: repeat(auto-fill, minmax(240px, 240px)); align-items: stretch"
+          class="cards-grid"
         >
           <!-- Tag filter mode or All Groups mode: show services without draggable -->
           <template v-if="tagFilter || store.showAllGroups">
@@ -557,8 +556,7 @@ function handleImport(file: File) {
         <!-- Search Results -->
         <div
           v-else-if="searchKeyword.trim()"
-          class="grid gap-3.5"
-          style="grid-template-columns: repeat(auto-fill, minmax(240px, 240px)); align-items: stretch"
+          class="cards-grid"
         >
           <div v-if="displayServices.length === 0" class="col-span-full flex flex-col items-center justify-center py-16 text-center">
             <div class="text-[40px] mb-3">🔍</div>
@@ -621,10 +619,16 @@ function handleImport(file: File) {
   min-width: 0;
 }
 
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
 .add-service-card {
   border: 2px dashed var(--border2);
-  border-radius: 16px;
-  min-height: 160px;
+  border-radius: 14px;
+  min-height: 200px;
   display: flex;
   flex-direction: column;
   align-items: center;

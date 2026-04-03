@@ -26,12 +26,6 @@ const hasCredentials = computed(() => {
   return props.service.username || props.service.password;
 });
 
-// Get group color for this service
-const groupColor = computed(() => {
-  const group = store.groups.find(g => g.id === props.service.group_id);
-  return group?.color || '#3b6ef8';
-});
-
 // 颜色池
 const ACCENT_COLORS = [
   '#4ade80', '#f472b6', '#fbbf24', '#38bdf8',
@@ -44,9 +38,14 @@ function generateColorFromId(id: number) {
   return ACCENT_COLORS[id % ACCENT_COLORS.length];
 }
 
+// 获取卡片主色
+const accentColor = computed(() => {
+  return props.service.accent_color || generateColorFromId(props.service.id);
+});
+
 // 计算渐变色条
 const accentGradient = computed(() => {
-  const color = props.service.accent_color || generateColorFromId(props.service.id);
+  const color = accentColor.value;
   // 转换为更深色用于渐变终点
   const r = parseInt(color.slice(1, 3), 16);
   const g = parseInt(color.slice(3, 5), 16);
@@ -166,7 +165,7 @@ function handleCardClick() {
   <div>
     <!-- Card -->
     <div
-      class="rounded-2xl border p-4 flex flex-col gap-3 cursor-pointer card-hover service-card"
+      class="service-card"
       :class="{ 'card-selected': selected }"
       :style="{
         background: 'var(--surface)',
@@ -181,135 +180,92 @@ function handleCardClick() {
         :style="{ background: accentGradient }"
       ></div>
 
-      <!-- Selection Checkbox -->
-      <div v-if="selectable" class="absolute top-3 left-3 z-10">
+      <!-- Card Body -->
+      <div class="card-body">
+        <!-- Header: Icon + Name + URL + Online -->
+        <div class="card-header">
+          <div
+            class="service-icon"
+            :style="{ background: hexToRgba(accentColor, 0.1) }"
+          >
+            {{ getDisplayIcon() }}
+          </div>
+          <div class="card-meta">
+            <div class="service-name">{{ service.name }}</div>
+            <div class="service-url">{{ trimUrl(service.url) }}</div>
+          </div>
+          <!-- 在线状态 -->
+          <div v-if="service.is_online" class="status-online">
+            <span class="pulse-dot"></span>
+            <span>在线</span>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <p class="service-desc">{{ service.description || '暂无描述' }}</p>
+
+        <!-- Tags -->
+        <div v-if="serviceTags.length > 0" class="card-tags">
+          <span
+            v-for="tag in serviceTags"
+            :key="tag.value"
+            class="badge"
+            :style="{
+              background: tag.color + '12',
+              color: tag.color,
+              borderColor: tag.color + '25'
+            }"
+          >
+            {{ tag.name }}
+          </span>
+        </div>
+
+        <!-- Auth Indicator -->
+        <div class="auth-indicator">
+          <span class="auth-dot" :class="hasCredentials ? 'auth-yes' : 'auth-no'"></span>
+          <span :class="hasCredentials ? 'auth-text-yes' : 'auth-text-no'">{{ hasCredentials ? '有凭据' : '无凭据' }}</span>
+        </div>
+      </div>
+
+      <!-- Card Footer -->
+      <div class="card-footer">
+        <!-- Selection Checkbox -->
         <button
+          v-if="selectable"
           @click.stop="emit('toggleSelect', service)"
-          class="w-5 h-5 rounded border-2 flex items-center justify-center transition-all"
-          :style="{
-            background: selected ? 'var(--accent)' : 'var(--surface)',
-            borderColor: selected ? 'var(--accent)' : 'var(--border2)'
-          }"
+          class="select-btn"
+          :class="{ selected: selected }"
         >
-          <svg v-if="selected" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <svg v-if="selected" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
             <polyline points="20 6 9 17 4 12"/>
           </svg>
         </button>
-      </div>
-
-      <!-- Top -->
-      <div class="flex items-start gap-3" :class="{ 'ml-7': selectable }">
-        <!-- Icon -->
-        <div
-          class="w-11 h-11 rounded-xl flex items-center justify-center text-[22px] flex-shrink-0"
-          :style="{ background: hexToRgba(groupColor, 0.1) }"
+        <button
+          @click.stop="openLoginModal"
+          class="open-btn"
+          :style="{
+            background: hexToRgba(accentColor, 0.15),
+            color: accentColor
+          }"
         >
-          {{ getDisplayIcon() }}
-        </div>
-
-        <!-- Body -->
-        <div class="flex-1 min-w-0">
-          <div class="text-[14.5px] font-semibold truncate mb-0.5" style="color: var(--text)">
-            {{ service.name }}
-          </div>
-          <div class="text-[11.5px] font-mono truncate" style="color: var(--text3)">
-            {{ trimUrl(service.url) }}
-          </div>
-        </div>
-
-        <!-- Edit Button -->
+          ↗ 打开
+        </button>
         <button
           @click.stop="emit('edit', service)"
-          class="w-7 h-7 rounded-md border flex items-center justify-center flex-shrink-0 transition-all"
-          style="border-color: var(--border); color: var(--text3); opacity: 0"
-          onmouseenter="this.style.opacity='1';this.style.background='var(--surface2)'"
-          onmouseleave="this.style.opacity='0';this.style.background='var(--surface)'"
+          class="action-btn"
           title="编辑"
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
           </svg>
         </button>
-      </div>
-
-      <!-- Description -->
-      <div class="text-[12.5px] leading-[1.4] line-clamp-2" style="color: var(--text2); min-height: 35px;">
-        {{ service.description || '' }}
-      </div>
-
-      <!-- Tags - flex-grow 让它自动扩展 -->
-      <div v-if="serviceTags.length > 0" class="flex flex-wrap gap-1.5 tags-area">
-        <span
-          v-for="tag in serviceTags"
-          :key="tag.value"
-          class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium"
-          :style="{
-            background: tag.color + '20',
-            color: tag.color,
-            border: '1px solid ' + tag.color + '40'
-          }"
-        >
-          {{ tag.name }}
-        </span>
-      </div>
-
-      <!-- Spacer - 当没有标签时占位 -->
-      <div v-else class="flex-grow"></div>
-
-      <!-- Meta -->
-      <div class="flex items-center gap-1.5 mt-auto">
-        <div
-          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border"
-          :style="{
-            background: hasCredentials ? 'var(--green-bg)' : 'var(--surface2)',
-            color: hasCredentials ? 'var(--green)' : 'var(--text3)',
-            borderColor: hasCredentials ? '#bbf7d0' : 'var(--border)'
-          }"
-        >
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-          </svg>
-          {{ hasCredentials ? '有凭据' : '无凭据' }}
-        </div>
-
-        <!-- 在线状态 -->
-        <div v-if="service.is_online" class="online-badge">
-          <span class="pulse-dot"></span>
-          <span class="online-text">在线</span>
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div class="flex items-center gap-2">
-        <button
-          @click.stop="openLoginModal"
-          class="flex-1 py-2 rounded-lg text-[13px] font-semibold flex items-center justify-center gap-1.5 transition-colors"
-          style="background: var(--accent); color: white"
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-            <polyline points="15 3 21 3 21 9"/>
-            <line x1="10" y1="14" x2="21" y2="3"/>
-          </svg>
-          打开
-        </button>
-
         <button
           @click.stop="showDeleteConfirm = true"
-          class="w-9 h-9 rounded-lg border flex items-center justify-center transition-colors"
-          style="border-color: var(--border); color: var(--text3)"
+          class="action-btn del-btn"
           title="删除"
-          onmouseenter="this.style.background='var(--red-bg)';this.style.color='var(--red)'"
-          onmouseleave="this.style.background='var(--surface)';this.style.color='var(--text3)'"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-            <path d="M10 11v6"/>
-            <path d="M14 11v6"/>
-          </svg>
+          🗑
         </button>
       </div>
     </div>
@@ -476,53 +432,87 @@ function handleCardClick() {
 
 <style scoped>
 .service-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s;
   position: relative;
-  transition: all 0.18s ease;
   display: flex;
   flex-direction: column;
-  width: 100%;
-  height: 100%;
 }
 
 .service-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: rgba(255,255,255,0.15);
   transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
 }
 
 .card-selected {
   box-shadow: 0 0 0 2px var(--accent);
 }
 
-.card-hover:hover button[style*="opacity: 0"] {
-  opacity: 1 !important;
-}
-
-/* 简介文本截断 - 最多显示2行 */
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* 标签区域 */
-.tags-area {
-  flex-shrink: 0;
-}
-
 /* 渐变色条 */
 .accent-bar {
   height: 3px;
   width: 100%;
-  border-radius: 16px 16px 0 0;
   flex-shrink: 0;
-  margin: -1px -1px 0 -1px;
 }
 
-/* 在线状态徽章 */
-.online-badge {
+/* Card Body */
+.card-body {
+  padding: 16px 18px 14px;
+  flex: 1;
+}
+
+/* Header */
+.card-header {
   display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.service-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+}
+
+.card-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.service-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 3px;
+}
+
+.service-url {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 在线状态 */
+.status-online {
+  display: inline-flex;
   align-items: center;
   gap: 4px;
   font-size: 10px;
@@ -530,11 +520,6 @@ function handleCardClick() {
   flex-shrink: 0;
 }
 
-.online-text {
-  font-weight: 500;
-}
-
-/* 在线状态脉冲动画 */
 .pulse-dot {
   width: 6px;
   height: 6px;
@@ -544,17 +529,130 @@ function handleCardClick() {
 }
 
 @keyframes pulse {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.5;
-    transform: scale(1.2);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(74,222,128,0.4); }
+  50% { opacity: 0.8; box-shadow: 0 0 0 4px rgba(74,222,128,0); }
+}
+
+/* Description */
+.service-desc {
+  font-size: 12px;
+  color: var(--text3);
+  line-height: 1.5;
+  margin-bottom: 12px;
+  min-height: 36px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Tags */
+.card-tags {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.badge {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  border: 1px solid;
+}
+
+/* Auth Indicator */
+.auth-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+}
+
+.auth-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.auth-yes { background: var(--green); }
+.auth-no { background: var(--text3); }
+.auth-text-yes { color: var(--green); }
+.auth-text-no { color: var(--text3); }
+
+/* Card Footer */
+.card-footer {
+  padding: 0 18px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.open-btn {
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 8px;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.open-btn:hover {
+  opacity: 0.85;
+}
+
+.select-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.select-btn.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.action-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(56,189,248,0.08);
+}
+
+.del-btn:hover {
+  border-color: var(--red);
+  color: var(--red);
+  background: rgba(248,113,113,0.08);
 }
 </style>
