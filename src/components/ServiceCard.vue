@@ -205,7 +205,7 @@ function handleCardClick() {
         <p class="service-desc">{{ service.description || '暂无描述' }}</p>
 
         <!-- Tags -->
-        <div v-if="serviceTags.length > 0" class="card-tags">
+        <div class="card-tags" :class="{ 'empty': serviceTags.length === 0 }">
           <span
             v-for="tag in serviceTags"
             :key="tag.value"
@@ -540,6 +540,7 @@ function handleCardClick() {
   line-height: 1.5;
   margin-bottom: 12px;
   min-height: 36px;
+  max-height: 36px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -552,6 +553,11 @@ function handleCardClick() {
   gap: 5px;
   flex-wrap: wrap;
   margin-bottom: 12px;
+  min-height: 20px;
+}
+
+.card-tags.empty {
+  visibility: hidden;
 }
 
 .badge {
