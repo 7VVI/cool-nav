@@ -94,17 +94,16 @@ export const useNavStore = defineStore('nav', () => {
 
   async function addService(data: Partial<Service>) {
     const res = await servicesApi.create(data);
-    services.value.push(res.data);
-    await fetchGroups(); // Update service count
+    // 创建新数组，触发响应式更新
+    services.value = [...services.value, res.data];
+    await fetchGroups();
     return res.data;
   }
 
   async function updateService(id: number, data: Partial<Service>) {
     const res = await servicesApi.update(id, data);
-    const index = services.value.findIndex(s => s.id === id);
-    if (index > -1) {
-      services.value[index] = res.data;
-    }
+    // 使用 map 创建新数组，触发响应式更新
+    services.value = services.value.map(s => s.id === id ? res.data : s);
     await fetchGroups();
   }
 

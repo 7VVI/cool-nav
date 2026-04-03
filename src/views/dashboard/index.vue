@@ -64,8 +64,27 @@ const displayServices = computed(() => {
 // Watch current services to sync with local
 watch(
   () => store.currentServices,
-  (newServices) => {
-    if (!searchKeyword.value.trim()) {
+  (newServices, oldServices) => {
+    if (searchKeyword.value.trim()) return;
+
+    // 如果服务数量变化（新增/删除），重新赋值
+    if (newServices.length !== localServices.value.length) {
+      localServices.value = [...newServices];
+      return;
+    }
+
+    // 如果是编辑单个服务，只更新数据，保持排序
+    const newIds = new Set(newServices.map(s => s.id));
+    const localIds = new Set(localServices.value.map(s => s.id));
+
+    // ID集合相同时，只更新数据，保持排序
+    if (newIds.size === localIds.size && [...newIds].every(id => localIds.has(id))) {
+      localServices.value = localServices.value.map(localService => {
+        const updated = newServices.find(s => s.id === localService.id);
+        return updated || localService;
+      });
+    } else {
+      // ID变化（切换分组等情况），重新赋值
       localServices.value = [...newServices];
     }
   },
@@ -574,7 +593,7 @@ function handleImport(file: File) {
       :service="editingService"
       :current-group-id="store.currentGroupId"
       @close="showServiceModal = false"
-      @saved="store.fetchServices()"
+      @saved="() => {}"
     />
 
     <GroupModal
