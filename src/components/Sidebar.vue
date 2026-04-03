@@ -36,6 +36,27 @@ onMounted(async () => {
   }
 });
 
+// 根据当前分组过滤标签
+const filteredTags = computed(() => {
+  // 全部服务时显示所有标签
+  if (store.showAllGroups) {
+    return allTags.value;
+  }
+
+  // 获取当前分组服务的标签
+  const currentServices = store.currentServices;
+  const usedTagValues = new Set<string>();
+
+  currentServices.forEach(service => {
+    if (service.tags) {
+      service.tags.forEach((tag: string) => usedTagValues.add(tag));
+    }
+  });
+
+  // 只返回被使用的标签
+  return allTags.value.filter(tag => usedTagValues.has(tag.value));
+});
+
 // 同步分组数据
 watch(() => store.groups, (newGroups) => {
   localGroups.value = [...newGroups];
@@ -287,7 +308,7 @@ function toggleTagFilter(tagValue: string) {
     </div>
 
     <!-- 按标签筛选 -->
-    <div v-if="!isCollapsed && allTags.length > 0" class="tag-filter-section">
+    <div v-if="!isCollapsed && filteredTags.length > 0" class="tag-filter-section">
       <div class="tag-filter-header">
         <span>按标签筛选</span>
         <button v-if="selectedTagFilter" @click="selectedTagFilter = null; emit('filterByTag', null)" class="clear-filter-btn">
@@ -296,7 +317,7 @@ function toggleTagFilter(tagValue: string) {
       </div>
       <div class="tag-filter-list">
         <button
-          v-for="tag in allTags"
+          v-for="tag in filteredTags"
           :key="tag.value"
           @click="toggleTagFilter(tag.value)"
           class="tag-filter-item"
