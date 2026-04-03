@@ -74,7 +74,6 @@ const tagNameError = ref('');
 const tagValueError = ref('');
 
 const isEditing = computed(() => !!props.service?.id);
-const modalTitle = computed(() => isEditing.value ? '编辑服务' : '添加服务');
 
 // 是否显示分组选择框：编辑时显示，或没有选中分组时显示
 const showGroupSelector = computed(() => {
@@ -289,23 +288,8 @@ async function handleSubmit() {
       class="w-full max-w-lg rounded-2xl shadow-lg overflow-hidden max-h-[90vh] overflow-y-auto"
       style="background: var(--surface); animation: modalIn 0.2s ease"
     >
-      <!-- Header -->
-      <div class="px-6 py-5 border-b flex items-center justify-between" style="border-color: var(--border)">
-        <div class="text-[15px] font-bold" style="color: var(--text)">{{ modalTitle }}</div>
-        <button
-          @click="emit('close')"
-          class="w-7 h-7 rounded-md flex items-center justify-center transition-colors"
-          style="color: var(--text3)"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
-      </div>
-
       <!-- Form -->
-      <form @submit.prevent="handleSubmit" class="px-6 py-4">
+      <form @submit.prevent="handleSubmit" class="px-6 py-5">
         <!-- Icon Picker -->
         <div class="mb-4">
           <label class="block text-xs font-semibold mb-2" style="color: var(--text2)">图标</label>
