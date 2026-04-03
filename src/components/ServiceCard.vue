@@ -340,6 +340,13 @@ function handleCardClick() {
             <div class="flex items-center gap-2 py-1.5 text-[13px]">
               <span class="w-12 flex-shrink-0 text-xs" style="color: var(--text3)">地址</span>
               <span class="flex-1 font-mono text-[12.5px] truncate" style="color: var(--accent)">{{ service.url }}</span>
+              <button
+                @click="copyToClipboard(service.url, '地址')"
+                class="px-2 py-0.5 rounded text-[11px] border transition-colors"
+                style="border-color: var(--border); color: var(--text2)"
+              >
+                复制
+              </button>
             </div>
 
             <!-- Username -->
