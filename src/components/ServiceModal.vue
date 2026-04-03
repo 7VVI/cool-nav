@@ -431,7 +431,7 @@ async function handleSubmit() {
             v-model="formData.name"
             type="text"
             class="w-full px-2.5 py-2 border rounded-lg text-[13.5px] outline-none transition-all"
-            style="border-color: var(--border); color: var(--text)"
+            style="border-color: var(--border); color: var(--text); background: var(--surface)"
             placeholder="例：OA 系统"
             required
           />
@@ -444,7 +444,7 @@ async function handleSubmit() {
             v-model="formData.description"
             type="text"
             class="w-full px-2.5 py-2 border rounded-lg text-[13.5px] outline-none transition-all"
-            style="border-color: var(--border); color: var(--text)"
+            style="border-color: var(--border); color: var(--text); background: var(--surface)"
             placeholder="一句话描述（选填）"
           />
         </div>
@@ -458,7 +458,7 @@ async function handleSubmit() {
             v-model="formData.url"
             type="url"
             class="w-full px-2.5 py-2 border rounded-lg text-[13.5px] outline-none transition-all"
-            style="border-color: var(--border); color: var(--text)"
+            style="border-color: var(--border); color: var(--text); background: var(--surface)"
             placeholder="https://example.com/login"
             required
           />
@@ -472,7 +472,7 @@ async function handleSubmit() {
               v-model="formData.username"
               type="text"
               class="w-full px-2.5 py-2 border rounded-lg text-[13.5px] outline-none transition-all"
-              style="border-color: var(--border); color: var(--text)"
+              style="border-color: var(--border); color: var(--text); background: var(--surface)"
               placeholder="username"
               autocomplete="off"
             />
@@ -484,7 +484,7 @@ async function handleSubmit() {
                 v-model="formData.password"
                 :type="showPassword ? 'text' : 'password'"
                 class="w-full px-2.5 py-2 pr-9 border rounded-lg text-[13.5px] outline-none transition-all"
-                style="border-color: var(--border); color: var(--text)"
+                style="border-color: var(--border); color: var(--text); background: var(--surface)"
                 placeholder="••••••••"
                 autocomplete="new-password"
               />

@@ -90,7 +90,7 @@ async function handleSubmit() {
             type="text"
             class="w-full px-2.5 py-2 border rounded-lg text-[13.5px] outline-none transition-all"
             :class="{ 'border-red-400': errorMessage }"
-            style="border-color: var(--border); color: var(--text)"
+            style="border-color: var(--border); color: var(--text); background: var(--surface)"
             placeholder="例：生产环境"
             :disabled="saving"
           />
