@@ -279,14 +279,23 @@ onMounted(() => {
   tagStore.fetchTags();
 });
 
-// Handle import
-function handleImport(file: File) {
+// Handle import from file input
+function handleImport(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (file) {
+    importData(file);
+  }
+  input.value = '';
+}
+
+// Import data
+async function importData(file: File) {
   const reader = new FileReader();
   reader.onload = async (e) => {
     try {
       const data = JSON.parse(e.target?.result as string);
       if (data.groups && data.services) {
-        // Call import API
         const res = await fetch('/api/import', {
           method: 'POST',
           headers: {
@@ -312,6 +321,14 @@ function handleImport(file: File) {
   };
   reader.readAsText(file);
 }
+
+// Handle logout
+function handleLogout() {
+  if (confirm('确定退出登录吗？')) {
+    authStore.logout();
+    window.location.reload();
+  }
+}
 </script>
 
 <template>
@@ -321,8 +338,6 @@ function handleImport(file: File) {
       @editGroup="handleEditGroup"
       @searchServices="handleSearchServices"
       @deleteGroup="handleDeleteGroup"
-      @showExport="showExportModal = true"
-      @importData="handleImport"
       @filterByTag="handleFilterByTag"
     />
 
@@ -453,6 +468,30 @@ function handleImport(file: File) {
               <line x1="12" y1="15" x2="12" y2="3"/>
             </svg>
             <span>导出</span>
+          </button>
+          <!-- Import Button -->
+          <label v-if="!selectMode" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer" style="border-color: var(--border); color: var(--text2)">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span>导入</span>
+            <input type="file" accept=".json" style="display: none" @change="handleImport">
+          </label>
+          <!-- Logout Button -->
+          <button
+            @click="handleLogout"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors"
+            style="border-color: var(--border); color: var(--text2)"
+            title="退出登录"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            <span>退出</span>
           </button>
         </div>
       </header>

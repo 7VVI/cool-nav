@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { ref, watch, computed, onMounted } from 'vue';
+import { ref, watch, computed } from 'vue';
 import draggable from 'vuedraggable';
 import { groupsApi } from '@/api/groups';
 import { useNavStore } from '@/stores/navStore';
-import { useAuthStore } from '@/stores/authStore';
 import { useTagStore } from '@/stores/tagStore';
 import type { Group } from '@/types';
 
@@ -11,13 +10,10 @@ const emit = defineEmits<{
   editGroup: [group: Group | null];
   searchServices: [keyword: string];
   deleteGroup: [group: Group];
-  showExport: [];
-  importData: [file: File];
   filterByTag: [tagValue: string | null];
 }>();
 
 const store = useNavStore();
-const authStore = useAuthStore();
 const tagStore = useTagStore();
 const searchKeyword = ref('');
 const localGroups = ref<Group[]>([]);
@@ -124,24 +120,6 @@ watch(searchKeyword, (keyword) => {
 function handleDeleteGroup(group: Group) {
   if (confirm(`确定删除分组「${group.name}」？分组下的所有服务也会被删除。`)) {
     emit('deleteGroup', group);
-  }
-}
-
-// 导入数据
-function handleImport(event: Event) {
-  const input = event.target as HTMLInputElement;
-  const file = input.files?.[0];
-  if (file) {
-    emit('importData', file);
-  }
-  input.value = '';
-}
-
-// 退出登录
-function handleLogout() {
-  if (confirm('确定退出登录吗？')) {
-    authStore.logout();
-    window.location.reload();
   }
 }
 
@@ -322,41 +300,6 @@ function toggleTagFilter(tagValue: string) {
           <span class="tag-filter-name">{{ tag.name }}</span>
         </button>
       </div>
-    </div>
-
-    <!-- 底部栏 -->
-    <div class="sidebar-footer">
-      <label class="footer-btn import-btn">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="17 8 12 3 7 8"/>
-          <line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>
-        <span>导入</span>
-        <input type="file" accept=".json" style="display: none" @change="handleImport">
-      </label>
-      <button @click="$emit('showExport')" class="footer-btn">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        <span>导出</span>
-      </button>
-      <button @click="handleLogout" class="footer-btn logout-btn" title="退出登录">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-          <polyline points="16 17 21 12 16 7"/>
-          <line x1="21" y1="12" x2="9" y2="12"/>
-        </svg>
-        <span>退出</span>
-      </button>
-      <!-- 折叠状态的展开按钮 -->
-      <button @click="toggleSidebar" class="expand-btn">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="15 18 9 12 15 6"/>
-        </svg>
-      </button>
     </div>
   </aside>
 </template>
@@ -783,78 +726,6 @@ function toggleTagFilter(tagValue: string) {
 
 .tag-filter-name {
   white-space: nowrap;
-}
-
-/* Footer */
-.sidebar-footer {
-  height: 52px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  flex-shrink: 0;
-  padding: 0 8px;
-  background: rgba(240, 241, 244, 0.85);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-}
-
-.footer-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 10px;
-  border: none;
-  background: none;
-  color: var(--text3);
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: background 0.15s, color 0.15s;
-  white-space: nowrap;
-}
-
-.footer-btn:hover {
-  background: var(--surface2);
-  color: var(--text);
-}
-
-.import-btn {
-  cursor: pointer;
-}
-
-.logout-btn:hover {
-  background: var(--red-bg);
-  color: var(--red);
-}
-
-.expand-btn {
-  display: none;
-  width: 36px;
-  height: 36px;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: none;
-  color: var(--text3);
-  cursor: pointer;
-  border-radius: 8px;
-  transition: background 0.15s, color 0.15s;
-}
-
-.expand-btn:hover {
-  background: var(--surface2);
-  color: var(--text);
-}
-
-.sidebar.collapsed .footer-btn {
-  display: none;
-}
-
-.sidebar.collapsed .expand-btn {
-  display: flex;
 }
 
 /* Scrollbar */
