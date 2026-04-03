@@ -136,7 +136,7 @@ function toggleTagFilter(tagValue: string) {
     :class="{ collapsed: isCollapsed }"
   >
     <!-- Logo -->
-    <div class="sidebar-logo">
+    <div class="sidebar-logo" @click="toggleSidebar" title="点击折叠/展开">
       <div class="logo-icon">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="3" width="7" height="7"/>
@@ -146,6 +146,9 @@ function toggleTagFilter(tagValue: string) {
         </svg>
       </div>
       <span class="logo-text">Nav Portal</span>
+      <svg v-if="!isCollapsed" class="collapse-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
     </div>
 
     <!-- 折叠状态：只显示第一个分组的点 -->
@@ -338,6 +341,12 @@ function toggleTagFilter(tagValue: string) {
   gap: 10px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.sidebar-logo:hover {
+  background: var(--surface2);
 }
 
 .logo-icon {
@@ -364,6 +373,16 @@ function toggleTagFilter(tagValue: string) {
 .sidebar.collapsed .logo-text {
   opacity: 0;
   pointer-events: none;
+}
+
+.collapse-arrow {
+  margin-left: auto;
+  color: var(--text3);
+  flex-shrink: 0;
+}
+
+.sidebar.collapsed .collapse-arrow {
+  display: none;
 }
 
 /* 折叠状态的分组点 */
