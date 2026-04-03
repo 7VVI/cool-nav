@@ -143,11 +143,15 @@ function toggleTagFilter(tagValue: string) {
     <!-- Logo -->
     <div class="sidebar-logo" @click="toggleSidebar" title="点击折叠/展开">
       <div class="logo-icon">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="7" height="7"/>
-          <rect x="14" y="3" width="7" height="7"/>
-          <rect x="14" y="14" width="7" height="7"/>
-          <rect x="3" y="14" width="7" height="7"/>
+        <svg width="28" height="28" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <rect width="48" height="48" rx="12" fill="#0f172a"></rect>
+          <defs>
+            <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#4f8cff"></stop>
+              <stop offset="100%" stop-color="#00e0ff"></stop>
+            </linearGradient>
+          </defs>
+          <path d="M12 24c0-6 4-10 10-10 3 0 6 1 7.5 3l-3 2.5c-1-1-2.5-1.5-4.5-1.5-3.5 0-6 2.5-6 6s2.5 6 6 6c2 0 3.5-.5 4.5-1.5l3 2.5c-1.5 2-4.5 3-7.5 3-6 0-10-4-10-10z" fill="url(#logoGrad)"></path>
         </svg>
       </div>
       <span class="logo-text">Nav Portal</span>
@@ -337,12 +341,10 @@ function toggleTagFilter(tagValue: string) {
 .logo-icon {
   width: 28px;
   height: 28px;
-  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: linear-gradient(135deg, #3b6ef8, #5585fa);
 }
 
 .logo-text {
