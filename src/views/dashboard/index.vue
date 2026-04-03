@@ -4,6 +4,7 @@ import draggable from 'vuedraggable';
 import { useNavStore } from '@/stores/navStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useThemeStore } from '@/stores/themeStore';
+import { useTagStore } from '@/stores/tagStore';
 import { servicesApi } from '@/api/services';
 import { groupsApi } from '@/api/groups';
 import Sidebar from '@/components/Sidebar.vue';
@@ -17,6 +18,7 @@ import type { Group, Service } from '@/types';
 const store = useNavStore();
 const authStore = useAuthStore();
 const themeStore = useThemeStore();
+const tagStore = useTagStore();
 
 // Modal states
 const showServiceModal = ref(false);
@@ -274,6 +276,7 @@ async function handleDragEnd() {
 // Initialize data on mount
 onMounted(() => {
   store.fetchGroups();
+  tagStore.fetchTags();
 });
 
 // Handle import

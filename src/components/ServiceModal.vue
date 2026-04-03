@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, watch, computed, onMounted } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { useNavStore } from '@/stores/navStore';
+import { useTagStore } from '@/stores/tagStore';
 import { tagsApi, type Tag } from '@/api/tags';
 import type { Service } from '@/types';
 
@@ -45,6 +46,7 @@ const emit = defineEmits<{
 }>();
 
 const store = useNavStore();
+const tagStore = useTagStore();
 
 const formData = ref({
   group_id: 0,
@@ -62,7 +64,6 @@ const showPassword = ref(false);
 const selectedTags = ref<string[]>([]);
 
 // 标签相关
-const allTags = ref<Tag[]>([]);
 const showTagManager = ref(false);
 const newTagName = ref('');
 const newTagValue = ref('');
@@ -73,30 +74,14 @@ const tagToDelete = ref<Tag | null>(null);
 const tagNameError = ref('');
 const tagValueError = ref('');
 
+// 使用 computed 获取标签列表
+const allTags = computed(() => tagStore.tags);
+
 const isEditing = computed(() => !!props.service?.id);
 
 // 是否显示分组选择框：编辑时显示，或没有选中分组时显示
 const showGroupSelector = computed(() => {
   return isEditing.value || !props.currentGroupId;
-});
-
-// 加载标签
-async function loadTags() {
-  try {
-    const res = await tagsApi.getAll();
-    allTags.value = res.data || [];
-  } catch (error) {
-    console.error('Failed to load tags:', error);
-  }
-}
-
-// 根据标签值获取标签信息
-function getTagByValue(value: string): Tag | undefined {
-  return allTags.value.find(t => t.value === value);
-}
-
-onMounted(() => {
-  loadTags();
 });
 
 watch(() => props.show, (newVal) => {
@@ -218,7 +203,7 @@ async function saveTag() {
         color: newTagColor.value
       });
     }
-    await loadTags();
+    await tagStore.refreshTags();
     showTagManager.value = false;
   } catch (error) {
     console.error('Failed to save tag:', error);
@@ -237,7 +222,7 @@ async function doDeleteTag() {
 
   try {
     await tagsApi.delete(tagToDelete.value.id);
-    await loadTags();
+    await tagStore.refreshTags();
     // 从已选标签中移除
     selectedTags.value = selectedTags.value.filter(t => t !== tagToDelete.value!.value);
     showDeleteConfirm.value = false;

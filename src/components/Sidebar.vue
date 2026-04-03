@@ -2,9 +2,9 @@
 import { ref, watch, computed, onMounted } from 'vue';
 import draggable from 'vuedraggable';
 import { groupsApi } from '@/api/groups';
-import { tagsApi, type Tag } from '@/api/tags';
 import { useNavStore } from '@/stores/navStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useTagStore } from '@/stores/tagStore';
 import type { Group } from '@/types';
 
 const emit = defineEmits<{
@@ -18,29 +18,21 @@ const emit = defineEmits<{
 
 const store = useNavStore();
 const authStore = useAuthStore();
+const tagStore = useTagStore();
 const searchKeyword = ref('');
 const localGroups = ref<Group[]>([]);
-const allTags = ref<Tag[]>([]);
 const selectedTagFilter = ref<string | null>(null);
 
 // 侧边栏折叠状态
 const isCollapsed = ref(false);
 
-// Load tags on mount
-onMounted(async () => {
-  try {
-    const res = await tagsApi.getAll();
-    allTags.value = res.data || [];
-  } catch (error) {
-    console.error('Failed to load tags:', error);
-  }
-});
-
 // 根据当前分组过滤标签
 const filteredTags = computed(() => {
+  const allTags = tagStore.tags;
+
   // 全部服务时显示所有标签
   if (store.showAllGroups) {
-    return allTags.value;
+    return allTags;
   }
 
   // 获取当前分组服务的标签
@@ -54,7 +46,7 @@ const filteredTags = computed(() => {
   });
 
   // 只返回被使用的标签
-  return allTags.value.filter(tag => usedTagValues.has(tag.value));
+  return allTags.filter(tag => usedTagValues.has(tag.value));
 });
 
 // 同步分组数据

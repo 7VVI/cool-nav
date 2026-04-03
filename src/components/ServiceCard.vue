@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import type { Service, Group } from '@/types';
-import { tagsApi, type Tag } from '@/api/tags';
+import { ref, computed } from 'vue';
+import type { Service } from '@/types';
 import { useNavStore } from '@/stores/navStore';
+import { useTagStore } from '@/stores/tagStore';
 
 const props = defineProps<{
   service: Service;
@@ -17,10 +17,10 @@ const emit = defineEmits<{
 }>();
 
 const store = useNavStore();
+const tagStore = useTagStore();
 const showLoginModal = ref(false);
 const showDeleteConfirm = ref(false);
 const showPassword = ref(false);
-const allTags = ref<Tag[]>([]);
 
 const hasCredentials = computed(() => {
   return props.service.username || props.service.password;
@@ -54,21 +54,11 @@ const accentGradient = computed(() => {
   return `linear-gradient(90deg, ${color}, ${darkerColor})`;
 });
 
-// Load tags
-onMounted(async () => {
-  try {
-    const res = await tagsApi.getAll();
-    allTags.value = res.data || [];
-  } catch (error) {
-    console.error('Failed to load tags:', error);
-  }
-});
-
 // Get service tags with full info
 const serviceTags = computed(() => {
   const tags = props.service.tags || [];
   return tags.map(tagValue => {
-    const tag = allTags.value.find(t => t.value === tagValue);
+    const tag = tagStore.getTagByValue(tagValue);
     return tag || { value: tagValue, name: tagValue, color: '#6b7280' };
   });
 });
