@@ -336,10 +336,10 @@ function handleRowClick() {
             <!-- Password -->
             <div v-if="displayPassword" class="flex items-center gap-2 py-1.5 text-[13px] border-t" style="border-color: var(--border)">
               <span class="w-12 flex-shrink-0 text-xs" style="color: var(--text3)">密码</span>
-              <span class="flex-1 font-mono text-[12.5px] select-all">{{ showPassword ? displayPassword : '••••••••' }}</span>
+              <span class="flex-1 min-w-0 font-mono text-[12.5px] select-all break-all">{{ showPassword ? displayPassword : '••••••••' }}</span>
               <button
                 @click="showPassword = !showPassword"
-                class="p-1 rounded transition-colors"
+                class="flex-shrink-0 p-1 rounded transition-colors"
                 style="color: var(--text3)"
                 :title="showPassword ? '隐藏' : '显示'"
               >
@@ -387,10 +387,12 @@ function handleRowClick() {
                   <div class="flex items-center gap-1.5">
                     <span class="account-name" :style="{ fontWeight: account.is_default ? 600 : 500 }">{{ account.name }}</span>
                   </div>
-                  <span class="account-username">{{ account.username }}</span>
+                  <span v-if="account.username" class="account-username">{{ account.username }}</span>
+                  <span v-else-if="account.password" class="account-username">仅密码/密钥</span>
                 </div>
                 <div class="account-actions">
                   <button
+                    v-if="account.username"
                     @click="copyToClipboard(account.username, '账号')"
                     class="account-copy-btn"
                     title="复制账号"

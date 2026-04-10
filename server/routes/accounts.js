@@ -15,10 +15,13 @@ router.get('/', (req, res) => {
 router.post('/', (req, res) => {
   const serviceId = parseInt(req.params.serviceId);
   const { name, username, password, is_default } = req.body;
-  if (!name || !username) {
-    return res.status(400).json({ success: false, message: '名称和用户名不能为空' });
+  if (!name) {
+    return res.status(400).json({ success: false, message: '名称不能为空' });
   }
-  const account = accountOps.create(serviceId, { name, username, password, is_default: !!is_default });
+  if (!username && !password) {
+    return res.status(400).json({ success: false, message: '用户名和密码至少填一个' });
+  }
+  const account = accountOps.create(serviceId, { name, username: username || '', password, is_default: !!is_default });
   res.status(201).json({ success: true, data: account });
 });
 
@@ -35,10 +38,13 @@ router.put('/:id', (req, res) => {
   const serviceId = parseInt(req.params.serviceId);
   const id = parseInt(req.params.id);
   const { name, username, password, is_default } = req.body;
-  if (!name || !username) {
-    return res.status(400).json({ success: false, message: '名称和用户名不能为空' });
+  if (!name) {
+    return res.status(400).json({ success: false, message: '名称不能为空' });
   }
-  const account = accountOps.update(serviceId, id, { name, username, password, is_default: !!is_default });
+  if (!username && !password) {
+    return res.status(400).json({ success: false, message: '用户名和密码至少填一个' });
+  }
+  const account = accountOps.update(serviceId, id, { name, username: username || '', password, is_default: !!is_default });
   res.json({ success: true, data: account });
 });
 

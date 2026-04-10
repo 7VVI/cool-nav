@@ -87,7 +87,8 @@ function openAddAccount() {
 }
 
 async function saveAccount() {
-  if (!accountForm.value.name.trim() || !accountForm.value.username.trim()) return;
+  if (!accountForm.value.name.trim()) return;
+  if (!accountForm.value.username.trim() && !accountForm.value.password) return;
 
   const isFirst = serviceAccounts.value.length === 0;
   // 如果是第一个账号，自动设为默认
@@ -135,7 +136,8 @@ function startEditAccount(account: ServiceAccount & { _local?: boolean }) {
 }
 
 async function saveEditAccount(account: ServiceAccount & { _local?: boolean }) {
-  if (!editForm.value.name.trim() || !editForm.value.username.trim()) return;
+  if (!editForm.value.name.trim()) return;
+  if (!editForm.value.username.trim() && !editForm.value.password) return;
   account.name = editForm.value.name.trim();
   account.username = editForm.value.username.trim();
   account.password = editForm.value.password;
@@ -219,6 +221,22 @@ function handleClickOutside(e: MouseEvent) {
   }
 }
 onUnmounted(() => document.removeEventListener('click', handleClickOutside));
+
+async function copyToClipboard(text: string, label: string) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  } catch {}
+}
 
 // 标签相关
 const showTagManager = ref(false);
@@ -729,58 +747,63 @@ async function handleSubmit() {
             <!-- Inline add row -->
             <div
               v-if="showAccountForm"
-              class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border"
+              class="account-form-card px-3 py-2.5 rounded-lg border"
               style="border-color: var(--accent); background: var(--accent-bg)"
             >
-              <input
-                v-model="accountForm.name"
-                type="text"
-                class="flex-1 min-w-0 px-2 py-1.5 border rounded-md text-[12.5px] outline-none"
-                style="border-color: var(--border); color: var(--text); background: var(--surface)"
-                placeholder="名称"
-                @keydown.enter="saveAccount"
-                ref="addAccountNameRef"
-              />
-              <input
-                v-model="accountForm.username"
-                type="text"
-                class="flex-1 min-w-0 px-2 py-1.5 border rounded-md text-[12.5px] outline-none"
-                style="border-color: var(--border); color: var(--text); background: var(--surface)"
-                placeholder="用户名"
-                @keydown.enter="saveAccount"
-              />
-              <input
-                v-model="accountForm.password"
-                type="text"
-                class="flex-1 min-w-0 px-2 py-1.5 border rounded-md text-[12.5px] outline-none"
-                style="border-color: var(--border); color: var(--text); background: var(--surface)"
-                placeholder="密码"
-                autocomplete="off"
-                @keydown.enter="saveAccount"
-              />
-              <button
-                type="button"
-                @click="saveAccount"
-                class="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center"
-                style="background: var(--accent); color: white"
-                title="保存"
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-              </button>
-              <button
-                type="button"
-                @click="showAccountForm = false"
-                class="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center border"
-                style="border-color: var(--border); color: var(--text3)"
-                title="取消"
-              >
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"/>
-                  <line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
-              </button>
+              <!-- Row 1: Name -->
+              <div class="flex items-center gap-1.5 mb-1.5">
+                <input
+                  v-model="accountForm.name"
+                  type="text"
+                  class="flex-1 min-w-0 px-2 py-1.5 border rounded-md text-[12.5px] outline-none"
+                  style="border-color: var(--border); color: var(--text); background: var(--surface)"
+                  placeholder="名称 *"
+                  @keydown.enter="saveAccount"
+                />
+              </div>
+              <!-- Row 2: Username + Password -->
+              <div class="flex items-center gap-1.5">
+                <input
+                  v-model="accountForm.username"
+                  type="text"
+                  class="flex-1 min-w-0 px-2 py-1.5 border rounded-md text-[12.5px] outline-none"
+                  style="border-color: var(--border); color: var(--text); background: var(--surface)"
+                  placeholder="用户名（选填）"
+                  @keydown.enter="saveAccount"
+                />
+                <input
+                  v-model="accountForm.password"
+                  type="text"
+                  class="flex-[2] min-w-0 px-2 py-1.5 border rounded-md text-[12.5px] outline-none font-mono"
+                  style="border-color: var(--border); color: var(--text); background: var(--surface)"
+                  placeholder="密码或密钥（选填）"
+                  autocomplete="off"
+                  @keydown.enter="saveAccount"
+                />
+                <button
+                  type="button"
+                  @click="saveAccount"
+                  class="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center"
+                  style="background: var(--accent); color: white"
+                  title="保存"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  @click="showAccountForm = false"
+                  class="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center border"
+                  style="border-color: var(--border); color: var(--text3)"
+                  title="取消"
+                >
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </div>
             </div>
 
             <!-- Empty state -->
@@ -796,60 +819,66 @@ async function handleSubmit() {
               <!-- Edit mode -->
               <div
                 v-if="editingAccountId === account.id"
-                class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border"
+                class="account-form-card px-3 py-2.5 rounded-lg border"
                 style="border-color: var(--accent); background: var(--accent-bg)"
               >
-                <input
-                  v-model="editForm.name"
-                  type="text"
-                  class="flex-1 min-w-0 px-2 py-1.5 border rounded-md text-[12.5px] outline-none"
-                  style="border-color: var(--border); color: var(--text); background: var(--surface)"
-                  placeholder="名称"
-                  @keydown.enter="saveEditAccount(account)"
-                  @keydown.escape="editingAccountId = null"
-                />
-                <input
-                  v-model="editForm.username"
-                  type="text"
-                  class="flex-1 min-w-0 px-2 py-1.5 border rounded-md text-[12.5px] outline-none"
-                  style="border-color: var(--border); color: var(--text); background: var(--surface)"
-                  placeholder="用户名"
-                  @keydown.enter="saveEditAccount(account)"
-                  @keydown.escape="editingAccountId = null"
-                />
-                <input
-                  v-model="editForm.password"
-                  type="text"
-                  class="flex-1 min-w-0 px-2 py-1.5 border rounded-md text-[12.5px] outline-none"
-                  style="border-color: var(--border); color: var(--text); background: var(--surface)"
-                  placeholder="密码"
-                  autocomplete="off"
-                  @keydown.enter="saveEditAccount(account)"
-                  @keydown.escape="editingAccountId = null"
-                />
-                <button
-                  type="button"
-                  @click="saveEditAccount(account)"
-                  class="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center"
-                  style="background: var(--accent); color: white"
-                  title="保存"
-                >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  @click="editingAccountId = null"
-                  class="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center border"
-                  style="border-color: var(--border); color: var(--text3)"
-                  title="取消"
-                >
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"/>
-                    <line x1="6" y1="6" x2="18" y2="18"/>
-                  </svg>
-                </button>
+                <!-- Row 1: Name -->
+                <div class="flex items-center gap-1.5 mb-1.5">
+                  <input
+                    v-model="editForm.name"
+                    type="text"
+                    class="flex-1 min-w-0 px-2 py-1.5 border rounded-md text-[12.5px] outline-none"
+                    style="border-color: var(--border); color: var(--text); background: var(--surface)"
+                    placeholder="名称"
+                    @keydown.enter="saveEditAccount(account)"
+                    @keydown.escape="editingAccountId = null"
+                  />
+                </div>
+                <!-- Row 2: Username + Password -->
+                <div class="flex items-center gap-1.5">
+                  <input
+                    v-model="editForm.username"
+                    type="text"
+                    class="flex-1 min-w-0 px-2 py-1.5 border rounded-md text-[12.5px] outline-none"
+                    style="border-color: var(--border); color: var(--text); background: var(--surface)"
+                    placeholder="用户名（选填）"
+                    @keydown.enter="saveEditAccount(account)"
+                    @keydown.escape="editingAccountId = null"
+                  />
+                  <input
+                    v-model="editForm.password"
+                    type="text"
+                    class="flex-[2] min-w-0 px-2 py-1.5 border rounded-md text-[12.5px] outline-none font-mono"
+                    style="border-color: var(--border); color: var(--text); background: var(--surface)"
+                    placeholder="密码或密钥（选填）"
+                    autocomplete="off"
+                    @keydown.enter="saveEditAccount(account)"
+                    @keydown.escape="editingAccountId = null"
+                  />
+                  <button
+                    type="button"
+                    @click="saveEditAccount(account)"
+                    class="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center"
+                    style="background: var(--accent); color: white"
+                    title="保存"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    @click="editingAccountId = null"
+                    class="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center border"
+                    style="border-color: var(--border); color: var(--text3)"
+                    title="取消"
+                  >
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
               <!-- Display mode -->
               <div
@@ -864,7 +893,7 @@ async function handleSubmit() {
               >
                 <span
                   class="flex-shrink-0"
-                  :title="account.is_default ? '默认账号' : '设为默认'"
+                  :title="account.is_default ? '默认账号' : '单击设为默认'"
                 >
                   <svg v-if="account.is_default" width="14" height="14" viewBox="0 0 24 24" fill="var(--accent)" stroke="var(--accent)" stroke-width="2">
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
@@ -875,23 +904,51 @@ async function handleSubmit() {
                   </svg>
                 </span>
                 <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2">
-                    <span class="text-[13px] font-medium" style="color: var(--text)">{{ account.name }}</span>
-                    <span class="text-[11px] font-mono" style="color: var(--text3)">{{ account.username }}</span>
+                  <div class="flex items-center gap-1.5 min-w-0">
+                    <span class="text-[13px] font-medium flex-shrink-0" style="color: var(--text)">{{ account.name }}</span>
+                    <span v-if="account.username" class="text-[11px] font-mono truncate" style="color: var(--text3)">{{ account.username }}</span>
+                    <span v-if="account.password && !account.username" class="text-[11px] font-mono truncate" style="color: var(--text3)">{{ account.password }}</span>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  @click.stop="confirmDeleteAccount(account)"
-                  class="flex-shrink-0 w-6 h-6 rounded flex items-center justify-center transition-colors"
-                  style="color: var(--text3)"
-                  title="删除"
-                >
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <polyline points="3 6 5 6 21 6"/>
-                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                  </svg>
-                </button>
+                <div class="flex items-center gap-1 flex-shrink-0">
+                  <button
+                    v-if="account.username"
+                    type="button"
+                    @click.stop="copyToClipboard(account.username, '账号')"
+                    class="w-6 h-6 rounded flex items-center justify-center transition-colors"
+                    style="color: var(--text3)"
+                    title="复制账号"
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                  </button>
+                  <button
+                    v-if="account.password"
+                    type="button"
+                    @click.stop="copyToClipboard(account.password, '密码')"
+                    class="w-6 h-6 rounded flex items-center justify-center transition-colors"
+                    style="color: var(--text3)"
+                    title="复制密码"
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    @click.stop="confirmDeleteAccount(account)"
+                    class="w-6 h-6 rounded flex items-center justify-center transition-colors"
+                    style="color: var(--text3)"
+                    title="删除"
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
