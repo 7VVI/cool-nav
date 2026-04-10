@@ -1,6 +1,6 @@
 // server/routes/export.js
 import { Router } from 'express';
-import { groupOps, serviceOps, tagOps } from '../database.js';
+import { groupOps, serviceOps, tagOps, accountOps } from '../database.js';
 
 const router = Router();
 
@@ -36,8 +36,19 @@ router.post('/', (req, res) => {
       markdown += '|------|-----|--------|------|------|\n';
 
       groupServices.forEach(service => {
-        const username = service.username || '-';
-        const password = service.password || '-';
+        const allAccounts = accountOps.getByServiceId(service.id);
+        let username, password;
+
+        // 优先显示默认账号，兼容旧数据
+        if (allAccounts.length > 0) {
+          const defaultAcc = allAccounts.find(a => a.is_default) || allAccounts[0];
+          username = defaultAcc.username || '-';
+          password = defaultAcc.password || '-';
+        } else {
+          username = service.username || '-';
+          password = service.password || '-';
+        }
+
         const tags = (service.tags || [])
           .map(tagValue => {
             const tag = allTags.find(t => t.value === tagValue);
@@ -45,6 +56,16 @@ router.post('/', (req, res) => {
           })
           .join(', ') || '-';
         markdown += `| ${service.name} | ${service.url} | ${username} | ${password} | ${tags} |\n`;
+
+        // 如果有多个账号，额外列出
+        if (allAccounts.length > 1) {
+          allAccounts.forEach(acc => {
+            if (acc.username) {
+              const tag = acc.is_default ? '（默认）' : '';
+              markdown += `| ↳ ${acc.name}${tag} | - | ${acc.username || '-'} | ${acc.password || '-'} | - |\n`;
+            }
+          });
+        }
       });
 
       markdown += '\n';
@@ -76,8 +97,19 @@ router.post('/', (req, res) => {
     markdown += '|------|-----|--------|------|------|\n';
 
     services.forEach(service => {
-      const username = service.username || '-';
-      const password = service.password || '-';
+      const allAccounts = accountOps.getByServiceId(service.id);
+      let username, password;
+
+      // 优先显示默认账号，兼容旧数据
+      if (allAccounts.length > 0) {
+        const defaultAcc = allAccounts.find(a => a.is_default) || allAccounts[0];
+        username = defaultAcc.username || '-';
+        password = defaultAcc.password || '-';
+      } else {
+        username = service.username || '-';
+        password = service.password || '-';
+      }
+
       const tags = (service.tags || [])
         .map(tagValue => {
           const tag = allTags.find(t => t.value === tagValue);
@@ -85,6 +117,16 @@ router.post('/', (req, res) => {
         })
         .join(', ') || '-';
       markdown += `| ${service.name} | ${service.url} | ${username} | ${password} | ${tags} |\n`;
+
+      // 如果有多个账号，额外列出
+      if (allAccounts.length > 1) {
+        allAccounts.forEach(acc => {
+          if (acc.username) {
+            const tag = acc.is_default ? '（默认）' : '';
+            markdown += `| ↳ ${acc.name}${tag} | - | ${acc.username || '-'} | ${acc.password || '-'} | - |\n`;
+          }
+        });
+      }
     });
 
     markdown += '\n';

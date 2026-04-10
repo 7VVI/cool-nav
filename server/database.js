@@ -9,6 +9,10 @@ const __dirname = dirname(__filename);
 const dbPath = join(__dirname, '..', 'data', 'nav.db');
 const db = new Database(dbPath);
 
+// 启用外键约束
+db.pragma('journal_mode = WAL');
+db.pragma('foreign_keys = ON');
+
 // 初始化表
 db.exec(`
   CREATE TABLE IF NOT EXISTS groups (
@@ -95,6 +99,22 @@ db.exec(`
   )
 `);
 
+// 创建服务账号表
+db.exec(`
+  CREATE TABLE IF NOT EXISTS service_accounts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    service_id INTEGER NOT NULL REFERENCES services(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    username TEXT NOT NULL,
+    password TEXT DEFAULT '',
+    is_default INTEGER DEFAULT 0,
+    sort_order INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_accounts_service ON service_accounts(service_id);
+`);
+
 // 插入默认标签（如果不存在）
 const defaultTags = [
   { name: '生产', value: 'production', color: '#059669', sort_order: 1 },
@@ -136,11 +156,20 @@ export const groupOps = {
   },
 
   delete: (id) => {
+    // 先删除分组下所有服务的账号
+    const services = db.prepare('SELECT id FROM services WHERE group_id = ?').all(id);
+    services.forEach(s => {
+      db.prepare('DELETE FROM service_accounts WHERE service_id = ?').run(s.id);
+    });
     // 删除分组下的所有服务
     db.prepare('DELETE FROM services WHERE group_id = ?').run(id);
-    // 删除子分组的服务
+    // 删除子分组的服务及其账号
     const childGroups = db.prepare('SELECT id FROM groups WHERE parent_id = ?').all(id);
     childGroups.forEach(g => {
+      const childServices = db.prepare('SELECT id FROM services WHERE group_id = ?').all(g.id);
+      childServices.forEach(s => {
+        db.prepare('DELETE FROM service_accounts WHERE service_id = ?').run(s.id);
+      });
       db.prepare('DELETE FROM services WHERE group_id = ?').run(g.id);
     });
     // 删除子分组
@@ -249,7 +278,10 @@ export const serviceOps = {
     return { id, tags: data.tags || [], ...data };
   },
 
-  delete: (id) => db.prepare('DELETE FROM services WHERE id = ?').run(id),
+  delete: (id) => {
+    db.prepare('DELETE FROM service_accounts WHERE service_id = ?').run(id);
+    return db.prepare('DELETE FROM services WHERE id = ?').run(id);
+  },
 
   reorder: (items) => {
     const stmt = db.prepare('UPDATE services SET sort_order = ?, group_id = ? WHERE id = ?');
@@ -296,6 +328,73 @@ export const tagOps = {
   },
 
   delete: (id) => db.prepare('DELETE FROM tags WHERE id = ?').run(id)
+};
+
+// 账号操作
+export const accountOps = {
+  getByServiceId: (serviceId) => {
+    return db.prepare('SELECT * FROM service_accounts WHERE service_id = ? ORDER BY is_default DESC, sort_order, id').all(serviceId)
+      .map(a => ({ ...a, is_default: a.is_default === 1 }));
+  },
+
+  getById: (id) => {
+    const account = db.prepare('SELECT * FROM service_accounts WHERE id = ?').get(id);
+    if (account) {
+      return { ...account, is_default: account.is_default === 1 };
+    }
+    return account;
+  },
+
+  create: (serviceId, data) => {
+    if (data.is_default) {
+      db.prepare('UPDATE service_accounts SET is_default = 0 WHERE service_id = ?').run(serviceId);
+    }
+    const stmt = db.prepare(
+      'INSERT INTO service_accounts (service_id, name, username, password, is_default, sort_order) VALUES (?, ?, ?, ?, ?, ?)'
+    );
+    const result = stmt.run(
+      serviceId,
+      data.name,
+      data.username,
+      data.password || '',
+      data.is_default ? 1 : 0,
+      data.sort_order || 0
+    );
+    return { id: result.lastInsertRowid, service_id: serviceId, is_default: !!data.is_default, ...data };
+  },
+
+  update: (serviceId, id, data) => {
+    if (data.is_default) {
+      db.prepare('UPDATE service_accounts SET is_default = 0 WHERE service_id = ?').run(serviceId);
+    }
+    const stmt = db.prepare(
+      'UPDATE service_accounts SET name = ?, username = ?, password = ?, is_default = ?, sort_order = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND service_id = ?'
+    );
+    stmt.run(
+      data.name,
+      data.username,
+      data.password || '',
+      data.is_default ? 1 : 0,
+      data.sort_order || 0,
+      id,
+      serviceId
+    );
+    return { id, service_id: serviceId, is_default: !!data.is_default, ...data };
+  },
+
+  delete: (serviceId, id) => {
+    return db.prepare('DELETE FROM service_accounts WHERE id = ? AND service_id = ?').run(id, serviceId);
+  },
+
+  setDefault: (serviceId, id) => {
+    db.prepare('UPDATE service_accounts SET is_default = 0 WHERE service_id = ?').run(serviceId);
+    db.prepare('UPDATE service_accounts SET is_default = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND service_id = ?').run(id, serviceId);
+    return { id, service_id: serviceId, is_default: true };
+  },
+
+  deleteByServiceId: (serviceId) => {
+    return db.prepare('DELETE FROM service_accounts WHERE service_id = ?').run(serviceId);
+  }
 };
 
 export { generateAccentColor };

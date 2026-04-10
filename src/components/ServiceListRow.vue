@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import type { Service } from '@/types';
+import type { Service, ServiceAccount } from '@/types';
 import { useTagStore } from '@/stores/tagStore';
+import { accountsApi } from '@/api/accounts';
 
 const props = defineProps<{
   service: Service;
@@ -18,10 +19,43 @@ const emit = defineEmits<{
 const tagStore = useTagStore();
 const showLoginModal = ref(false);
 const showPassword = ref(false);
+const showAccountList = ref(false);
+const accounts = ref<ServiceAccount[]>([]);
+const loadingAccounts = ref(false);
+
+const ACCOUNT_COLORS = [
+  '#4ade80', '#f472b6', '#fbbf24', '#38bdf8',
+  '#a78bfa', '#fb923c', '#34d399', '#f87171',
+  '#22d3ee', '#6366f1', '#ec4899', '#14b8a6'
+];
+
+function getAccountColor(id: number) {
+  return ACCOUNT_COLORS[id % ACCOUNT_COLORS.length];
+}
+
+async function loadAccounts() {
+  if (!props.service.id) return;
+  loadingAccounts.value = true;
+  try {
+    const res = await accountsApi.list(props.service.id);
+    accounts.value = res.data || [];
+  } catch {
+    accounts.value = [];
+  } finally {
+    loadingAccounts.value = false;
+  }
+}
+
+const hasAccounts = computed(() => accounts.value.length > 0);
 
 const hasCredentials = computed(() => {
-  return props.service.username || props.service.password;
+  if (props.service.username || props.service.password) return true;
+  return hasAccounts.value;
 });
+
+const defaultAccount = computed(() => accounts.value.find(a => a.is_default) || accounts.value[0]);
+const displayUsername = computed(() => defaultAccount.value?.username || props.service.username);
+const displayPassword = computed(() => defaultAccount.value?.password || props.service.password);
 
 // 颜色池
 const ACCENT_COLORS = [
@@ -78,6 +112,8 @@ function hexToRgba(hex: string, alpha: number) {
 function openLoginModal() {
   showLoginModal.value = true;
   showPassword.value = false;
+  showAccountList.value = false;
+  loadAccounts();
 }
 
 function openUrl() {
@@ -285,11 +321,11 @@ function handleRowClick() {
             </div>
 
             <!-- Username -->
-            <div v-if="service.username" class="flex items-center gap-2 py-1.5 text-[13px] border-t" style="border-color: var(--border)">
+            <div v-if="displayUsername" class="flex items-center gap-2 py-1.5 text-[13px] border-t" style="border-color: var(--border)">
               <span class="w-12 flex-shrink-0 text-xs" style="color: var(--text3)">用户名</span>
-              <span class="flex-1 font-mono text-[12.5px] truncate" style="color: var(--text)">{{ service.username }}</span>
+              <span class="flex-1 font-mono text-[12.5px] truncate" style="color: var(--text)">{{ displayUsername }}</span>
               <button
-                @click="copyToClipboard(service.username!, '用户名')"
+                @click="copyToClipboard(displayUsername!, '用户名')"
                 class="px-2 py-0.5 rounded text-[11px] border transition-colors"
                 style="border-color: var(--border); color: var(--text2)"
               >
@@ -298,9 +334,9 @@ function handleRowClick() {
             </div>
 
             <!-- Password -->
-            <div v-if="service.password" class="flex items-center gap-2 py-1.5 text-[13px] border-t" style="border-color: var(--border)">
+            <div v-if="displayPassword" class="flex items-center gap-2 py-1.5 text-[13px] border-t" style="border-color: var(--border)">
               <span class="w-12 flex-shrink-0 text-xs" style="color: var(--text3)">密码</span>
-              <span class="flex-1 font-mono text-[12.5px] select-all">{{ showPassword ? service.password : '••••••••' }}</span>
+              <span class="flex-1 font-mono text-[12.5px] select-all">{{ showPassword ? displayPassword : '••••••••' }}</span>
               <button
                 @click="showPassword = !showPassword"
                 class="p-1 rounded transition-colors"
@@ -317,7 +353,7 @@ function handleRowClick() {
                 </svg>
               </button>
               <button
-                @click="copyToClipboard(service.password!, '密码')"
+                @click="copyToClipboard(displayPassword!, '密码')"
                 class="px-2 py-0.5 rounded text-[11px] border transition-colors"
                 style="border-color: var(--border); color: var(--text2)"
               >
@@ -326,9 +362,61 @@ function handleRowClick() {
             </div>
 
             <!-- No credentials -->
-            <div v-if="!service.username && !service.password" class="py-1.5 text-xs" style="color: var(--text3)">
+            <div v-if="!displayUsername && !displayPassword" class="py-1.5 text-xs" style="color: var(--text3)">
               未录入凭据
             </div>
+          </div>
+
+          <!-- Account List -->
+          <div v-if="showAccountList && hasAccounts" class="mt-3">
+            <div class="text-xs font-semibold mb-2" style="color: var(--text2)">全部账号</div>
+            <div class="space-y-1.5">
+              <div
+                v-for="account in accounts"
+                :key="account.id"
+                class="account-item"
+                :style="{ background: 'var(--surface2)', borderColor: account.is_default ? getAccountColor(account.id) + '40' : 'var(--border)' }"
+              >
+                <div
+                  class="account-avatar"
+                  :style="{ background: getAccountColor(account.id) + '20', color: getAccountColor(account.id) }"
+                >
+                  {{ account.name.charAt(0) }}
+                </div>
+                <div class="account-info">
+                  <div class="flex items-center gap-1.5">
+                    <span class="account-name" :style="{ fontWeight: account.is_default ? 600 : 500 }">{{ account.name }}</span>
+                  </div>
+                  <span class="account-username">{{ account.username }}</span>
+                </div>
+                <div class="account-actions">
+                  <button
+                    @click="copyToClipboard(account.username, '账号')"
+                    class="account-copy-btn"
+                    title="复制账号"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                  </button>
+                  <button
+                    v-if="account.password"
+                    @click="copyToClipboard(account.password, '密码')"
+                    class="account-copy-btn"
+                    title="复制密码"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="showAccountList && !hasAccounts && !loadingAccounts" class="mt-3 text-xs text-center py-3" style="color: var(--text3)">
+            暂无账号记录
           </div>
 
           <p class="text-xs mt-3" style="color: var(--text3)">💡 点击「复制」后，在登录页对应输入框粘贴即可</p>
@@ -342,6 +430,22 @@ function handleRowClick() {
             style="border-color: var(--border); color: var(--text2)"
           >
             关闭
+          </button>
+          <button
+            @click="showAccountList = !showAccountList"
+            class="px-4 py-2 rounded-lg text-[13px] font-medium border transition-colors flex items-center gap-1.5"
+            :style="{
+              borderColor: showAccountList ? 'var(--accent)' : 'var(--border)',
+              color: showAccountList ? 'var(--accent)' : 'var(--text2)',
+              background: showAccountList ? 'var(--accent-bg)' : 'transparent'
+            }"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            账号
+            <span v-if="accounts.length > 0" class="account-count-badge">{{ accounts.length }}</span>
           </button>
           <button
             @click="openUrl"
@@ -618,5 +722,96 @@ function handleRowClick() {
   background: var(--red-bg);
   color: var(--red);
   border-color: var(--red-border);
+}
+
+/* Account List */
+.account-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid;
+  transition: all 0.15s ease;
+}
+
+.account-item:hover {
+  border-color: var(--accent);
+}
+
+.account-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.account-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.account-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.account-username {
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.account-copy-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.account-copy-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.account-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 0 4px;
 }
 </style>

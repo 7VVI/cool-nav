@@ -1,12 +1,12 @@
 // server/routes/import.js
 import { Router } from 'express';
-import { groupOps, serviceOps } from '../database.js';
+import { groupOps, serviceOps, accountOps } from '../database.js';
 
 const router = Router();
 
 // 导入数据
 router.post('/', (req, res) => {
-  const { groups, services } = req.body;
+  const { groups, services, accounts } = req.body;
 
   if (!Array.isArray(groups) || !Array.isArray(services)) {
     return res.status(400).json({ success: false, message: '数据格式错误' });
@@ -19,6 +19,7 @@ router.post('/', (req, res) => {
 
     // 创建 ID 映射（旧ID -> 新ID）
     const groupIdMap = {};
+    const serviceIdMap = {};
 
     // 导入分组
     groups.forEach(g => {
@@ -27,14 +28,16 @@ router.post('/', (req, res) => {
         name: g.name,
         color: g.color || '#3b6ef8',
         parent_id: g.parent_id ? groupIdMap[g.parent_id] : null,
-        sort_order: g.sort_order || 0
+        sort_order: g.sort_order || 0,
+        view_mode: g.view_mode || 'card'
       });
       groupIdMap[oldId] = newGroup.id;
     });
 
     // 导入服务
     services.forEach(s => {
-      serviceOps.create({
+      const oldId = s.id;
+      const newService = serviceOps.create({
         group_id: groupIdMap[s.group_id] || s.group_id,
         name: s.name,
         url: s.url,
@@ -42,9 +45,28 @@ router.post('/', (req, res) => {
         password: s.password || null,
         description: s.description || null,
         icon: s.icon || s.emoji || null,
-        sort_order: s.sort_order || 0
+        sort_order: s.sort_order || 0,
+        tags: Array.isArray(s.tags) ? s.tags : [],
+        accent_color: s.accent_color || null
       });
+      serviceIdMap[oldId] = newService.id;
     });
+
+    // 导入账号数据（兼容新版数据）
+    if (Array.isArray(accounts) && accounts.length > 0) {
+      accounts.forEach(a => {
+        const newServiceId = serviceIdMap[a.service_id] || a.service_id;
+        if (newServiceId) {
+          accountOps.create(newServiceId, {
+            name: a.name,
+            username: a.username,
+            password: a.password || '',
+            is_default: !!a.is_default,
+            sort_order: a.sort_order || 0
+          });
+        }
+      });
+    }
 
     res.json({ success: true, message: '导入成功' });
   } catch (error) {

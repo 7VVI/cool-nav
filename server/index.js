@@ -8,6 +8,7 @@ import servicesRouter from './routes/services.js';
 import exportRouter from './routes/export.js';
 import importRouter from './routes/import.js';
 import tagsRouter from './routes/tags.js';
+import accountsRouter from './routes/accounts.js';
 import authRouter from './routes/auth.js';
 import { authMiddleware } from './middleware/auth.js';
 import errorHandler from './middleware/errorHandler.js';
@@ -32,6 +33,7 @@ app.use('/api/services', authMiddleware, servicesRouter);
 app.use('/api/export', authMiddleware, exportRouter);
 app.use('/api/import', authMiddleware, importRouter);
 app.use('/api/tags', authMiddleware, tagsRouter);
+app.use('/api/services/:serviceId/accounts', authMiddleware, accountsRouter);
 
 // 静态文件托管（生产环境）
 app.use(express.static(join(__dirname, '..', 'dist')));

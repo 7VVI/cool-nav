@@ -35,3 +35,15 @@ export interface ApiResponse<T> {
   data?: T;
   message?: string;
 }
+
+export interface ServiceAccount {
+  id: number;
+  service_id: number;
+  name: string;
+  username: string;
+  password: string;
+  is_default: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
