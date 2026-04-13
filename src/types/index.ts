@@ -4,6 +4,7 @@ export interface Group {
   id: number;
   name: string;
   color: string;
+  icon: string | null;
   parent_id: number | null;
   view_mode: 'card' | 'list';
   sort_order: number;

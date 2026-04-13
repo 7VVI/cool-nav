@@ -6,6 +6,28 @@ import { useNavStore } from '@/stores/navStore';
 import { useTagStore } from '@/stores/tagStore';
 import type { Group } from '@/types';
 
+// 分组图标定义（实心填充）
+const GROUP_ICONS: Record<string, string> = {
+  folder:   'M2 6a2 2 0 012-2h5l2 3h9a2 2 0 012 2v11a2 2 0 01-2 2H4a2 2 0 01-2-2V6z',
+  server:   'M4 2h16a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2zm0 8h16a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4a2 2 0 012-2zm0 8h16a2 2 0 012 2v2a2 2 0 01-2 2H4a2 2 0 01-2-2v-2a2 2 0 012-2z',
+  database: 'M12 2C6.5 2 2 4.5 2 7v10c0 2.5 4.5 5 10 5s10-2.5 10-5V7c0-2.5-4.5-5-10-5z',
+  cloud:    'M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z',
+  shield:   'M12 2l8 4v6c0 5.5-3.8 10.7-8 12-4.2-1.3-8-6.5-8-12V6l8-4z',
+  terminal: 'M2 5l7 7-7 7 2 2 9-9-9-9-2 2zm10 14h8v-3h-8v3z',
+  globe:    'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z',
+  lock:     'M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM9 8V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9z',
+  box:      'M12 2L2 7v10l10 5 10-5V7L12 2z',
+  rocket:   'M12 2l3 8h4l-3 4 2 7-6-4-6 4 2-7-3-4h4z',
+  code:     'M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z',
+  layers:   'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5-10-5z',
+};
+const ICON_NAMES = Object.keys(GROUP_ICONS);
+
+function getGroupIconPath(icon: string | null, fallbackId: number): string {
+  const name = icon || ICON_NAMES[fallbackId % ICON_NAMES.length];
+  return GROUP_ICONS[name] || GROUP_ICONS.folder;
+}
+
 const emit = defineEmits<{
   editGroup: [group: Group | null];
   searchServices: [keyword: string];
@@ -21,6 +43,36 @@ const selectedTagFilter = ref<string | null>(null);
 
 // 侧边栏折叠状态
 const isCollapsed = ref(false);
+
+// 侧边栏宽度拖拽调整
+const sidebarWidth = ref(parseInt(localStorage.getItem('sidebarWidth') || '220'));
+const isResizing = ref(false);
+
+function startResize(e: MouseEvent) {
+  e.preventDefault();
+  isResizing.value = true;
+  const startX = e.clientX;
+  const startWidth = sidebarWidth.value;
+  document.body.style.cursor = 'col-resize';
+  document.body.style.userSelect = 'none';
+
+  function onMouseMove(e: MouseEvent) {
+    const delta = e.clientX - startX;
+    sidebarWidth.value = Math.max(180, Math.min(400, startWidth + delta));
+  }
+
+  function onMouseUp() {
+    isResizing.value = false;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    localStorage.setItem('sidebarWidth', String(sidebarWidth.value));
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
+  }
+
+  document.addEventListener('mousemove', onMouseMove);
+  document.addEventListener('mouseup', onMouseUp);
+}
 
 // 根据当前分组过滤标签
 const filteredTags = computed(() => {
@@ -138,8 +190,17 @@ function toggleTagFilter(tagValue: string) {
 <template>
   <aside
     class="sidebar"
-    :class="{ collapsed: isCollapsed }"
+    :class="{ collapsed: isCollapsed, resizing: isResizing }"
+    :style="isCollapsed ? {} : { width: sidebarWidth + 'px', minWidth: sidebarWidth + 'px' }"
   >
+    <!-- Resize Handle -->
+    <div
+      v-if="!isCollapsed"
+      class="resize-handle"
+      :class="{ active: isResizing }"
+      @mousedown="startResize"
+    ></div>
+
     <!-- Logo -->
     <div class="sidebar-logo" @click="toggleSidebar" title="点击折叠/展开">
       <div class="logo-icon">
@@ -198,10 +259,17 @@ function toggleTagFilter(tagValue: string) {
             :key="group.id"
             class="group-item"
             :class="{ active: store.currentGroupId === group.id }"
-            :style="store.currentGroupId === group.id ? { background: (group.color || '#3b6ef8') + '12' } : {}"
+            :style="{
+              '--group-color': group.color || '#3b6ef8',
+              background: store.currentGroupId === group.id ? (group.color || '#3b6ef8') + '12' : undefined
+            }"
             @click="selectGroup(group.id)"
           >
-            <span class="group-dot" :style="{ background: group.color || '#3b6ef8' }"></span>
+            <div class="group-icon-box" :style="store.currentGroupId === group.id ? { background: (group.color || '#3b6ef8') + '15', color: group.color || '#3b6ef8' } : {}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path :d="getGroupIconPath(group.icon, group.id)"/>
+              </svg>
+            </div>
             <span class="group-name" :style="store.currentGroupId === group.id ? { color: group.color || '#3b6ef8' } : {}">{{ group.name }}</span>
             <span v-if="group.serviceCount !== undefined" class="group-count" :style="store.currentGroupId === group.id ? { background: (group.color || '#3b6ef8') + '20', color: group.color || '#3b6ef8' } : {}">{{ group.serviceCount }}</span>
           </div>
@@ -214,14 +282,17 @@ function toggleTagFilter(tagValue: string) {
           <div
             class="group-item all-groups-item"
             :class="{ active: store.showAllGroups }"
+            :style="{ '--group-color': 'var(--accent)' }"
             @click="selectAllGroups"
           >
-            <svg class="group-dot-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="7" height="7"/>
-              <rect x="14" y="3" width="7" height="7"/>
-              <rect x="14" y="14" width="7" height="7"/>
-              <rect x="3" y="14" width="7" height="7"/>
-            </svg>
+            <div class="group-icon-box" :style="store.showAllGroups ? { background: 'var(--accent-bg)', color: 'var(--accent)' } : {}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="2" y="2" width="9" height="9" rx="2"/>
+                <rect x="13" y="2" width="9" height="9" rx="2"/>
+                <rect x="13" y="13" width="9" height="9" rx="2"/>
+                <rect x="2" y="13" width="9" height="9" rx="2"/>
+              </svg>
+            </div>
             <span class="group-name">全部服务</span>
             <span class="group-count">{{ totalCount }}</span>
           </div>
@@ -236,10 +307,17 @@ function toggleTagFilter(tagValue: string) {
               <div v-if="!group.parent_id" :key="group.id" class="group-item-wrapper">
                 <div
                   :class="['group-item', { active: store.currentGroupId === group.id && !store.showAllGroups }]"
-                  :style="store.currentGroupId === group.id && !store.showAllGroups ? { background: (group.color || '#3b6ef8') + '12' } : {}"
+                  :style="{
+                    '--group-color': group.color || '#3b6ef8',
+                    background: store.currentGroupId === group.id && !store.showAllGroups ? (group.color || '#3b6ef8') + '12' : undefined
+                  }"
                   @click="selectGroup(group.id)"
                 >
-                  <span class="group-dot" :style="{ background: group.color || '#3b6ef8' }"></span>
+                  <div class="group-icon-box" :style="store.currentGroupId === group.id && !store.showAllGroups ? { background: (group.color || '#3b6ef8') + '15', color: group.color || '#3b6ef8' } : {}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <path :d="getGroupIconPath(group.icon, group.id)"/>
+                    </svg>
+                  </div>
                   <span class="group-name" :style="store.currentGroupId === group.id && !store.showAllGroups ? { color: group.color || '#3b6ef8' } : {}">{{ group.name }}</span>
                   <span v-if="group.serviceCount !== undefined" class="group-count" :style="store.currentGroupId === group.id && !store.showAllGroups ? { background: (group.color || '#3b6ef8') + '20', color: group.color || '#3b6ef8' } : {}">{{ group.serviceCount }}</span>
                   <div class="group-actions">
@@ -312,6 +390,7 @@ function toggleTagFilter(tagValue: string) {
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
+  position: relative;
   transition: width 0.25s ease, min-width 0.25s ease;
   overflow: hidden;
 }
@@ -319,6 +398,28 @@ function toggleTagFilter(tagValue: string) {
 .sidebar.collapsed {
   width: 52px;
   min-width: 52px;
+}
+
+.sidebar.resizing {
+  transition: none !important;
+}
+
+/* Resize Handle */
+.resize-handle {
+  position: absolute;
+  right: -3px;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  cursor: col-resize;
+  z-index: 10;
+  transition: background 0.15s;
+}
+
+.resize-handle:hover,
+.resize-handle.active {
+  background: var(--accent);
+  opacity: 0.4;
 }
 
 /* Logo */
@@ -467,13 +568,14 @@ function toggleTagFilter(tagValue: string) {
 .group-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
+  gap: 10px;
+  padding: 8px 10px;
   border-radius: 8px;
   cursor: pointer;
   color: var(--text2);
   transition: background 0.15s, color 0.15s;
   white-space: nowrap;
+  position: relative;
 }
 
 .group-item:hover {
@@ -485,20 +587,29 @@ function toggleTagFilter(tagValue: string) {
   color: var(--accent);
 }
 
-.group-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
+.group-item.active::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background: var(--group-color, var(--accent));
+  border-radius: 0 3px 3px 0;
 }
 
-.group-dot-icon {
+.group-icon-box {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--surface2);
   color: var(--text3);
-  flex-shrink: 0;
-}
-
-.all-groups-item .group-dot-icon {
-  color: var(--accent);
+  transition: all 0.15s ease;
 }
 
 .all-groups-item {
@@ -510,21 +621,21 @@ function toggleTagFilter(tagValue: string) {
 .group-name {
   flex: 1;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 450;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .group-item.active .group-name {
-  font-weight: 600;
+  font-weight: 500;
   color: var(--accent);
 }
 
 .group-count {
   font-size: 11px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 999px;
+  font-weight: 500;
+  padding: 1px 6px;
+  border-radius: 10px;
   background: var(--surface2);
   color: var(--text3);
 }

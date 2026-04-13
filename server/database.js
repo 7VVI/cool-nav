@@ -87,6 +87,13 @@ try {
   // 列已存在，忽略错误
 }
 
+// 添加 icon 列到 groups 表（如果不存在）
+try {
+  db.exec('ALTER TABLE groups ADD COLUMN icon TEXT DEFAULT NULL');
+} catch (e) {
+  // 列已存在，忽略错误
+}
+
 // 创建标签表
 db.exec(`
   CREATE TABLE IF NOT EXISTS tags (
@@ -144,14 +151,14 @@ export const groupOps = {
   },
 
   create: (data) => {
-    const stmt = db.prepare('INSERT INTO groups (name, color, parent_id, sort_order) VALUES (?, ?, ?, ?)');
-    const result = stmt.run(data.name, data.color || '#3b6ef8', data.parent_id || null, data.sort_order || 0);
+    const stmt = db.prepare('INSERT INTO groups (name, color, icon, parent_id, sort_order) VALUES (?, ?, ?, ?, ?)');
+    const result = stmt.run(data.name, data.color || '#3b6ef8', data.icon || null, data.parent_id || null, data.sort_order || 0);
     return { id: result.lastInsertRowid, color: data.color || '#3b6ef8', ...data };
   },
 
   update: (id, data) => {
-    const stmt = db.prepare('UPDATE groups SET name = ?, color = ?, parent_id = ?, sort_order = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?');
-    stmt.run(data.name, data.color || '#3b6ef8', data.parent_id || null, data.sort_order || 0, id);
+    const stmt = db.prepare('UPDATE groups SET name = ?, color = ?, icon = ?, parent_id = ?, sort_order = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?');
+    stmt.run(data.name, data.color || '#3b6ef8', data.icon || null, data.parent_id || null, data.sort_order || 0, id);
     return { id, color: data.color || '#3b6ef8', ...data };
   },
 

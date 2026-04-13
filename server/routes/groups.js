@@ -45,7 +45,7 @@ router.post('/', (req, res) => {
     return res.status(400).json({ success: false, message: '分组名称已存在' });
   }
 
-  const group = groupOps.create({ name: name.trim(), color, parent_id });
+  const group = groupOps.create({ name: name.trim(), color, icon: req.body.icon, parent_id });
   res.status(201).json({ success: true, data: group });
 });
 
@@ -71,7 +71,7 @@ router.put('/:id/view-mode', (req, res) => {
 
 // 更新分组
 router.put('/:id', (req, res) => {
-  const { name, color, parent_id, sort_order } = req.body;
+  const { name, color, icon, parent_id, sort_order } = req.body;
   if (!name || !name.trim()) {
     return res.status(400).json({ success: false, message: '分组名称不能为空' });
   }
@@ -82,7 +82,7 @@ router.put('/:id', (req, res) => {
     return res.status(400).json({ success: false, message: '分组名称已存在' });
   }
 
-  const group = groupOps.update(parseInt(req.params.id), { name: name.trim(), color, parent_id, sort_order });
+  const group = groupOps.update(parseInt(req.params.id), { name: name.trim(), color, icon, parent_id, sort_order });
   res.json({ success: true, data: group });
 });
 
