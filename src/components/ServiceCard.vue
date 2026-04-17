@@ -540,8 +540,6 @@ function handleCardClick() {
   display: flex;
   flex-direction: column;
   box-shadow: var(--shadow-card);
-  will-change: transform;
-  contain: layout style;
 }
 
 .service-card:hover {

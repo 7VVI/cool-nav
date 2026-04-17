@@ -631,7 +631,7 @@ function formatTodoTime(dateStr: string) {
       </div>
 
       <!-- Service Content Area -->
-      <div class="flex-1 p-5 overflow-y-auto">
+      <div class="flex-1 p-5 overflow-y-auto" style="min-height: 0;">
         <div v-if="store.loading || isSearching" class="flex flex-col items-center justify-center py-20" style="color: var(--text3)">
           <div class="w-8 h-8 border-2 rounded-full animate-spin mb-3" style="border-color: var(--border2); border-top-color: var(--accent)"></div>
           <p class="text-sm">加载中...</p>
@@ -1101,8 +1101,6 @@ function formatTodoTime(dateStr: string) {
 .card-wrapper {
   display: flex;
   min-width: 0;
-  will-change: transform;
-  contain: layout style;
 }
 
 .card-wrapper > :deep(*) {
@@ -1114,7 +1112,6 @@ function formatTodoTime(dateStr: string) {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
-  contain: layout;
 }
 
 .add-service-card {
