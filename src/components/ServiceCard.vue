@@ -198,7 +198,7 @@ function handleCardClick() {
       :style="{
         background: 'var(--surface)',
         borderColor: selected ? 'var(--accent)' : 'var(--border)',
-        animation: 'cardIn 0.18s ease forwards'
+        animation: 'cardIn 0.25s ease both'
       }"
       @click="handleCardClick"
     >
