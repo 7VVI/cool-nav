@@ -48,3 +48,15 @@ export interface ServiceAccount {
   created_at: string;
   updated_at: string;
 }
+
+export interface Todo {
+  id: number;
+  title: string;
+  desc: string;
+  priority: 'high' | 'medium' | 'low';
+  status: 'todo' | 'doing' | 'done';
+  tag: string;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}

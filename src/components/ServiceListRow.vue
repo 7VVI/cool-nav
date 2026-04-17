@@ -277,11 +277,11 @@ function handleRowClick() {
     <div
       v-if="showLoginModal"
       class="fixed inset-0 flex items-center justify-center z-50 p-4"
-      style="background: rgba(0,0,0,.4); backdrop-filter: blur(6px)"
+      style="background: rgba(0,0,0,.36); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px)"
       @click.self="showLoginModal = false"
     >
       <div
-        class="w-full max-w-md rounded-2xl shadow-lg overflow-hidden"
+        class="w-full max-w-md rounded-3xl shadow-lg overflow-hidden"
         style="background: var(--surface); animation: modalIn 0.2s ease"
       >
         <!-- Header -->
@@ -467,22 +467,22 @@ function handleRowClick() {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 16px 10px 12px;
+  padding: 11px 18px 11px 14px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-card);
 }
 
 .list-row:hover {
   border-color: var(--border2);
-  background: var(--surface2);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background: var(--surface);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card-hover);
 }
 
 .row-selected {
@@ -490,7 +490,7 @@ function handleRowClick() {
   box-shadow: 0 0 0 2px var(--accent-bg);
 }
 
-/* 左侧渐变色条 - 和卡片一样的切条效果 */
+/* 左侧渐变色条 */
 .accent-bar {
   width: 4px;
   height: 100%;
@@ -498,7 +498,7 @@ function handleRowClick() {
   left: 0;
   top: 0;
   bottom: 0;
-  border-radius: 12px 0 0 12px;
+  border-radius: 14px 0 0 14px;
   flex-shrink: 0;
 }
 
@@ -509,14 +509,14 @@ function handleRowClick() {
 .checkbox-btn {
   width: 18px;
   height: 18px;
-  border-radius: 4px;
+  border-radius: 5px;
   border: 2px solid var(--border2);
   background: var(--surface);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.2s;
 }
 
 .checkbox-btn.checked {
@@ -525,15 +525,14 @@ function handleRowClick() {
 }
 
 .list-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 15px;
   flex-shrink: 0;
-  border: 1px solid var(--border);
 }
 
 .list-name {
@@ -546,6 +545,7 @@ function handleRowClick() {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  letter-spacing: -0.1px;
 }
 
 /* 描述列 - 固定宽度 */
@@ -590,17 +590,18 @@ function handleRowClick() {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
 }
 
 .list-tag {
   font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 2px 7px;
+  border-radius: 5px;
   border: 1px solid;
   font-weight: 500;
 }
 
-/* 凭据状态 - 增强样式 */
+/* 凭据状态 */
 .list-auth {
   display: flex;
   align-items: center;
@@ -673,8 +674,8 @@ function handleRowClick() {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(74,222,128,0.4); }
-  50% { opacity: 0.8; box-shadow: 0 0 0 4px rgba(74,222,128,0); }
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(52,199,89,0.4); }
+  50% { opacity: 0.8; box-shadow: 0 0 0 4px rgba(52,199,89,0); }
 }
 
 .list-actions {
@@ -684,13 +685,13 @@ function handleRowClick() {
 }
 
 .list-open-btn {
-  padding: 5px 12px;
-  border-radius: 6px;
+  padding: 5px 14px;
+  border-radius: 8px;
   border: none;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.15s;
+  transition: opacity 0.2s;
 }
 
 .list-open-btn:hover {
@@ -699,9 +700,9 @@ function handleRowClick() {
 
 .list-edit-btn,
 .list-delete-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
   border: 1px solid var(--border);
   background: transparent;
   color: var(--text3);
@@ -709,12 +710,12 @@ function handleRowClick() {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.2s;
 }
 
 /* 编辑按钮悬停变蓝 */
 .list-edit-btn:hover {
-  background: rgba(59, 110, 248, 0.1);
+  background: var(--accent-bg);
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -723,7 +724,7 @@ function handleRowClick() {
 .list-delete-btn:hover {
   background: var(--red-bg);
   color: var(--red);
-  border-color: var(--red-border);
+  border-color: rgba(255, 59, 48, 0.3);
 }
 
 /* Account List */
@@ -732,9 +733,9 @@ function handleRowClick() {
   align-items: center;
   gap: 10px;
   padding: 8px 10px;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
 }
 
 .account-item:hover {
@@ -770,7 +771,7 @@ function handleRowClick() {
 
 .account-username {
   font-size: 11px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
   color: var(--text3);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -786,7 +787,7 @@ function handleRowClick() {
 .account-copy-btn {
   width: 28px;
   height: 28px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--border);
   background: transparent;
   color: var(--text3);
@@ -794,7 +795,7 @@ function handleRowClick() {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.2s;
 }
 
 .account-copy-btn:hover {

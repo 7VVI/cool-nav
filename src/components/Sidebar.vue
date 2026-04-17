@@ -45,7 +45,7 @@ const selectedTagFilter = ref<string | null>(null);
 const isCollapsed = ref(false);
 
 // 侧边栏宽度拖拽调整
-const sidebarWidth = ref(parseInt(localStorage.getItem('sidebarWidth') || '220'));
+const sidebarWidth = ref(parseInt(localStorage.getItem('sidebarWidth') || '240'));
 const isResizing = ref(false);
 
 function startResize(e: MouseEvent) {
@@ -204,15 +204,9 @@ function toggleTagFilter(tagValue: string) {
     <!-- Logo -->
     <div class="sidebar-logo" @click="toggleSidebar" title="点击折叠/展开">
       <div class="logo-icon">
-        <svg width="28" height="28" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-          <rect width="48" height="48" rx="12" fill="#0f172a"></rect>
-          <defs>
-            <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#4f8cff"></stop>
-              <stop offset="100%" stop-color="#00e0ff"></stop>
-            </linearGradient>
-          </defs>
-          <path d="M12 24c0-6 4-10 10-10 3 0 6 1 7.5 3l-3 2.5c-1-1-2.5-1.5-4.5-1.5-3.5 0-6 2.5-6 6s2.5 6 6 6c2 0 3.5-.5 4.5-1.5l3 2.5c-1.5 2-4.5 3-7.5 3-6 0-10-4-10-10z" fill="url(#logoGrad)"></path>
+        <svg width="26" height="26" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <rect width="48" height="48" rx="12" fill="#000000"></rect>
+          <path d="M12 24c0-6 4-10 10-10 3 0 6 1 7.5 3l-3 2.5c-1-1-2.5-1.5-4.5-1.5-3.5 0-6 2.5-6 6s2.5 6 6 6c2 0 3.5-.5 4.5-1.5l3 2.5c-1.5 2-4.5 3-7.5 3-6 0-10-4-10-10z" fill="#ffffff"></path>
         </svg>
       </div>
       <span class="logo-text">Nav Portal</span>
@@ -228,14 +222,14 @@ function toggleTagFilter(tagValue: string) {
         @click="selectGroup(firstGroup.id)"
         :title="firstGroup.name"
       >
-        <span class="group-dot" :style="{ background: firstGroup.color || '#3b6ef8' }"></span>
+        <span class="group-dot" :style="{ background: firstGroup.color || '#007AFF' }"></span>
       </div>
     </div>
 
     <!-- 搜索框 -->
     <div class="sidebar-search">
       <div class="search-wrapper">
-        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="11" cy="11" r="8"/>
           <path d="m21 21-4.35-4.35"/>
         </svg>
@@ -259,19 +253,15 @@ function toggleTagFilter(tagValue: string) {
             :key="group.id"
             class="group-item"
             :class="{ active: store.currentGroupId === group.id }"
-            :style="{
-              '--group-color': group.color || '#3b6ef8',
-              background: store.currentGroupId === group.id ? (group.color || '#3b6ef8') + '12' : undefined
-            }"
             @click="selectGroup(group.id)"
           >
-            <div class="group-icon-box" :style="store.currentGroupId === group.id ? { background: (group.color || '#3b6ef8') + '15', color: group.color || '#3b6ef8' } : {}">
+            <div class="group-icon-box">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                 <path :d="getGroupIconPath(group.icon, group.id)"/>
               </svg>
             </div>
-            <span class="group-name" :style="store.currentGroupId === group.id ? { color: group.color || '#3b6ef8' } : {}">{{ group.name }}</span>
-            <span v-if="group.serviceCount !== undefined" class="group-count" :style="store.currentGroupId === group.id ? { background: (group.color || '#3b6ef8') + '20', color: group.color || '#3b6ef8' } : {}">{{ group.serviceCount }}</span>
+            <span class="group-name">{{ group.name }}</span>
+            <span v-if="group.serviceCount !== undefined" class="group-count">{{ group.serviceCount }}</span>
           </div>
           <div v-if="filteredGroups.length === 0" class="empty-state">未找到匹配的分组</div>
         </div>
@@ -282,10 +272,9 @@ function toggleTagFilter(tagValue: string) {
           <div
             class="group-item all-groups-item"
             :class="{ active: store.showAllGroups }"
-            :style="{ '--group-color': 'var(--accent)' }"
             @click="selectAllGroups"
           >
-            <div class="group-icon-box" :style="store.showAllGroups ? { background: 'var(--accent-bg)', color: 'var(--accent)' } : {}">
+            <div class="group-icon-box">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                 <rect x="2" y="2" width="9" height="9" rx="2"/>
                 <rect x="13" y="2" width="9" height="9" rx="2"/>
@@ -307,19 +296,15 @@ function toggleTagFilter(tagValue: string) {
               <div v-if="!group.parent_id" :key="group.id" class="group-item-wrapper">
                 <div
                   :class="['group-item', { active: store.currentGroupId === group.id && !store.showAllGroups }]"
-                  :style="{
-                    '--group-color': group.color || '#3b6ef8',
-                    background: store.currentGroupId === group.id && !store.showAllGroups ? (group.color || '#3b6ef8') + '12' : undefined
-                  }"
                   @click="selectGroup(group.id)"
                 >
-                  <div class="group-icon-box" :style="store.currentGroupId === group.id && !store.showAllGroups ? { background: (group.color || '#3b6ef8') + '15', color: group.color || '#3b6ef8' } : {}">
+                  <div class="group-icon-box">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                       <path :d="getGroupIconPath(group.icon, group.id)"/>
                     </svg>
                   </div>
-                  <span class="group-name" :style="store.currentGroupId === group.id && !store.showAllGroups ? { color: group.color || '#3b6ef8' } : {}">{{ group.name }}</span>
-                  <span v-if="group.serviceCount !== undefined" class="group-count" :style="store.currentGroupId === group.id && !store.showAllGroups ? { background: (group.color || '#3b6ef8') + '20', color: group.color || '#3b6ef8' } : {}">{{ group.serviceCount }}</span>
+                  <span class="group-name">{{ group.name }}</span>
+                  <span v-if="group.serviceCount !== undefined" class="group-count">{{ group.serviceCount }}</span>
                   <div class="group-actions">
                     <button @click.stop="emit('editGroup', group)" class="action-btn" title="编辑">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -371,9 +356,7 @@ function toggleTagFilter(tagValue: string) {
           @click="toggleTagFilter(tag.value)"
           class="tag-filter-item"
           :class="{ active: selectedTagFilter === tag.value }"
-          :style="selectedTagFilter === tag.value ? { background: tag.color + '15', borderColor: tag.color, color: tag.color } : {}"
         >
-          <span class="tag-color-dot" :style="{ background: tag.color }"></span>
           <span class="tag-filter-name">{{ tag.name }}</span>
         </button>
       </div>
@@ -383,21 +366,26 @@ function toggleTagFilter(tagValue: string) {
 
 <style scoped>
 .sidebar {
-  width: 220px;
-  min-width: 220px;
+  width: 240px;
+  min-width: 240px;
   height: 100vh;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
+  background: #ffffff;
+  border-right: 1px solid #e5e5e5;
   display: flex;
   flex-direction: column;
   position: relative;
-  transition: width 0.25s ease, min-width 0.25s ease;
+  transition: width 0.3s cubic-bezier(0.25, 0.1, 0.25, 1), min-width 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
   overflow: hidden;
 }
 
+[data-theme="dark"] .sidebar {
+  background: #0a0a0a;
+  border-right-color: #1a1a1a;
+}
+
 .sidebar.collapsed {
-  width: 52px;
-  min-width: 52px;
+  width: 56px;
+  min-width: 56px;
 }
 
 .sidebar.resizing {
@@ -413,35 +401,43 @@ function toggleTagFilter(tagValue: string) {
   width: 6px;
   cursor: col-resize;
   z-index: 10;
-  transition: background 0.15s;
+  transition: background 0.2s;
 }
 
 .resize-handle:hover,
 .resize-handle.active {
-  background: var(--accent);
-  opacity: 0.4;
+  background: #000000;
+  opacity: 0.15;
+}
+
+[data-theme="dark"] .resize-handle:hover,
+[data-theme="dark"] .resize-handle.active {
+  background: #ffffff;
+  opacity: 0.1;
 }
 
 /* Logo */
 .sidebar-logo {
   height: 52px;
-  padding: 0 12px;
+  padding: 0 16px;
   display: flex;
   align-items: center;
   gap: 10px;
-  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
   cursor: pointer;
-  transition: background 0.15s;
 }
 
 .sidebar-logo:hover {
-  background: var(--surface2);
+  background: #fafafa;
+}
+
+[data-theme="dark"] .sidebar-logo:hover {
+  background: #111111;
 }
 
 .logo-icon {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -449,13 +445,18 @@ function toggleTagFilter(tagValue: string) {
 }
 
 .logo-text {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: -0.2px;
+  font-size: 15px;
+  font-weight: 500;
+  font-family: 'SF Pro Rounded', system-ui, -apple-system, sans-serif;
+  color: #000000;
+  letter-spacing: -0.3px;
   white-space: nowrap;
   opacity: 1;
-  transition: opacity 0.15s ease;
+  transition: opacity 0.2s ease;
+}
+
+[data-theme="dark"] .logo-text {
+  color: #ffffff;
 }
 
 .sidebar.collapsed .logo-text {
@@ -465,7 +466,7 @@ function toggleTagFilter(tagValue: string) {
 
 .collapse-arrow {
   margin-left: auto;
-  color: var(--text3);
+  color: #a3a3a3;
   flex-shrink: 0;
 }
 
@@ -478,7 +479,6 @@ function toggleTagFilter(tagValue: string) {
   display: none;
   justify-content: center;
   padding: 8px 0;
-  border-bottom: 1px solid var(--border);
 }
 
 .sidebar.collapsed .collapsed-group {
@@ -486,22 +486,29 @@ function toggleTagFilter(tagValue: string) {
 }
 
 .group-dot-btn {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background 0.15s;
 }
 
 .group-dot-btn:hover {
-  background: var(--surface2);
+  background: #fafafa;
+}
+
+[data-theme="dark"] .group-dot-btn:hover {
+  background: #111111;
 }
 
 .group-dot-btn.active {
-  background: var(--accent-bg);
+  background: #e5e5e5;
+}
+
+[data-theme="dark"] .group-dot-btn.active {
+  background: #1a1a1a;
 }
 
 .group-dot-btn .group-dot {
@@ -512,7 +519,7 @@ function toggleTagFilter(tagValue: string) {
 
 /* Search */
 .sidebar-search {
-  padding: 12px;
+  padding: 10px 12px;
   flex-shrink: 0;
 }
 
@@ -522,28 +529,42 @@ function toggleTagFilter(tagValue: string) {
 
 .search-icon {
   position: absolute;
-  left: 10px;
+  left: 12px;
   top: 50%;
   transform: translateY(-50%);
   width: 14px;
   height: 14px;
-  color: var(--text3);
+  color: #a3a3a3;
 }
 
 .search-input {
   width: 100%;
-  padding: 6px 10px 6px 32px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 12px;
-  background: var(--surface2);
-  color: var(--text);
+  padding: 7px 12px 7px 34px;
+  border: 1px solid #e5e5e5;
+  border-radius: 9999px;
+  font-size: 13px;
+  background: #ffffff;
+  color: #000000;
   outline: none;
-  transition: border-color 0.15s;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
 .search-input:focus {
-  border-color: var(--accent);
+  border-color: #d4d4d4;
+}
+
+[data-theme="dark"] .search-input {
+  background: #111111;
+  border-color: #262626;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .search-input:focus {
+  border-color: #404040;
+}
+
+.search-input::placeholder {
+  color: #a3a3a3;
 }
 
 .sidebar.collapsed .sidebar-search {
@@ -556,100 +577,125 @@ function toggleTagFilter(tagValue: string) {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 0 8px 12px;
+  padding: 4px 8px 12px;
 }
 
 .group-list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
 .group-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 10px;
-  border-radius: 8px;
+  padding: 7px 10px;
+  border-radius: 9999px;
   cursor: pointer;
-  color: var(--text2);
-  transition: background 0.15s, color 0.15s;
+  color: #525252;
   white-space: nowrap;
   position: relative;
 }
 
 .group-item:hover {
-  background: var(--surface2);
+  background: #fafafa;
+}
+
+[data-theme="dark"] .group-item:hover {
+  background: #111111;
 }
 
 .group-item.active {
-  background: var(--accent-bg);
-  color: var(--accent);
+  background: #e5e5e5;
+  color: #000000;
 }
 
-.group-item.active::before {
-  content: '';
-  position: absolute;
-  left: -8px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 20px;
-  background: var(--group-color, var(--accent));
-  border-radius: 0 3px 3px 0;
+[data-theme="dark"] .group-item.active {
+  background: #262626;
+  color: #ffffff;
 }
 
 .group-icon-box {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 9999px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: var(--surface2);
-  color: var(--text3);
-  transition: all 0.15s ease;
+  background: #fafafa;
+  color: #737373;
+}
+
+[data-theme="dark"] .group-icon-box {
+  background: #1a1a1a;
+  color: #a3a3a3;
+}
+
+.group-item.active .group-icon-box {
+  background: #d4d4d4;
+  color: #000000;
+}
+
+[data-theme="dark"] .group-item.active .group-icon-box {
+  background: #333333;
+  color: #ffffff;
 }
 
 .all-groups-item {
-  margin-bottom: 4px;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 10px;
+  margin-bottom: 6px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+[data-theme="dark"] .all-groups-item {
+  border-bottom-color: #1a1a1a;
 }
 
 .group-name {
   flex: 1;
   font-size: 13px;
-  font-weight: 450;
+  font-weight: 400;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: -0.1px;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
 .group-item.active .group-name {
   font-weight: 500;
-  color: var(--accent);
 }
 
 .group-count {
   font-size: 11px;
-  font-weight: 500;
-  padding: 1px 6px;
-  border-radius: 10px;
-  background: var(--surface2);
-  color: var(--text3);
+  font-weight: 400;
+  padding: 1px 8px;
+  border-radius: 9999px;
+  background: #fafafa;
+  color: #737373;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+[data-theme="dark"] .group-count {
+  background: #1a1a1a;
+  color: #a3a3a3;
 }
 
 .group-item.active .group-count {
-  background: rgba(59, 110, 248, 0.15);
-  color: var(--accent);
+  background: #d4d4d4;
+  color: #262626;
+}
+
+[data-theme="dark"] .group-item.active .group-count {
+  background: #333333;
+  color: #d4d4d4;
 }
 
 .group-actions {
   display: flex;
   gap: 2px;
   opacity: 0;
-  transition: opacity 0.15s;
 }
 
 .group-item:hover .group-actions {
@@ -660,30 +706,39 @@ function toggleTagFilter(tagValue: string) {
   padding: 4px;
   border: none;
   background: none;
-  color: var(--text3);
+  color: #a3a3a3;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 9999px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, color 0.15s;
 }
 
 .action-btn:hover {
-  background: var(--surface2);
-  color: var(--text);
+  background: #e5e5e5;
+  color: #262626;
+}
+
+[data-theme="dark"] .action-btn:hover {
+  background: #262626;
+  color: #d4d4d4;
 }
 
 .action-btn.delete:hover {
-  background: var(--red-bg);
-  color: var(--red);
+  background: #e5e5e5;
+  color: #404040;
+}
+
+[data-theme="dark"] .action-btn.delete:hover {
+  background: #262626;
+  color: #a3a3a3;
 }
 
 .empty-state {
   text-align: center;
   padding: 32px;
   font-size: 13px;
-  color: var(--text3);
+  color: #a3a3a3;
 }
 
 /* Add button */
@@ -691,7 +746,6 @@ function toggleTagFilter(tagValue: string) {
   padding: 8px 12px;
   display: flex;
   justify-content: center;
-  border-top: 1px solid var(--border);
   flex-shrink: 0;
 }
 
@@ -699,21 +753,30 @@ function toggleTagFilter(tagValue: string) {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
-  border: none;
-  background: none;
-  color: var(--text3);
+  padding: 7px 18px;
+  border: 1px solid #e5e5e5;
+  background: #ffffff;
+  color: #262626;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 400;
   cursor: pointer;
-  border-radius: 8px;
-  transition: background 0.15s, color 0.15s;
+  border-radius: 9999px;
   white-space: nowrap;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
 .add-btn:hover {
-  background: var(--surface2);
-  color: var(--text);
+  background: #fafafa;
+}
+
+[data-theme="dark"] .add-btn {
+  background: #0a0a0a;
+  border-color: #262626;
+  color: #d4d4d4;
+}
+
+[data-theme="dark"] .add-btn:hover {
+  background: #111111;
 }
 
 .sidebar.collapsed .sidebar-add {
@@ -723,9 +786,13 @@ function toggleTagFilter(tagValue: string) {
 
 /* Tag Filter Section */
 .tag-filter-section {
-  padding: 8px 12px;
-  border-top: 1px solid var(--border);
+  padding: 10px 12px;
+  border-top: 1px solid #e5e5e5;
   flex-shrink: 0;
+}
+
+[data-theme="dark"] .tag-filter-section {
+  border-top-color: #1a1a1a;
 }
 
 .tag-filter-header {
@@ -733,28 +800,33 @@ function toggleTagFilter(tagValue: string) {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 8px;
-  font-size: 10.5px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text3);
+  letter-spacing: 0.04em;
+  color: #a3a3a3;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
 .clear-filter-btn {
   font-size: 11px;
-  color: var(--accent);
+  color: #525252;
   background: none;
   border: none;
   cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 4px;
-  transition: background 0.15s;
+  padding: 2px 8px;
+  border-radius: 9999px;
   text-transform: none;
   letter-spacing: normal;
+  font-weight: 400;
 }
 
 .clear-filter-btn:hover {
-  background: var(--accent-bg);
+  background: #e5e5e5;
+}
+
+[data-theme="dark"] .clear-filter-btn:hover {
+  background: #262626;
 }
 
 .tag-filter-list {
@@ -766,27 +838,43 @@ function toggleTagFilter(tagValue: string) {
 .tag-filter-item {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  gap: 5px;
+  padding: 4px 10px;
+  border: 1px solid #e5e5e5;
+  border-radius: 9999px;
   background: transparent;
-  color: var(--text2);
+  color: #525252;
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 400;
   cursor: pointer;
-  transition: all 0.15s;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
 .tag-filter-item:hover {
-  background: var(--surface2);
-  border-color: var(--border2);
+  background: #fafafa;
+  border-color: #d4d4d4;
+}
+
+[data-theme="dark"] .tag-filter-item {
+  border-color: #262626;
+  color: #a3a3a3;
+}
+
+[data-theme="dark"] .tag-filter-item:hover {
+  background: #111111;
+  border-color: #333333;
 }
 
 .tag-filter-item.active {
-  background: var(--accent-bg);
-  border-color: var(--accent);
-  color: var(--accent);
+  background: #000000;
+  border-color: #000000;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .tag-filter-item.active {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #000000;
 }
 
 .tag-color-dot {
@@ -810,11 +898,19 @@ function toggleTagFilter(tagValue: string) {
 }
 
 .sidebar-content::-webkit-scrollbar-thumb {
-  background: var(--border2);
-  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 9999px;
 }
 
 .sidebar-content::-webkit-scrollbar-thumb:hover {
-  background: #c4c7d0;
+  background: rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] .sidebar-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .sidebar-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 </style>

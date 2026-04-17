@@ -302,11 +302,11 @@ function handleCardClick() {
     <div
       v-if="showLoginModal"
       class="fixed inset-0 flex items-center justify-center z-50 p-4"
-      style="background: rgba(0,0,0,.4); backdrop-filter: blur(6px)"
+      style="background: rgba(0,0,0,.36); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px)"
       @click.self="showLoginModal = false"
     >
       <div
-        class="w-full max-w-md rounded-2xl shadow-lg overflow-hidden"
+        class="w-full max-w-md rounded-3xl shadow-lg overflow-hidden"
         style="background: var(--surface); animation: modalIn 0.2s ease"
       >
         <!-- Header -->
@@ -489,11 +489,11 @@ function handleCardClick() {
     <div
       v-if="showDeleteConfirm"
       class="fixed inset-0 flex items-center justify-center z-50 p-4"
-      style="background: rgba(0,0,0,.4); backdrop-filter: blur(6px)"
+      style="background: rgba(0,0,0,.36); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px)"
       @click.self="showDeleteConfirm = false"
     >
       <div
-        class="w-full max-w-sm rounded-2xl shadow-lg overflow-hidden"
+        class="w-full max-w-sm rounded-3xl shadow-lg overflow-hidden"
         style="background: var(--surface); animation: modalIn 0.2s ease"
       >
         <div class="px-5 py-6 text-center">
@@ -532,10 +532,10 @@ function handleCardClick() {
 .service-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -543,7 +543,7 @@ function handleCardClick() {
 }
 
 .service-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
   box-shadow: var(--shadow-card-hover);
   border-color: var(--border2);
 }
@@ -561,7 +561,7 @@ function handleCardClick() {
 
 /* Card Body */
 .card-body {
-  padding: 16px 18px 14px;
+  padding: 18px 18px 14px;
   flex: 1;
 }
 
@@ -570,19 +570,18 @@ function handleCardClick() {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .service-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 19px;
   flex-shrink: 0;
-  border: 1px solid var(--border);
 }
 
 .card-meta {
@@ -591,18 +590,19 @@ function handleCardClick() {
 }
 
 .service-name {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   margin-bottom: 3px;
+  letter-spacing: -0.2px;
 }
 
 .service-url {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  font-size: 11px;
   color: var(--text3);
   white-space: nowrap;
   overflow: hidden;
@@ -615,6 +615,7 @@ function handleCardClick() {
   align-items: center;
   gap: 4px;
   font-size: 10px;
+  font-weight: 600;
   color: var(--green);
   flex-shrink: 0;
 }
@@ -628,18 +629,18 @@ function handleCardClick() {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(74,222,128,0.4); }
-  50% { opacity: 0.8; box-shadow: 0 0 0 4px rgba(74,222,128,0); }
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(52,199,89,0.4); }
+  50% { opacity: 0.8; box-shadow: 0 0 0 4px rgba(52,199,89,0); }
 }
 
 /* Description */
 .service-desc {
-  font-size: 12px;
-  color: var(--text3);
+  font-size: 13px;
+  color: var(--text2);
   line-height: 1.5;
   margin-bottom: 12px;
-  min-height: 36px;
-  max-height: 36px;
+  min-height: 39px;
+  max-height: 39px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -649,10 +650,10 @@ function handleCardClick() {
 /* Tags */
 .card-tags {
   display: flex;
-  gap: 5px;
+  gap: 6px;
   flex-wrap: wrap;
   margin-bottom: 12px;
-  min-height: 20px;
+  min-height: 22px;
 }
 
 .card-tags.empty {
@@ -660,11 +661,11 @@ function handleCardClick() {
 }
 
 .badge {
-  font-size: 10px;
-  padding: 2px 7px;
-  border-radius: 4px;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 6px;
   font-weight: 500;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   border: 1px solid;
 }
 
@@ -673,7 +674,8 @@ function handleCardClick() {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .auth-dot {
@@ -689,7 +691,7 @@ function handleCardClick() {
 
 /* Card Footer */
 .card-footer {
-  padding: 0 18px 14px;
+  padding: 0 18px 16px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -697,13 +699,13 @@ function handleCardClick() {
 
 .open-btn {
   flex: 1;
-  padding: 8px 0;
-  border-radius: 8px;
+  padding: 9px 0;
+  border-radius: 10px;
   border: none;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -717,14 +719,14 @@ function handleCardClick() {
 .select-btn {
   width: 28px;
   height: 28px;
-  border-radius: 7px;
+  border-radius: 8px;
   border: 2px solid var(--border);
   background: var(--surface);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.2s;
   flex-shrink: 0;
 }
 
@@ -737,7 +739,7 @@ function handleCardClick() {
 .action-btn {
   width: 32px;
   height: 32px;
-  border-radius: 7px;
+  border-radius: 8px;
   border: 1px solid var(--border);
   background: transparent;
   color: var(--text3);
@@ -745,20 +747,20 @@ function handleCardClick() {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s;
+  transition: all 0.2s;
   flex-shrink: 0;
 }
 
 .action-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
-  background: rgba(56,189,248,0.08);
+  background: var(--accent-bg);
 }
 
 .del-btn:hover {
   border-color: var(--red);
   color: var(--red);
-  background: rgba(248,113,113,0.08);
+  background: var(--red-bg);
 }
 
 /* Account List */
@@ -767,9 +769,9 @@ function handleCardClick() {
   align-items: center;
   gap: 10px;
   padding: 8px 10px;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
 }
 
 .account-item:hover {
@@ -805,7 +807,7 @@ function handleCardClick() {
 
 .account-username {
   font-size: 11px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
   color: var(--text3);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -821,7 +823,7 @@ function handleCardClick() {
 .account-copy-btn {
   width: 28px;
   height: 28px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--border);
   background: transparent;
   color: var(--text3);
@@ -829,7 +831,7 @@ function handleCardClick() {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.2s;
 }
 
 .account-copy-btn:hover {

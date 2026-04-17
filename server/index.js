@@ -10,6 +10,7 @@ import importRouter from './routes/import.js';
 import tagsRouter from './routes/tags.js';
 import accountsRouter from './routes/accounts.js';
 import authRouter from './routes/auth.js';
+import todosRouter from './routes/todos.js';
 import { authMiddleware } from './middleware/auth.js';
 import errorHandler from './middleware/errorHandler.js';
 import { startStatusChecker } from './tasks/statusChecker.js';
@@ -33,6 +34,7 @@ app.use('/api/services', authMiddleware, servicesRouter);
 app.use('/api/export', authMiddleware, exportRouter);
 app.use('/api/import', authMiddleware, importRouter);
 app.use('/api/tags', authMiddleware, tagsRouter);
+app.use('/api/todos', authMiddleware, todosRouter);
 app.use('/api/services/:serviceId/accounts', authMiddleware, accountsRouter);
 
 // 静态文件托管（生产环境）

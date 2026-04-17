@@ -258,7 +258,6 @@ const isEditing = computed(() => !!props.service?.id);
 const showGroupDropdown = ref(false);
 const groupDropdownRef = ref<HTMLElement | null>(null);
 const selectedGroupName = computed(() => store.groups.find(g => g.id === formData.value.group_id)?.name || '选择分组');
-const selectedGroupColor = computed(() => store.groups.find(g => g.id === formData.value.group_id)?.color || '#6b7280');
 const dropdownPos = ref({ top: 0, left: 0, width: 0 });
 
 function toggleGroupDropdown() {
@@ -497,10 +496,10 @@ async function handleSubmit() {
   <div
     v-if="show"
     class="fixed inset-0 flex items-center justify-center z-50 p-4"
-    style="background: rgba(0,0,0,.4); backdrop-filter: blur(6px)"
+    style="background: rgba(0,0,0,.36); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px)"
   >
     <div
-      class="w-full max-w-lg rounded-2xl shadow-lg overflow-hidden flex flex-col"
+      class="w-full max-w-lg rounded-3xl shadow-lg overflow-hidden flex flex-col"
       style="background: var(--surface); animation: modalIn 0.2s ease; height: 80vh; max-height: 700px"
     >
       <!-- Form -->
@@ -622,13 +621,9 @@ async function handleSubmit() {
                 boxShadow: showGroupDropdown ? '0 0 0 2px var(--accent-bg)' : 'none'
               }"
             >
-              <span
-                class="w-3 h-3 rounded-full flex-shrink-0 transition-all"
-                :style="{
-                  background: selectedGroupColor,
-                  boxShadow: showGroupDropdown ? '0 0 0 3px ' + selectedGroupColor + '30' : 'none'
-                }"
-              ></span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text3); flex-shrink: 0">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
               <span class="flex-1 text-left font-medium">{{ selectedGroupName }}</span>
               <svg
                 width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -661,24 +656,10 @@ async function handleSubmit() {
                     class="group-dropdown-item w-full flex items-center gap-3 px-3.5 py-2.5 text-[13px] transition-all duration-100"
                     :class="{ 'is-active': formData.group_id === group.id }"
                   >
-                    <span
-                      class="w-3.5 h-3.5 rounded-full flex-shrink-0 transition-all duration-150"
-                      :style="{
-                        background: group.color,
-                        boxShadow: formData.group_id === group.id ? '0 0 0 3px ' + group.color + '30' : 'none',
-                        transform: formData.group_id === group.id ? 'scale(1.1)' : 'scale(1)'
-                      }"
-                    ></span>
-                    <span class="flex-1 text-left font-medium">{{ group.name }}</span>
-                    <svg
-                      v-if="formData.group_id === group.id"
-                      width="14" height="14" viewBox="0 0 24 24"
-                      :style="{ color: group.color }"
-                      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
-                      class="check-icon"
-                    >
-                      <polyline points="20 6 9 17 4 12"/>
+                    <svg width="15" height="15" viewBox="0 0 24 24" :fill="formData.group_id === group.id ? group.color : 'none'" :stroke="formData.group_id === group.id ? group.color : 'var(--text3)'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0">
+                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
                     </svg>
+                    <span class="flex-1 text-left font-medium" :style="{ color: formData.group_id === group.id ? group.color : 'var(--text)' }">{{ group.name }}</span>
                   </button>
                 </div>
               </div>
@@ -983,7 +964,7 @@ async function handleSubmit() {
       style="background: rgba(0,0,0,.5)"
     >
       <div
-        class="w-full max-w-md rounded-2xl shadow-lg overflow-hidden"
+        class="w-full max-w-md rounded-3xl shadow-lg overflow-hidden"
         style="background: var(--surface); animation: modalIn 0.2s ease"
       >
         <!-- Header -->
@@ -1099,7 +1080,7 @@ async function handleSubmit() {
       @click.self="showDeleteConfirm = false"
     >
       <div
-        class="w-full max-w-sm rounded-2xl shadow-lg overflow-hidden"
+        class="w-full max-w-sm rounded-3xl shadow-lg overflow-hidden"
         style="background: var(--surface); animation: modalIn 0.2s ease"
       >
         <div class="px-5 py-6 text-center">
@@ -1140,7 +1121,7 @@ async function handleSubmit() {
       @click.self="showAccountDeleteConfirm = false"
     >
       <div
-        class="w-full max-w-sm rounded-2xl shadow-lg overflow-hidden"
+        class="w-full max-w-sm rounded-3xl shadow-lg overflow-hidden"
         style="background: var(--surface); animation: modalIn 0.2s ease"
       >
         <div class="px-5 py-6 text-center">

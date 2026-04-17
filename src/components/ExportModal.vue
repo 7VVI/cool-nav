@@ -83,11 +83,11 @@ async function handleExport() {
   <div
     v-if="show"
     class="fixed inset-0 flex items-center justify-center z-50"
-    style="background: rgba(0,0,0,.4); backdrop-filter: blur(6px)"
+    style="background: rgba(0,0,0,.36); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px)"
     @click.self="emit('close')"
   >
     <div
-      class="w-[400px] rounded-2xl shadow-lg overflow-hidden"
+      class="w-[400px] rounded-3xl shadow-lg overflow-hidden"
       style="background: var(--surface); animation: modalIn 0.2s ease"
     >
       <!-- Header -->

@@ -32,14 +32,14 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f7fa;
+  background: #f5f5f7;
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid #e5e7eb;
-  border-top-color: #3b6ef8;
+  border: 3px solid rgba(0, 0, 0, 0.06);
+  border-top-color: #007AFF;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }

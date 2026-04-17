@@ -3,7 +3,7 @@ import { ref, watch } from 'vue';
 import { useNavStore } from '@/stores/navStore';
 import type { Group } from '@/types';
 
-const COLORS = ['#ef4444','#f97316','#eab308','#22c55e','#06b6d4','#3b6ef8','#8b5cf6','#ec4899','#64748b','#10b981'];
+const COLORS = ['#FF3B30','#FF9500','#FFCC00','#34C759','#5AC8FA','#007AFF','#AF52DE','#FF2D55','#8E8E93','#30D158'];
 
 // 图标定义（实心填充）
 const GROUP_ICONS: { name: string; path: string }[] = [
@@ -33,7 +33,7 @@ const emit = defineEmits<{
 
 const store = useNavStore();
 const groupName = ref('');
-const selectedColor = ref(COLORS[5]);
+const selectedColor = ref(COLORS[5] || '#007AFF');
 const selectedIcon = ref('folder');
 const saving = ref(false);
 const errorMessage = ref('');
@@ -73,11 +73,11 @@ async function handleSubmit() {
   <div
     v-if="show"
     class="fixed inset-0 flex items-center justify-center z-50 p-4"
-    style="background: rgba(0,0,0,.4); backdrop-filter: blur(6px)"
+    style="background: rgba(0,0,0,.36); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px)"
     @click.self="emit('close')"
   >
     <div
-      class="w-full max-w-sm rounded-2xl shadow-lg overflow-hidden"
+      class="w-full max-w-sm rounded-3xl shadow-lg overflow-hidden"
       style="background: var(--surface); animation: modalIn 0.2s ease"
     >
       <!-- Header -->
