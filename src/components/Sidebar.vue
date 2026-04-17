@@ -253,14 +253,15 @@ function toggleTagFilter(tagValue: string) {
             :key="group.id"
             class="group-item"
             :class="{ active: store.currentGroupId === group.id }"
+            :style="{ '--group-color': group.color || '#525252' }"
             @click="selectGroup(group.id)"
           >
-            <div class="group-icon-box">
+            <div class="group-icon-box" :style="{ color: group.color || '#737373' }">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                 <path :d="getGroupIconPath(group.icon, group.id)"/>
               </svg>
             </div>
-            <span class="group-name">{{ group.name }}</span>
+            <span class="group-name" :style="store.currentGroupId === group.id ? { color: group.color || '#000' } : {}">{{ group.name }}</span>
             <span v-if="group.serviceCount !== undefined" class="group-count">{{ group.serviceCount }}</span>
           </div>
           <div v-if="filteredGroups.length === 0" class="empty-state">未找到匹配的分组</div>
@@ -296,14 +297,15 @@ function toggleTagFilter(tagValue: string) {
               <div v-if="!group.parent_id" :key="group.id" class="group-item-wrapper">
                 <div
                   :class="['group-item', { active: store.currentGroupId === group.id && !store.showAllGroups }]"
+                  :style="{ '--group-color': group.color || '#525252' }"
                   @click="selectGroup(group.id)"
                 >
-                  <div class="group-icon-box">
+                  <div class="group-icon-box" :style="{ color: group.color || '#737373' }">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                       <path :d="getGroupIconPath(group.icon, group.id)"/>
                     </svg>
                   </div>
-                  <span class="group-name">{{ group.name }}</span>
+                  <span class="group-name" :style="store.currentGroupId === group.id && !store.showAllGroups ? { color: group.color || '#000' } : {}">{{ group.name }}</span>
                   <span v-if="group.serviceCount !== undefined" class="group-count">{{ group.serviceCount }}</span>
                   <div class="group-actions">
                     <button @click.stop="emit('editGroup', group)" class="action-btn" title="编辑">
@@ -356,7 +358,9 @@ function toggleTagFilter(tagValue: string) {
           @click="toggleTagFilter(tag.value)"
           class="tag-filter-item"
           :class="{ active: selectedTagFilter === tag.value }"
+          :style="selectedTagFilter === tag.value ? { background: tag.color + '15', borderColor: tag.color + '40', color: tag.color } : {}"
         >
+          <span class="tag-color-dot" :style="{ background: tag.color }"></span>
           <span class="tag-filter-name">{{ tag.name }}</span>
         </button>
       </div>
@@ -599,20 +603,20 @@ function toggleTagFilter(tagValue: string) {
 }
 
 .group-item:hover {
-  background: #fafafa;
+  background: color-mix(in srgb, var(--group-color, #525252) 8%, transparent);
 }
 
 [data-theme="dark"] .group-item:hover {
-  background: #111111;
+  background: color-mix(in srgb, var(--group-color, #a3a3a3) 10%, transparent);
 }
 
 .group-item.active {
-  background: #e5e5e5;
+  background: color-mix(in srgb, var(--group-color, #525252) 12%, transparent);
   color: #000000;
 }
 
 [data-theme="dark"] .group-item.active {
-  background: #262626;
+  background: color-mix(in srgb, var(--group-color, #a3a3a3) 15%, transparent);
   color: #ffffff;
 }
 
@@ -634,13 +638,11 @@ function toggleTagFilter(tagValue: string) {
 }
 
 .group-item.active .group-icon-box {
-  background: #d4d4d4;
-  color: #000000;
+  background: color-mix(in srgb, var(--group-color, #525252) 15%, transparent);
 }
 
 [data-theme="dark"] .group-item.active .group-icon-box {
-  background: #333333;
-  color: #ffffff;
+  background: color-mix(in srgb, var(--group-color, #a3a3a3) 18%, transparent);
 }
 
 .all-groups-item {

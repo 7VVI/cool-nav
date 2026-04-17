@@ -198,7 +198,7 @@ function handleCardClick() {
       :style="{
         background: 'var(--surface)',
         borderColor: selected ? 'var(--accent)' : 'var(--border)',
-        animation: 'cardIn 0.25s ease both'
+        animation: 'cardIn 0.18s ease forwards'
       }"
       @click="handleCardClick"
     >
@@ -535,11 +535,13 @@ function handleCardClick() {
   border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   position: relative;
   display: flex;
   flex-direction: column;
   box-shadow: var(--shadow-card);
+  will-change: transform;
+  contain: layout style;
 }
 
 .service-card:hover {

@@ -1101,6 +1101,8 @@ function formatTodoTime(dateStr: string) {
 .card-wrapper {
   display: flex;
   min-width: 0;
+  will-change: transform;
+  contain: layout style;
 }
 
 .card-wrapper > :deep(*) {
@@ -1112,6 +1114,7 @@ function formatTodoTime(dateStr: string) {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
+  contain: layout;
 }
 
 .add-service-card {
