@@ -427,15 +427,16 @@ function getColumnList(status: string) {
 async function handleTodoDragEnd(evt: any, _list: Todo[]) {
   const item = evt.item.__draggable_context?.element as Todo | undefined;
   if (!item) return;
-  // Find which column the item ended up in by checking its new parent
   const newStatus = evt.to?.dataset?.status as Todo['status'] | undefined;
   if (newStatus && newStatus !== item.status) {
     await todoStore.moveTodo(item.id, newStatus);
+    await todoStore.fetchTodos();
   }
 }
 
 async function handleMoveTodo(id: number, newStatus: Todo['status']) {
   await todoStore.moveTodo(id, newStatus);
+  await todoStore.fetchTodos();
 }
 
 function hideTagSuggestions() {
@@ -443,7 +444,9 @@ function hideTagSuggestions() {
 }
 
 async function handleDeleteTodo(id: number) {
+  if (!confirm('确定删除此待办？删除后不可恢复。')) return;
   await todoStore.deleteTodo(id);
+  await todoStore.fetchTodos();
 }
 
 function openTodoModal() {
@@ -485,6 +488,7 @@ async function handleSaveTodo() {
       status: 'todo'
     });
   }
+  await todoStore.fetchTodos();
   showTodoModal.value = false;
 }
 
