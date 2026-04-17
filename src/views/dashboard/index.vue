@@ -582,7 +582,7 @@ function formatTodoTime(dateStr: string) {
       </header>
 
       <!-- ==================== Services Page ==================== -->
-      <div v-if="currentPage === 'services'" class="flex-1 flex flex-col overflow-hidden">
+      <div v-if="currentPage === 'services'" class="flex-1 flex flex-col overflow-hidden" style="min-height: 0">
       <!-- Service Sub-Header -->
       <div
         class="flex items-center justify-between px-6 border-b flex-shrink-0"
@@ -631,7 +631,7 @@ function formatTodoTime(dateStr: string) {
       </div>
 
       <!-- Service Content Area -->
-      <div class="flex-1 p-6 overflow-y-auto">
+      <div class="flex-1 p-6 overflow-y-auto" style="min-height: 0">
         <div v-if="store.loading || isSearching" class="flex flex-col items-center justify-center py-20" style="color: var(--text3)">
           <div class="w-8 h-8 border-2 rounded-full animate-spin mb-3" style="border-color: var(--border2); border-top-color: var(--accent)"></div>
           <p class="text-sm">加载中...</p>
