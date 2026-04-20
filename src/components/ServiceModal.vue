@@ -495,12 +495,11 @@ async function handleSubmit() {
 <template>
   <div
     v-if="show"
-    class="fixed inset-0 flex items-center justify-center z-50 p-4"
-    style="background: rgba(0,0,0,.36); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px)"
+    class="fixed inset-0 flex items-center justify-center z-50 p-4 modal-backdrop"
   >
     <div
-      class="w-full max-w-lg rounded-3xl shadow-lg overflow-hidden flex flex-col"
-      style="background: var(--surface); animation: modalIn 0.2s ease; height: 80vh; max-height: 700px"
+      class="w-full max-w-lg rounded-3xl shadow-lg overflow-hidden flex flex-col modal-container"
+      style="background: var(--surface); height: 80vh; max-height: 700px"
     >
       <!-- Form -->
       <form @submit.prevent="handleSubmit" class="flex flex-col flex-1 min-h-0">
@@ -675,7 +674,7 @@ async function handleSubmit() {
           <input
             v-model="formData.name"
             type="text"
-            class="w-full px-2.5 py-2 border rounded-lg text-[13.5px] outline-none transition-all"
+            class="w-full px-2.5 py-2 border rounded-lg text-[13.5px] outline-none transition-all service-input"
             style="border-color: var(--border); color: var(--text); background: var(--surface)"
             placeholder="例：OA 系统"
             required
@@ -688,7 +687,7 @@ async function handleSubmit() {
           <input
             v-model="formData.description"
             type="text"
-            class="w-full px-2.5 py-2 border rounded-lg text-[13.5px] outline-none transition-all"
+            class="w-full px-2.5 py-2 border rounded-lg text-[13.5px] outline-none transition-all service-input"
             style="border-color: var(--border); color: var(--text); background: var(--surface)"
             placeholder="一句话描述（选填）"
           />
@@ -702,7 +701,7 @@ async function handleSubmit() {
           <input
             v-model="formData.url"
             type="url"
-            class="w-full px-2.5 py-2 border rounded-lg text-[13.5px] outline-none transition-all"
+            class="w-full px-2.5 py-2 border rounded-lg text-[13.5px] outline-none transition-all service-input"
             style="border-color: var(--border); color: var(--text); background: var(--surface)"
             placeholder="https://example.com/login"
             required
@@ -1157,6 +1156,29 @@ async function handleSubmit() {
 </template>
 
 <style scoped>
+/* Modal backdrop - frosted glass */
+.modal-backdrop {
+  background: rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+}
+
+/* Modal container - scale in animation */
+.modal-container {
+  animation: modalScaleIn 0.22s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* Input focus glow */
+.service-input:focus {
+  border-color: rgba(0, 122, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.12);
+}
+
+[data-theme="dark"] .service-input:focus {
+  border-color: rgba(10, 132, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.15);
+}
+
 .tag-btn-wrapper {
   position: relative;
 }

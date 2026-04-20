@@ -551,10 +551,12 @@ function toggleTagFilter(tagValue: string) {
   color: #000000;
   outline: none;
   font-family: system-ui, -apple-system, sans-serif;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .search-input:focus {
-  border-color: #d4d4d4;
+  border-color: rgba(0, 122, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.12);
 }
 
 [data-theme="dark"] .search-input {
@@ -564,7 +566,8 @@ function toggleTagFilter(tagValue: string) {
 }
 
 [data-theme="dark"] .search-input:focus {
-  border-color: #404040;
+  border-color: rgba(10, 132, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.15);
 }
 
 .search-input::placeholder {

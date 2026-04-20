@@ -272,11 +272,12 @@ function handleCardClick() {
           @click.stop="openLoginModal"
           class="open-btn"
           :style="{
+            '--btn-color': accentColor,
             background: hexToRgba(accentColor, 0.15),
             color: accentColor
           }"
         >
-          ↗ 打开
+          <span class="open-arrow">↗</span> 打开
         </button>
         <button
           @click.stop="emit('edit', service)"
@@ -535,7 +536,7 @@ function handleCardClick() {
   border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition: box-shadow 0.28s cubic-bezier(0.25, 0.1, 0.25, 1), border-color 0.28s ease;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -543,20 +544,25 @@ function handleCardClick() {
 }
 
 .service-card:hover {
-  transform: translateY(-2px);
   box-shadow: var(--shadow-card-hover);
   border-color: var(--border2);
+}
+
+.service-card:hover .accent-bar {
+  opacity: 1;
 }
 
 .card-selected {
   box-shadow: 0 0 0 2px var(--accent);
 }
 
-/* 渐变色条 */
+/* 渐变色条 - 默认隐藏，悬停显示 */
 .accent-bar {
   height: 3px;
   width: 100%;
   flex-shrink: 0;
+  opacity: 0.7;
+  transition: opacity 0.28s ease, height 0.28s ease;
 }
 
 /* Card Body */
@@ -705,15 +711,28 @@ function handleCardClick() {
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.22s cubic-bezier(0.25, 0.1, 0.25, 1);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
+  position: relative;
 }
 
 .open-btn:hover {
-  opacity: 0.85;
+  background: var(--btn-color);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.open-btn:hover .open-arrow {
+  transform: translateX(3px) translateY(-2px);
+}
+
+.open-arrow {
+  display: inline-block;
+  transition: transform 0.22s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .select-btn {

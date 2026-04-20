@@ -332,37 +332,11 @@ function handleLogout() {
 }
 
 // ============ Page Navigation ============
-const currentPage = ref<'services' | 'todos' | 'notes'>((localStorage.getItem('currentPage') as any) || 'services');
+const currentPage = ref<'services' | 'todos'>((localStorage.getItem('currentPage') as any) || 'services');
 
 watch(currentPage, (page) => {
   localStorage.setItem('currentPage', page);
 });
-
-// ============ Notes Feature ============
-const noteUrl = ref(localStorage.getItem('noteUrl') || '');
-const noteUrlInput = ref('');
-const noteUrlKey = ref(0);
-const showNoteInput = ref(false);
-
-function saveNoteUrl() {
-  const url = noteUrlInput.value.trim();
-  if (!url) return;
-  noteUrl.value = url;
-  localStorage.setItem('noteUrl', url);
-  noteUrlKey.value++;
-  showNoteInput.value = false;
-}
-
-function clearNoteUrl() {
-  noteUrl.value = '';
-  noteUrlInput.value = '';
-  localStorage.removeItem('noteUrl');
-}
-
-function openNoteInput() {
-  noteUrlInput.value = noteUrl.value;
-  showNoteInput.value = true;
-}
 
 // ============ Todo Feature ============
 const todoStore = useTodoStore();
@@ -567,10 +541,6 @@ function formatTodoTime(dateStr: string) {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
             <span>待办清单</span>
             <span v-if="todoStats.todo > 0" class="tab-badge todo">{{ todoStats.todo }}</span>
-          </button>
-          <button class="topbar-tab" :class="{ active: currentPage === 'notes' }" @click="currentPage = 'notes'">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-            <span>日志笔记</span>
           </button>
         </nav>
 
@@ -814,80 +784,6 @@ function formatTodoTime(dateStr: string) {
           <div class="px-6 py-3.5 border-t flex justify-end gap-2" style="border-color: var(--border)">
             <button @click="showTodoModal = false" class="px-4 py-2 rounded-xl text-[13px] font-medium border" style="border-color: var(--border); color: var(--text2)">取消</button>
             <button @click="handleSaveTodo" class="px-4 py-2 rounded-xl text-[13px] font-medium" style="background: var(--accent); color: white">{{ editingTodoId ? '保存' : '创建' }}</button>
-          </div>
-        </div>
-      </div>
-      </template>
-
-      <!-- ==================== Notes Page ==================== -->
-      <template v-if="currentPage === 'notes'">
-      <div class="flex-1 flex flex-col overflow-hidden" style="background: var(--bg)">
-        <!-- Notes Toolbar -->
-        <div class="notes-toolbar">
-          <div class="notes-toolbar-left">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-            <span style="font-size: 13px; font-weight: 600; color: var(--text);">日志笔记</span>
-            <span v-if="noteUrl" style="font-size: 11px; color: var(--text3); max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ noteUrl }}</span>
-          </div>
-          <div class="notes-toolbar-right">
-            <button v-if="noteUrl" @click="noteUrlKey++" class="notes-toolbar-btn">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-              刷新
-            </button>
-            <button v-if="noteUrl" @click="clearNoteUrl" class="notes-toolbar-btn" style="color: var(--red);">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              移除
-            </button>
-            <button @click="openNoteInput" class="notes-toolbar-btn">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-              {{ noteUrl ? '更换链接' : '嵌入链接' }}
-            </button>
-          </div>
-        </div>
-
-        <!-- Notes Content -->
-        <div class="notes-content">
-          <iframe
-            v-if="noteUrl"
-            :src="noteUrl"
-            :key="noteUrlKey"
-            class="notes-iframe"
-          ></iframe>
-          <div v-if="!noteUrl" class="notes-empty">
-            <div class="notes-empty-icon">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-            </div>
-            <div style="font-size: 16px; font-weight: 600; color: var(--text);">嵌入外部笔记</div>
-            <div style="font-size: 13px; color: var(--text2); max-width: 360px; text-align: center; line-height: 1.7;">
-              支持嵌入思源笔记、Notion、语雀等支持外部访问的笔记页面
-            </div>
-            <button @click="openNoteInput" class="notes-empty-btn">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-              嵌入链接
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Notes URL Input Modal -->
-      <div v-if="showNoteInput" class="fixed inset-0 flex items-center justify-center z-50 p-4" style="background: rgba(0,0,0,.36); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px)" @click.self="showNoteInput = false">
-        <div class="w-full max-w-lg rounded-3xl shadow-lg overflow-hidden" style="background: var(--surface); animation: modalIn 0.2s ease">
-          <div class="px-6 py-5 border-b flex items-center justify-between" style="border-color: var(--border)">
-            <span class="text-[15px] font-bold" style="color: var(--text)">嵌入笔记链接</span>
-            <button @click="showNoteInput = false" class="w-7 h-7 rounded-md flex items-center justify-center" style="color: var(--text3)">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          </div>
-          <div class="px-6 py-4">
-            <label class="block text-xs font-semibold mb-2" style="color: var(--text2)">笔记页面地址</label>
-            <input v-model="noteUrlInput" type="url" class="todo-form-input" placeholder="例如: http://localhost:6806/stage/build/desktop/?r=xxx" @keydown.enter="saveNoteUrl" />
-            <p style="font-size: 11px; color: var(--text3); margin-top: 8px; line-height: 1.6;">
-              提示：输入目标笔记的完整地址，如 <code style="background: var(--bg); padding: 1px 5px; border-radius: 4px; font-size: 10px;">http://192.168.1.100:6806</code>
-            </p>
-          </div>
-          <div class="px-6 py-3.5 border-t flex justify-end gap-2" style="border-color: var(--border)">
-            <button @click="showNoteInput = false" class="px-4 py-2 rounded-xl text-[13px] font-medium border" style="border-color: var(--border); color: var(--text2)">取消</button>
-            <button @click="saveNoteUrl" class="px-4 py-2 rounded-xl text-[13px] font-medium" style="background: var(--purple); color: white">确认嵌入</button>
           </div>
         </div>
       </div>
@@ -1501,8 +1397,8 @@ function formatTodoTime(dateStr: string) {
 }
 
 .todo-form-input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+  border-color: rgba(0, 122, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.12);
 }
 
 .todo-form-input.has-error {
@@ -1533,92 +1429,5 @@ function formatTodoTime(dateStr: string) {
 .tag-suggestion-item:hover {
   background: var(--accent);
   color: white;
-}
-
-/* ========== Notes Page ========== */
-.notes-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
-  flex-shrink: 0;
-}
-.notes-toolbar-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-.notes-toolbar-right {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-}
-.notes-toolbar-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  padding: 5px 10px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.notes-toolbar-btn:hover {
-  background: var(--surface);
-}
-.notes-content {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-}
-.notes-iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-  display: block;
-}
-.notes-empty {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-.notes-empty-icon {
-  width: 72px;
-  height: 72px;
-  border-radius: 18px;
-  background: rgba(175, 82, 222, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.notes-empty-btn {
-  margin-top: 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  padding: 8px 18px;
-  border-radius: 12px;
-  border: none;
-  background: var(--purple);
-  color: white;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.notes-empty-btn:hover {
-  opacity: 0.85;
-  transform: translateY(-1px);
 }
 </style>
