@@ -600,35 +600,35 @@ function toggleTagFilter(tagValue: string) {
   padding: 7px 10px;
   border-radius: 9999px;
   cursor: pointer;
-  color: #1a1a1a;
+  color: #3d3d3d;
   white-space: nowrap;
   position: relative;
 }
 
 [data-theme="dark"] .group-item {
-  color: #f5f5f7;
+  color: #d4d4d4;
 }
 
 .group-item:hover {
-  background: color-mix(in srgb, var(--group-color, #1a1a1a) 6%, transparent);
+  background: color-mix(in srgb, var(--group-color, #525252) 6%, transparent);
 }
 
 [data-theme="dark"] .group-item:hover {
-  background: color-mix(in srgb, var(--group-color, #f5f5f7) 8%, transparent);
+  background: color-mix(in srgb, var(--group-color, #a3a3a3) 8%, transparent);
 }
 
 .group-item.active {
-  background: color-mix(in srgb, var(--group-color, #525252) 12%, transparent);
-  color: #000000;
+  background: color-mix(in srgb, var(--group-color, #525252) 10%, transparent);
+  color: #1a1a1a;
 }
 
 [data-theme="dark"] .group-item.active {
-  background: color-mix(in srgb, var(--group-color, #a3a3a3) 15%, transparent);
-  color: #ffffff;
+  background: color-mix(in srgb, var(--group-color, #a3a3a3) 12%, transparent);
+  color: #f5f5f7;
 }
 
 [data-theme="dark"] .group-item.active .group-name {
-  color: #ffffff;
+  color: #f5f5f7;
   font-weight: 600;
 }
 
@@ -640,21 +640,21 @@ function toggleTagFilter(tagValue: string) {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: #f0f0f0;
-  color: #1a1a1a;
+  background: #f5f5f5;
+  color: #525252;
 }
 
 [data-theme="dark"] .group-icon-box {
-  background: #2a2a2a;
-  color: #f5f5f7;
+  background: #222222;
+  color: #b0b0b0;
 }
 
 .group-item.active .group-icon-box {
-  background: color-mix(in srgb, var(--group-color, #1a1a1a) 12%, transparent);
+  background: color-mix(in srgb, var(--group-color, #525252) 12%, transparent);
 }
 
 [data-theme="dark"] .group-item.active .group-icon-box {
-  background: color-mix(in srgb, var(--group-color, #f5f5f7) 15%, transparent);
+  background: color-mix(in srgb, var(--group-color, #a3a3a3) 15%, transparent);
 }
 
 .all-groups-item {
@@ -670,7 +670,7 @@ function toggleTagFilter(tagValue: string) {
 .group-name {
   flex: 1;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   letter-spacing: -0.1px;
@@ -678,7 +678,7 @@ function toggleTagFilter(tagValue: string) {
 }
 
 [data-theme="dark"] .group-name {
-  color: #f5f5f7;
+  color: #d4d4d4;
 }
 
 .group-item.active .group-name {
@@ -691,23 +691,23 @@ function toggleTagFilter(tagValue: string) {
   padding: 1px 8px;
   border-radius: 9999px;
   background: #f0f0f0;
-  color: #525252;
+  color: #6b6b6b;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 [data-theme="dark"] .group-count {
   background: #2a2a2a;
-  color: #a3a3a3;
+  color: #8a8a8a;
 }
 
 .group-item.active .group-count {
-  background: #d4d4d4;
-  color: #1a1a1a;
+  background: #e0e0e0;
+  color: #3d3d3d;
 }
 
 [data-theme="dark"] .group-item.active .group-count {
-  background: #404040;
-  color: #f5f5f7;
+  background: #3a3a3a;
+  color: #c0c0c0;
 }
 
 .group-actions {
@@ -774,9 +774,9 @@ function toggleTagFilter(tagValue: string) {
   padding: 7px 18px;
   border: 1px solid #d4d4d4;
   background: #ffffff;
-  color: #1a1a1a;
+  color: #3d3d3d;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   border-radius: 9999px;
   white-space: nowrap;
@@ -784,17 +784,17 @@ function toggleTagFilter(tagValue: string) {
 }
 
 .add-btn:hover {
-  background: #f5f5f5;
+  background: #f8f8f8;
 }
 
 [data-theme="dark"] .add-btn {
   background: #1a1a1a;
-  border-color: #404040;
-  color: #f5f5f7;
+  border-color: #3a3a3a;
+  color: #b0b0b0;
 }
 
 [data-theme="dark"] .add-btn:hover {
-  background: #2a2a2a;
+  background: #222222;
 }
 
 .sidebar.collapsed .sidebar-add {
@@ -822,17 +822,17 @@ function toggleTagFilter(tagValue: string) {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #525252;
+  color: #6b6b6b;
   font-family: system-ui, -apple-system, sans-serif;
 }
 
 [data-theme="dark"] .tag-filter-header {
-  color: #a3a3a3;
+  color: #8a8a8a;
 }
 
 .clear-filter-btn {
   font-size: 11px;
-  color: #1a1a1a;
+  color: #525252;
   background: none;
   border: none;
   cursor: pointer;
@@ -848,7 +848,7 @@ function toggleTagFilter(tagValue: string) {
 }
 
 [data-theme="dark"] .clear-filter-btn {
-  color: #d4d4d4;
+  color: #8a8a8a;
 }
 
 [data-theme="dark"] .clear-filter-btn:hover {
@@ -869,7 +869,7 @@ function toggleTagFilter(tagValue: string) {
   border: 1px solid #d4d4d4;
   border-radius: 9999px;
   background: transparent;
-  color: #1a1a1a;
+  color: #3d3d3d;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -877,17 +877,17 @@ function toggleTagFilter(tagValue: string) {
 }
 
 .tag-filter-item:hover {
-  background: #f5f5f5;
-  border-color: #a3a3a3;
+  background: #f8f8f8;
+  border-color: #b0b0b0;
 }
 
 [data-theme="dark"] .tag-filter-item {
-  border-color: #404040;
-  color: #f5f5f7;
+  border-color: #3a3a3a;
+  color: #b0b0b0;
 }
 
 [data-theme="dark"] .tag-filter-item:hover {
-  background: #1a1a1a;
+  background: #222222;
   border-color: #525252;
 }
 
