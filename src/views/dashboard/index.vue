@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import draggable from 'vuedraggable';
+import { marked } from 'marked';
 import { useNavStore } from '@/stores/navStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useThemeStore } from '@/stores/themeStore';
@@ -346,6 +347,91 @@ const showTodoModal = ref(false);
 const editingTodoId = ref<number | null>(null);
 const todoForm = ref({ title: '', desc: '', priority: 'medium' as const, tag: '运维' });
 const todoFormError = ref('');
+const todoDescPreview = ref(false);
+const todoDescTextarea = ref<HTMLTextAreaElement | null>(null);
+
+// Markdown render function
+function renderMarkdown(text: string): string {
+  if (!text) return '';
+  return marked.parse(text, {
+    breaks: true,
+    gfm: true
+  }) as string;
+}
+
+// Insert markdown format around selected text
+function insertMdFormat(before: string, after: string, placeholder: string = '') {
+  const textarea = todoDescTextarea.value;
+  if (!textarea) return;
+
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const selected = todoForm.value.desc.substring(start, end);
+  const text = todoForm.value.desc;
+
+  if (selected) {
+    // Wrap selected text
+    todoForm.value.desc = text.substring(0, start) + before + selected + after + text.substring(end);
+    // Restore selection to include the format markers
+    setTimeout(() => {
+      textarea.selectionStart = start + before.length;
+      textarea.selectionEnd = end + before.length;
+      textarea.focus();
+    }, 0);
+  } else {
+    // No selection: insert placeholder and position cursor inside
+    const insertText = before + placeholder + after;
+    todoForm.value.desc = text.substring(0, start) + insertText + text.substring(end);
+    setTimeout(() => {
+      textarea.selectionStart = start + before.length;
+      textarea.selectionEnd = start + before.length + placeholder.length;
+      textarea.focus();
+    }, 0);
+  }
+}
+
+function insertMdBold() {
+  insertMdFormat('**', '**', '粗体文字');
+}
+
+function insertMdItalic() {
+  insertMdFormat('*', '*', '斜体文字');
+}
+
+function insertMdList() {
+  const textarea = todoDescTextarea.value;
+  if (!textarea) return;
+
+  const start = textarea.selectionStart;
+  const text = todoForm.value.desc;
+
+  // Find the start of the current line
+  const lineStart = text.lastIndexOf('\n', start - 1) + 1;
+  const before = text.substring(0, lineStart);
+  const after = text.substring(lineStart);
+
+  // Check if line already starts with list marker
+  if (after.match(/^[-*]\s/)) {
+    // Remove list marker
+    todoForm.value.desc = before + after.substring(2);
+  } else {
+    // Add list marker
+    todoForm.value.desc = before + '- ' + after;
+  }
+
+  setTimeout(() => {
+    textarea.selectionStart = textarea.selectionEnd = lineStart + 2;
+    textarea.focus();
+  }, 0);
+}
+
+function insertMdCode() {
+  insertMdFormat('`', '`', '代码');
+}
+
+function insertMdLink() {
+  insertMdFormat('[', '](url)', '链接文字');
+}
 
 const TODO_TAGS = ['运维', '安全', '部署', '排查', '优化'];
 
@@ -429,6 +515,7 @@ function openTodoModal() {
   customTagInput.value = '';
   showTagSuggestions.value = false;
   todoFormError.value = '';
+  todoDescPreview.value = false;
   showTodoModal.value = true;
 }
 
@@ -710,7 +797,7 @@ function formatTodoTime(dateStr: string) {
                   <div class="todo-card" :style="{ animationDelay: `${i * 0.04}s` }" @dblclick="openEditTodoModal(t)">
                     <div class="todo-card-bar" :style="{ background: getCardGradient(t.id) }"></div>
                     <div class="todo-card-title">{{ t.title }}</div>
-                    <div v-if="t.desc" class="todo-card-desc">{{ t.desc }}</div>
+                    <div v-if="t.desc" class="todo-card-desc" v-html="renderMarkdown(t.desc)"></div>
                     <div class="todo-card-footer">
                       <div class="todo-card-meta">
                         <span v-if="t.tag" class="todo-card-tag" :style="{ background: getTagColor(t.tag) + '14', color: getTagColor(t.tag) }">{{ t.tag }}</span>
@@ -752,8 +839,30 @@ function formatTodoTime(dateStr: string) {
               <p v-if="todoFormError" class="text-[11px] mt-1" style="color: var(--red)">{{ todoFormError }}</p>
             </div>
             <div>
-              <label class="block text-xs font-semibold mb-1.5" style="color: var(--text2)">描述</label>
-              <textarea v-model="todoForm.desc" class="todo-form-input" style="resize: vertical; min-height: 52px;" placeholder="简要描述（可选）..." rows="2"></textarea>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="block text-xs font-semibold" style="color: var(--text2)">描述</label>
+                <div class="flex items-center gap-2">
+                  <button
+                    v-for="btn in [{ key: 'edit', label: '编辑' }, { key: 'preview', label: '预览' }]"
+                    :key="btn.key"
+                    @click="todoDescPreview = btn.key === 'preview'"
+                    class="md-toggle-btn"
+                    :class="{ active: todoDescPreview === (btn.key === 'preview') }"
+                  >{{ btn.label }}</button>
+                </div>
+              </div>
+              <!-- Markdown toolbar -->
+              <div v-if="!todoDescPreview" class="md-toolbar">
+                <button @click="insertMdBold" class="md-toolbar-btn" title="粗体">B</button>
+                <button @click="insertMdItalic" class="md-toolbar-btn italic" title="斜体">I</button>
+                <button @click="insertMdList" class="md-toolbar-btn" title="列表">•</button>
+                <button @click="insertMdCode" class="md-toolbar-btn" title="代码">`</button>
+                <button @click="insertMdLink" class="md-toolbar-btn" title="链接">🔗</button>
+              </div>
+              <!-- Editor textarea -->
+              <textarea v-if="!todoDescPreview" ref="todoDescTextarea" v-model="todoForm.desc" class="todo-form-input md-editor" placeholder="支持 Markdown 格式（可选）..." rows="4"></textarea>
+              <!-- Preview area -->
+              <div v-else class="todo-form-input md-preview" v-html="renderMarkdown(todoForm.desc)"></div>
             </div>
             <div class="flex gap-3">
               <div class="flex-1">
@@ -1403,6 +1512,171 @@ function formatTodoTime(dateStr: string) {
 
 .todo-form-input.has-error {
   border-color: var(--red);
+}
+
+/* Markdown editor styles */
+.md-toggle-btn {
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text3);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.md-toggle-btn:hover {
+  background: var(--surface2);
+  color: var(--text2);
+}
+
+.md-toggle-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.md-toolbar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.md-toolbar-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text2);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.md-toolbar-btn.italic {
+  font-style: italic;
+}
+
+.md-toolbar-btn:hover {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.md-editor {
+  resize: vertical;
+  min-height: 100px;
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+}
+
+.md-preview {
+  min-height: 80px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.md-preview :deep(p) {
+  margin: 0 0 8px;
+}
+
+.md-preview :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.md-preview :deep(strong) {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.md-preview :deep(em) {
+  font-style: italic;
+}
+
+.md-preview :deep(code) {
+  background: var(--surface2);
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-family: 'SF Mono', monospace;
+  font-size: 12px;
+}
+
+.md-preview :deep(a) {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.md-preview :deep(ul), .md-preview :deep(ol) {
+  margin: 4px 0;
+  padding-left: 20px;
+  display: block;
+}
+
+.md-preview :deep(ul) {
+  list-style-type: disc !important;
+  list-style-position: outside !important;
+}
+
+.md-preview :deep(ol) {
+  list-style-type: decimal !important;
+  list-style-position: outside !important;
+}
+
+.md-preview :deep(li) {
+  margin: 2px 0;
+  display: list-item !important;
+}
+
+.todo-card-desc :deep(p) {
+  margin: 0;
+}
+
+.todo-card-desc :deep(strong) {
+  font-weight: 600;
+}
+
+.todo-card-desc :deep(code) {
+  background: rgba(0,0,0,0.06);
+  padding: 1px 3px;
+  border-radius: 3px;
+  font-size: 10px;
+}
+
+.todo-card-desc :deep(a) {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.todo-card-desc :deep(ul), .todo-card-desc :deep(ol) {
+  margin: 4px 0;
+  padding-left: 18px;
+  display: block;
+}
+
+.todo-card-desc :deep(ul) {
+  list-style-type: disc !important;
+  list-style-position: outside !important;
+}
+
+.todo-card-desc :deep(ol) {
+  list-style-type: decimal !important;
+  list-style-position: outside !important;
+}
+
+.todo-card-desc :deep(li) {
+  margin: 2px 0;
+  display: list-item !important;
+}
+
+[data-theme="dark"] .todo-card-desc :deep(code) {
+  background: rgba(255,255,255,0.08);
 }
 
 /* Tag Suggestions */
