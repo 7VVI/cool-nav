@@ -122,6 +122,30 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_accounts_service ON service_accounts(service_id);
 `);
 
+// 创建待办事项表
+db.exec(`
+  CREATE TABLE IF NOT EXISTS todos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    desc TEXT DEFAULT '',
+    priority TEXT DEFAULT 'medium',
+    status TEXT DEFAULT 'todo',
+    tag TEXT DEFAULT '',
+    sort_order INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    done_at DATETIME DEFAULT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_todos_status ON todos(status);
+  CREATE INDEX IF NOT EXISTS idx_todos_sort ON todos(sort_order);
+`);
+
+// 迁移：添加 done_at 列（如果不存在）
+const todoCols = db.prepare("PRAGMA table_info(todos)").all();
+if (!todoCols.find(c => c.name === 'done_at')) {
+  db.exec('ALTER TABLE todos ADD COLUMN done_at DATETIME DEFAULT NULL');
+}
+
 // 插入默认标签（如果不存在）
 const defaultTags = [
   { name: '生产', value: 'production', color: '#059669', sort_order: 1 },
@@ -401,6 +425,77 @@ export const accountOps = {
 
   deleteByServiceId: (serviceId) => {
     return db.prepare('DELETE FROM service_accounts WHERE service_id = ?').run(serviceId);
+  }
+};
+
+// 待办事项操作
+export const todoOps = {
+  getAll: () => db.prepare('SELECT * FROM todos ORDER BY sort_order, id').all(),
+
+  getById: (id) => db.prepare('SELECT * FROM todos WHERE id = ?').get(id),
+
+  create: (data) => {
+    const stmt = db.prepare(
+      'INSERT INTO todos (title, desc, priority, status, tag, sort_order) VALUES (?, ?, ?, ?, ?, ?)'
+    );
+    const maxSort = db.prepare('SELECT COALESCE(MAX(sort_order), -1) + 1 as next FROM todos').get().next;
+    const result = stmt.run(
+      data.title,
+      data.desc || '',
+      data.priority || 'medium',
+      data.status || 'todo',
+      data.tag || '',
+      data.sort_order ?? maxSort
+    );
+    return { id: result.lastInsertRowid, ...data, desc: data.desc || '', priority: data.priority || 'medium', status: data.status || 'todo', tag: data.tag || '' };
+  },
+
+  update: (id, data) => {
+    const existing = db.prepare('SELECT * FROM todos WHERE id = ?').get(id);
+    if (!existing) return null;
+    const newStatus = data.status ?? existing.status;
+    // Set done_at when moving to done, clear when moving away
+    let doneAt = existing.done_at;
+    if (newStatus === 'done' && existing.status !== 'done') {
+      doneAt = new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
+    } else if (newStatus !== 'done' && existing.status === 'done') {
+      doneAt = null;
+    }
+    const stmt = db.prepare(
+      'UPDATE todos SET title = ?, desc = ?, priority = ?, status = ?, tag = ?, updated_at = CURRENT_TIMESTAMP, done_at = ? WHERE id = ?'
+    );
+    stmt.run(
+      data.title ?? existing.title,
+      data.desc ?? existing.desc,
+      data.priority ?? existing.priority,
+      newStatus,
+      data.tag ?? existing.tag,
+      doneAt,
+      id
+    );
+    return { id, ...existing, ...data, done_at: doneAt };
+  },
+
+  delete: (id) => db.prepare('DELETE FROM todos WHERE id = ?').run(id),
+
+  batchUpdate: (items) => {
+    const getStmt = db.prepare('SELECT status, done_at FROM todos WHERE id = ?');
+    const stmt = db.prepare(
+      'UPDATE todos SET status = ?, sort_order = ?, updated_at = CURRENT_TIMESTAMP, done_at = ? WHERE id = ?'
+    );
+    const transaction = db.transaction((items) => {
+      items.forEach((item, index) => {
+        const existing = getStmt.get(item.id);
+        let doneAt = existing?.done_at ?? null;
+        if (item.status === 'done' && existing?.status !== 'done') {
+          doneAt = new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
+        } else if (item.status !== 'done' && existing?.status === 'done') {
+          doneAt = null;
+        }
+        stmt.run(item.status, item.sort_order ?? index, doneAt, item.id);
+      });
+    });
+    transaction(items);
   }
 };
 

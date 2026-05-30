@@ -15,6 +15,12 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true
+      },
+      '/siyuan': {
+        target: 'http://localhost:6806',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/siyuan/, ''),
+        ws: true
       }
     }
   }
