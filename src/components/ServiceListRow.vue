@@ -94,6 +94,11 @@ const serviceTags = computed(() => {
   });
 });
 
+// 获取服务名称首字
+const firstChar = computed(() => {
+  return props.service.name ? props.service.name.charAt(0) : '?';
+});
+
 function trimUrl(url: string) {
   try {
     return new URL(url).hostname;
@@ -198,9 +203,9 @@ function handleRowClick() {
       <!-- 图标 -->
       <div
         class="list-icon"
-        :style="{ background: hexToRgba(accentColor, 0.1) }"
+        :style="{ background: accentColor, color: '#ffffff' }"
       >
-        {{ service.icon || '🖥️' }}
+        {{ firstChar }}
       </div>
 
       <!-- 名称 -->
@@ -287,7 +292,10 @@ function handleRowClick() {
         <!-- Header -->
         <div class="px-6 py-5 border-b flex items-center justify-between" style="border-color: var(--border)">
           <div class="flex items-center gap-2">
-            <span class="text-xl">{{ service.icon || '🖥️' }}</span>
+            <span
+              class="inline-flex items-center justify-center w-6 h-6 rounded-md text-xs font-bold"
+              :style="{ background: accentColor, color: '#ffffff' }"
+            >{{ firstChar }}</span>
             <span class="text-[15px] font-bold" style="color: var(--text)">{{ service.name }}</span>
           </div>
           <button
@@ -531,9 +539,9 @@ function handleRowClick() {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
+  font-size: 13px;
+  font-weight: 700;
   flex-shrink: 0;
-  border: 1px solid var(--border);
 }
 
 .list-name {

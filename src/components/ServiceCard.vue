@@ -106,9 +106,10 @@ function hexToRgba(hex: string, alpha: number) {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-function getDisplayIcon() {
-  return props.service.icon || '🖥️';
-}
+// 获取服务名称首字
+const firstChar = computed(() => {
+  return props.service.name ? props.service.name.charAt(0) : '?';
+});
 
 function trimUrl(url: string) {
   try {
@@ -214,9 +215,9 @@ function handleCardClick() {
         <div class="card-header">
           <div
             class="service-icon"
-            :style="{ background: hexToRgba(accentColor, 0.1) }"
+            :style="{ background: accentColor, color: '#ffffff' }"
           >
-            {{ getDisplayIcon() }}
+            {{ firstChar }}
           </div>
           <div class="card-meta">
             <div class="service-name">{{ service.name }}</div>
@@ -312,7 +313,10 @@ function handleCardClick() {
         <!-- Header -->
         <div class="px-6 py-5 border-b flex items-center justify-between" style="border-color: var(--border)">
           <div class="flex items-center gap-2">
-            <span class="text-xl">{{ getDisplayIcon() }}</span>
+            <span
+              class="inline-flex items-center justify-center w-6 h-6 rounded-md text-xs font-bold"
+              :style="{ background: accentColor, color: '#ffffff' }"
+            >{{ firstChar }}</span>
             <span class="text-[15px] font-bold" style="color: var(--text)">{{ service.name }}</span>
           </div>
           <button
@@ -580,9 +584,9 @@ function handleCardClick() {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 16px;
+  font-weight: 700;
   flex-shrink: 0;
-  border: 1px solid var(--border);
 }
 
 .card-meta {
