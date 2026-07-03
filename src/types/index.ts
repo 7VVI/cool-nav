@@ -91,3 +91,22 @@ export interface ModuleNodeType {
   inputs: number;
   outputs: number;
 }
+
+// ========== SharedDoc Types ==========
+
+export interface SharedDoc {
+  id: number;
+  code: string;
+  url: string;
+  name: string;
+  content_type: 'html' | 'md';
+  size_bytes: number;
+  views: number;
+  created_at: string;
+}
+
+export interface SharedDocCreatePayload {
+  name: string;
+  content: string;
+  content_type: 'html' | 'md';
+}
