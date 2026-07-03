@@ -76,7 +76,7 @@ router.get('/s/:code', (req, res) => {
     return res.status(404).type('html').send(NOT_FOUND_HTML);
   }
 
-  // 异步自增访问数，不阻塞响应（better-sqlite3 同步执行，用 try/catch 容错）
+  // 同步自增访问数（better-sqlite3 无异步 API），失败静默不阻塞响应
   try { sharedDocOps.incrementViews(doc.id); } catch (e) { /* ignore */ }
 
   res.set('Cache-Control', 'no-store');
