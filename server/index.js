@@ -25,7 +25,7 @@ const PORT = process.env.PORT || 3000;
 
 // 中间件
 app.use(cors());
-app.use(express.json({ limit: '2mb' }));
+app.use(express.json({ limit: '2.1mb' }));
 
 // 信任反向代理，使 req.protocol / req.get('host') 正确反映客户端视角
 app.set('trust proxy', 1);
