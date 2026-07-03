@@ -499,4 +499,67 @@ export const todoOps = {
   }
 };
 
+// 创建短链文档表
+db.exec(`
+  CREATE TABLE IF NOT EXISTS shared_docs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    content TEXT NOT NULL,
+    content_type TEXT NOT NULL,
+    size_bytes INTEGER NOT NULL DEFAULT 0,
+    views INTEGER NOT NULL DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_shared_docs_code ON shared_docs(code);
+  CREATE INDEX IF NOT EXISTS idx_shared_docs_created ON shared_docs(created_at DESC);
+`);
+
+// 短链文档操作
+const BASE62 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+function generateCode(len = 6) {
+  let code = '';
+  for (let i = 0; i < len; i++) {
+    code += BASE62[Math.floor(Math.random() * BASE62.length)];
+  }
+  return code;
+}
+
+export const sharedDocOps = {
+  getAll: () => db.prepare('SELECT id, code, name, content_type, size_bytes, views, created_at FROM shared_docs ORDER BY created_at DESC').all(),
+
+  getByCode: (code) => db.prepare('SELECT * FROM shared_docs WHERE code = ?').get(code),
+
+  create: (data) => {
+    let code;
+    for (let i = 0; i < 5; i++) {
+      const candidate = generateCode(6);
+      if (!db.prepare('SELECT 1 FROM shared_docs WHERE code = ?').get(candidate)) {
+        code = candidate;
+        break;
+      }
+    }
+    if (!code) throw new Error('CODE_GEN_FAILED');
+    const stmt = db.prepare(
+      'INSERT INTO shared_docs (code, name, content, content_type, size_bytes) VALUES (?, ?, ?, ?, ?)'
+    );
+    const sizeBytes = Buffer.byteLength(data.content, 'utf8');
+    const result = stmt.run(code, data.name, data.content, data.content_type, sizeBytes);
+    return {
+      id: result.lastInsertRowid,
+      code,
+      name: data.name,
+      content_type: data.content_type,
+      size_bytes: sizeBytes,
+      views: 0,
+      created_at: new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '')
+    };
+  },
+
+  delete: (id) => db.prepare('DELETE FROM shared_docs WHERE id = ?').run(id),
+
+  incrementViews: (id) => db.prepare('UPDATE shared_docs SET views = views + 1 WHERE id = ?').run(id)
+};
+
 export { generateAccentColor };
