@@ -15,7 +15,7 @@ import ServiceListRow from '@/components/ServiceListRow.vue';
 import ServiceModal from '@/components/ServiceModal.vue';
 import GroupModal from '@/components/GroupModal.vue';
 import ExportModal from '@/components/ExportModal.vue';
-import ServiceChain from '@/components/chain/ServiceChain.vue';
+import DocShare from '@/components/share/DocShare.vue';
 import type { Group, Service, Todo } from '@/types';
 
 const store = useNavStore();
@@ -334,7 +334,13 @@ function handleLogout() {
 }
 
 // ============ Page Navigation ============
-const currentPage = ref<'services' | 'todos' | 'chain'>((localStorage.getItem('currentPage') as any) || 'services');
+const VALID_PAGES = ['services', 'todos', 'docs'] as const;
+type PageKey = typeof VALID_PAGES[number];
+const storedPage = localStorage.getItem('currentPage');
+const initialPage: PageKey = (storedPage && (VALID_PAGES as readonly string[]).includes(storedPage))
+  ? (storedPage as PageKey)
+  : 'services';
+const currentPage = ref<PageKey>(initialPage);
 
 watch(currentPage, (page) => {
   localStorage.setItem('currentPage', page);
@@ -630,9 +636,9 @@ function formatTodoTime(dateStr: string) {
             <span>待办清单</span>
             <span v-if="todoStats.todo > 0" class="tab-badge todo">{{ todoStats.todo }}</span>
           </button>
-          <button class="topbar-tab" :class="{ active: currentPage === 'chain' }" @click="currentPage = 'chain'">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            <span>服务链路</span>
+          <button class="topbar-tab" :class="{ active: currentPage === 'docs' }" @click="currentPage = 'docs'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            <span>短链文档</span>
           </button>
         </nav>
 
@@ -905,9 +911,9 @@ function formatTodoTime(dateStr: string) {
       </div>
       </template>
 
-      <!-- ==================== Service Chain Page ==================== -->
-      <template v-if="currentPage === 'chain'">
-        <ServiceChain />
+      <!-- ==================== Doc Share Page ==================== -->
+      <template v-if="currentPage === 'docs'">
+        <DocShare />
       </template>
     </main>
 
