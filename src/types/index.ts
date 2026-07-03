@@ -62,36 +62,6 @@ export interface Todo {
   done_at: string | null;
 }
 
-// ========== Service Chain Types ==========
-
-export type NodeCategory = 'custom' | 'triggers' | 'services' | 'logic' | 'data';
-
-export interface ModuleNodeData {
-  label: string;
-  description: string;
-  icon: string;
-  category: NodeCategory;
-  type: string;
-  status: 'idle' | 'running' | 'success' | 'error' | 'warning';
-  config: Record<string, unknown>;
-  outputs?: number;
-  inputs?: number;
-  color?: string;
-  editing?: boolean;
-}
-
-export interface ModuleNodeType {
-  type: string;
-  label: string;
-  description: string;
-  icon: string;
-  category: NodeCategory;
-  color: string;
-  defaultConfig: Record<string, unknown>;
-  inputs: number;
-  outputs: number;
-}
-
 // ========== SharedDoc Types ==========
 
 export interface SharedDoc {
