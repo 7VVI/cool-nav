@@ -224,7 +224,7 @@ async function handleLogin() {
 
 .submit-btn:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3);
+  box-shadow: 0 4px 12px rgba(198, 87, 49, 0.3);
 }
 
 .submit-btn:disabled {

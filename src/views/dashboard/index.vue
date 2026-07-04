@@ -936,16 +936,12 @@ function formatTodoTime(dateStr: string) {
   height: 46px;
   min-height: 46px;
   background: var(--topbar-bg);
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   padding: 0 16px;
   gap: 0;
   flex-shrink: 0;
-  position: relative;
-  z-index: 10;
 }
 
 .topbar-tabs {

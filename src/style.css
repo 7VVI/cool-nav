@@ -5,40 +5,40 @@
 @tailwind components;
 @tailwind utilities;
 
-/* CSS Variables — 纸质暖米白（Warm Ivory Paper）亮色主题：暖米白主区 + 略深侧栏 + 暖白卡片 + 绿色 active */
+/* CSS Variables — 暖纸（Warm Paper）亮色主题：暖白侧栏 + 暖白卡片 + 橙色 accent */
 :root {
   --sidebar-w: 220px;
   --topbar-h: 52px;
 
-  /* 一、整体背景 — 暖米白带纸张质感 */
+  /* 整体背景 */
   --bg: #F8F5EF;
-  /* 三、左侧导航 — 比主体深 5% 的暖纸色 */
-  --chrome-bg: #F7F2E9;
-  /* 二、顶部 Header — 半透明暖白，配合 backdrop-filter 形成磨砂玻璃 */
-  --topbar-bg: rgba(255, 255, 255, 0.72);
-  /* 四、卡片 — 不要纯白，带一点暖味 */
-  --surface: #FFFDFC;
-  /* Sidebar hover / 二级表面 */
-  --surface2: #F1EBDF;
+  /* 左侧菜单（Sidebar） */
+  --chrome-bg: #F9F6F2;
+  /* 顶部栏（Topbar） */
+  --topbar-bg: #FAF7F2;
+  /* 中间卡片背景 */
+  --surface: #FAF8F8;
+  /* 二级表面（hover / badge bg） */
+  --surface2: #F2ECE3;
   /* 三级表面 */
-  --surface3: #EFE8DE;
-  /* 二、Header 底部极浅分割线 */
+  --surface3: #EBE4D8;
+  /* 边框 */
   --border: #ECE6DC;
   --border2: #E2DCD0;
 
-  /* 九、字体 — 整体偏暖灰，不要纯黑 */
+  /* 文字 — 暖灰 */
   --text: #2D2A26;
   --text2: #5C5A56;
   --text3: #8D877D;
   --text4: #B3AEA7;
 
-  /* 主色 — 选中态用淡绿色，左侧高亮 #34C759 */
-  --accent: #34C759;
-  --accent2: #2DA44E;
-  --accent-bg: #E9F4E7;
-  --accent-border: rgba(52, 199, 89, 0.30);
+  /* 主色 — 橙色 #C65731 */
+  --accent: #C65731;
+  --accent2: #A84629;
+  --accent-bg: rgba(198, 87, 49, 0.08);
+  --accent-border: rgba(198, 87, 49, 0.25);
 
-  /* 八、在线状态 — 降低饱和度 */
+  /* 状态色 */
   --green: #34C759;
   --green-text: #2DA44E;
   --green-bg: rgba(52, 199, 89, 0.10);
@@ -60,12 +60,11 @@
   --cyan-bg: rgba(20, 184, 166, 0.10);
   --cyan-border: rgba(20, 184, 166, 0.25);
 
-  /* 阴影 — 暖棕色而不是黑色，营造 Light Layer */
+  /* 阴影 — 暖棕色 */
   --shadow-xs: 0 1px 2px rgba(95, 78, 53, 0.04);
   --shadow-sm: 0 1px 3px rgba(95, 78, 53, 0.05), 0 1px 2px rgba(95, 78, 53, 0.03);
   --shadow: 0 4px 12px rgba(95, 78, 53, 0.06), 0 1px 4px rgba(95, 78, 53, 0.04);
   --shadow-lg: 0 12px 32px rgba(95, 78, 53, 0.10), 0 4px 12px rgba(95, 78, 53, 0.05);
-  /* 四、卡片阴影 0 8px 24px 暖棕 */
   --shadow-card: 0 8px 24px rgba(95, 78, 53, 0.08), 0 1px 2px rgba(95, 78, 53, 0.04);
   --shadow-card-hover: 0 14px 32px rgba(95, 78, 53, 0.12), 0 4px 8px rgba(95, 78, 53, 0.06);
 

@@ -222,7 +222,7 @@ function toggleTagFilter(tagValue: string) {
         @click="selectGroup(firstGroup.id)"
         :title="firstGroup.name"
       >
-        <span class="group-dot" :style="{ background: firstGroup.color || '#34C759' }"></span>
+        <span class="group-dot" :style="{ background: firstGroup.color || '#C65731' }"></span>
       </div>
     </div>
 
@@ -254,18 +254,18 @@ function toggleTagFilter(tagValue: string) {
             class="group-item"
             :class="{ active: store.currentGroupId === group.id }"
             :style="{
-              '--group-color': group.color || '#34C759',
-              background: store.currentGroupId === group.id ? (group.color || '#34C759') + '12' : undefined
+              '--group-color': group.color || '#C65731',
+              background: store.currentGroupId === group.id ? (group.color || '#C65731') + '12' : undefined
             }"
             @click="selectGroup(group.id)"
           >
-            <div class="group-icon-box" :style="store.currentGroupId === group.id ? { background: (group.color || '#34C759') + '15', color: group.color || '#34C759' } : {}">
+            <div class="group-icon-box" :style="store.currentGroupId === group.id ? { background: (group.color || '#C65731') + '15', color: group.color || '#C65731' } : {}">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                 <path :d="getGroupIconPath(group.icon, group.id)"/>
               </svg>
             </div>
-            <span class="group-name" :style="store.currentGroupId === group.id ? { color: group.color || '#34C759' } : {}">{{ group.name }}</span>
-            <span v-if="group.serviceCount !== undefined" class="group-count" :style="store.currentGroupId === group.id ? { background: (group.color || '#34C759') + '20', color: group.color || '#34C759' } : {}">{{ group.serviceCount }}</span>
+            <span class="group-name" :style="store.currentGroupId === group.id ? { color: group.color || '#C65731' } : {}">{{ group.name }}</span>
+            <span v-if="group.serviceCount !== undefined" class="group-count" :style="store.currentGroupId === group.id ? { background: (group.color || '#C65731') + '20', color: group.color || '#C65731' } : {}">{{ group.serviceCount }}</span>
           </div>
           <div v-if="filteredGroups.length === 0" class="empty-state">未找到匹配的分组</div>
         </div>
@@ -302,18 +302,18 @@ function toggleTagFilter(tagValue: string) {
                 <div
                   :class="['group-item', { active: store.currentGroupId === group.id && !store.showAllGroups }]"
                   :style="{
-                    '--group-color': group.color || '#34C759',
-                    background: store.currentGroupId === group.id && !store.showAllGroups ? (group.color || '#34C759') + '12' : undefined
+                    '--group-color': group.color || '#C65731',
+                    background: store.currentGroupId === group.id && !store.showAllGroups ? (group.color || '#C65731') + '12' : undefined
                   }"
                   @click="selectGroup(group.id)"
                 >
-                  <div class="group-icon-box" :style="store.currentGroupId === group.id && !store.showAllGroups ? { background: (group.color || '#34C759') + '15', color: group.color || '#34C759' } : {}">
+                  <div class="group-icon-box" :style="store.currentGroupId === group.id && !store.showAllGroups ? { background: (group.color || '#C65731') + '15', color: group.color || '#C65731' } : {}">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                       <path :d="getGroupIconPath(group.icon, group.id)"/>
                     </svg>
                   </div>
-                  <span class="group-name" :style="store.currentGroupId === group.id && !store.showAllGroups ? { color: group.color || '#34C759' } : {}">{{ group.name }}</span>
-                  <span v-if="group.serviceCount !== undefined" class="group-count" :style="store.currentGroupId === group.id && !store.showAllGroups ? { background: (group.color || '#34C759') + '20', color: group.color || '#34C759' } : {}">{{ group.serviceCount }}</span>
+                  <span class="group-name" :style="store.currentGroupId === group.id && !store.showAllGroups ? { color: group.color || '#C65731' } : {}">{{ group.name }}</span>
+                  <span v-if="group.serviceCount !== undefined" class="group-count" :style="store.currentGroupId === group.id && !store.showAllGroups ? { background: (group.color || '#C65731') + '20', color: group.color || '#C65731' } : {}">{{ group.serviceCount }}</span>
                   <div class="group-actions">
                     <button @click.stop="emit('editGroup', group)" class="action-btn" title="编辑">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
