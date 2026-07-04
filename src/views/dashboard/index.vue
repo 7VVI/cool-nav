@@ -616,16 +616,6 @@ function formatTodoTime(dateStr: string) {
     <main class="flex-1 flex flex-col overflow-hidden">
       <!-- Top Tab Bar -->
       <header class="topbar">
-        <div class="topbar-logo" v-if="currentPage !== 'services'">
-          <div class="topbar-logo-icon">
-            <svg width="14" height="14" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-              <rect width="48" height="48" rx="12" fill="#000000"></rect>
-              <path d="M12 24c0-6 4-10 10-10 3 0 6 1 7.5 3l-3 2.5c-1-1-2.5-1.5-4.5-1.5-3.5 0-6 2.5-6 6s2.5 6 6 6c2 0 3.5-.5 4.5-1.5l3 2.5c-1.5 2-4.5 3-7.5 3-6 0-10-4-10-10z" fill="#ffffff"></path>
-            </svg>
-          </div>
-          <span class="topbar-logo-text">Nav Portal</span>
-        </div>
-
         <nav class="topbar-tabs">
           <button class="topbar-tab" :class="{ active: currentPage === 'services' }" @click="currentPage = 'services'">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M7 7h3v3H7zM14 7h3v3h-3zM7 14h3v3H7zM14 14h3v3h-3z"/></svg>
@@ -945,46 +935,17 @@ function formatTodoTime(dateStr: string) {
 .topbar {
   height: 46px;
   min-height: 46px;
-  background: #ffffff;
-  border-bottom: 1px solid #e5e5e5;
+  background: var(--topbar-bg);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   padding: 0 16px;
   gap: 0;
   flex-shrink: 0;
-}
-
-[data-theme="dark"] .topbar {
-  background: #0a0a0a;
-  border-bottom-color: #1a1a1a;
-}
-
-.topbar-logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-right: 20px;
-  flex-shrink: 0;
-}
-
-.topbar-logo-icon {
-  width: 26px;
-  height: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.topbar-logo-text {
-  font-size: 14px;
-  font-weight: 500;
-  font-family: 'SF Pro Rounded', system-ui, -apple-system, sans-serif;
-  color: #000000;
-  letter-spacing: -0.3px;
-}
-
-[data-theme="dark"] .topbar-logo-text {
-  color: #ffffff;
+  position: relative;
+  z-index: 10;
 }
 
 .topbar-tabs {
@@ -1002,35 +963,23 @@ function formatTodoTime(dateStr: string) {
   cursor: pointer;
   border: none;
   background: transparent;
-  color: #737373;
+  color: var(--text3);
   font-size: 13px;
   font-weight: 400;
   font-family: system-ui, -apple-system, sans-serif;
+  transition: background 0.15s, color 0.15s;
 }
 
 .topbar-tab:hover {
-  background: #fafafa;
-  color: #262626;
-}
-
-[data-theme="dark"] .topbar-tab {
-  color: #a3a3a3;
-}
-
-[data-theme="dark"] .topbar-tab:hover {
-  background: #111111;
-  color: #d4d4d4;
+  background: var(--surface2);
+  color: var(--text);
 }
 
 .topbar-tab.active {
-  background: #e5e5e5;
-  color: #000000;
+  background: var(--surface);
+  color: var(--text);
   font-weight: 500;
-}
-
-[data-theme="dark"] .topbar-tab.active {
-  background: #262626;
-  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(60,40,10,0.06);
 }
 
 .tab-badge {
@@ -1039,24 +988,14 @@ function formatTodoTime(dateStr: string) {
   border-radius: 9999px;
   font-weight: 400;
   line-height: 1.4;
-  background: #fafafa;
-  color: #737373;
+  background: var(--surface2);
+  color: var(--text3);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 .topbar-tab.active .tab-badge {
-  background: #d4d4d4;
-  color: #262626;
-}
-
-[data-theme="dark"] .tab-badge {
-  background: #1a1a1a;
-  color: #a3a3a3;
-}
-
-[data-theme="dark"] .topbar-tab.active .tab-badge {
-  background: #333333;
-  color: #d4d4d4;
+  background: var(--accent-bg);
+  color: var(--accent);
 }
 
 .topbar-right {
@@ -1073,34 +1012,17 @@ function formatTodoTime(dateStr: string) {
   border-radius: 9999px;
   border: none;
   background: transparent;
-  color: #a3a3a3;
+  color: var(--text3);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.15s, color 0.15s;
 }
 
 .topbar-icon-btn:hover {
-  background: #fafafa;
-  color: #262626;
-}
-
-[data-theme="dark"] .topbar-icon-btn {
-  color: #525252;
-}
-
-[data-theme="dark"] .topbar-icon-btn:hover {
-  background: #111111;
-  color: #d4d4d4;
-}
-
-.topbar-icon-btn:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--surface2);
   color: var(--text);
-}
-
-[data-theme="dark"] .topbar-icon-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
 }
 
 /* ========== Service Sub-Header ========== */

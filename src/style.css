@@ -5,44 +5,69 @@
 @tailwind components;
 @tailwind utilities;
 
-/* CSS Variables */
+/* CSS Variables — 纸质暖米白（Warm Ivory Paper）亮色主题：暖米白主区 + 略深侧栏 + 暖白卡片 + 绿色 active */
 :root {
   --sidebar-w: 220px;
   --topbar-h: 52px;
 
-  --bg: #f0f2f7;
-  --surface: #ffffff;
-  --surface2: #f5f7fa;
-  --surface3: #eaeef3;
-  --border: #e2e6ed;
-  --border2: #d1d6e0;
+  /* 一、整体背景 — 暖米白带纸张质感 */
+  --bg: #F8F5EF;
+  /* 三、左侧导航 — 比主体深 5% 的暖纸色 */
+  --chrome-bg: #F7F2E9;
+  /* 二、顶部 Header — 半透明暖白，配合 backdrop-filter 形成磨砂玻璃 */
+  --topbar-bg: rgba(255, 255, 255, 0.72);
+  /* 四、卡片 — 不要纯白，带一点暖味 */
+  --surface: #FFFDFC;
+  /* Sidebar hover / 二级表面 */
+  --surface2: #F1EBDF;
+  /* 三级表面 */
+  --surface3: #EFE8DE;
+  /* 二、Header 底部极浅分割线 */
+  --border: #ECE6DC;
+  --border2: #E2DCD0;
 
-  --text: #1c1e26;
-  --text2: #5a5f72;
-  --text3: #9096aa;
+  /* 九、字体 — 整体偏暖灰，不要纯黑 */
+  --text: #2D2A26;
+  --text2: #5C5A56;
+  --text3: #8D877D;
+  --text4: #B3AEA7;
 
-  --accent: #3b6ef8;
-  --accent2: #5585fa;
-  --accent-bg: rgba(59, 110, 248, 0.08);
-  --accent-border: #c7d4fd;
+  /* 主色 — 选中态用淡绿色，左侧高亮 #34C759 */
+  --accent: #34C759;
+  --accent2: #2DA44E;
+  --accent-bg: #E9F4E7;
+  --accent-border: rgba(52, 199, 89, 0.30);
 
-  --green: #22c55e;
-  --green-bg: rgba(34, 197, 94, 0.08);
-  --red: #ef4444;
-  --red-bg: rgba(239, 68, 68, 0.08);
-  --amber: #f59e0b;
-  --amber-bg: rgba(245, 158, 11, 0.08);
-  --purple: #8b5cf6;
-  --purple-bg: rgba(139, 92, 246, 0.08);
-  --cyan: #06b6d4;
-  --cyan-bg: rgba(6, 182, 212, 0.08);
+  /* 八、在线状态 — 降低饱和度 */
+  --green: #34C759;
+  --green-text: #2DA44E;
+  --green-bg: rgba(52, 199, 89, 0.10);
+  --green-border: rgba(52, 199, 89, 0.25);
 
-  --shadow-xs: 0 1px 2px rgba(0,0,0,.04);
-  --shadow-sm: 0 1px 4px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
-  --shadow: 0 4px 16px rgba(0,0,0,.07), 0 1px 4px rgba(0,0,0,.04);
-  --shadow-lg: 0 12px 40px rgba(0,0,0,.10), 0 4px 12px rgba(0,0,0,.05);
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
-  --shadow-card-hover: 0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.08);
+  --red: #E96A6A;
+  --red-bg: rgba(233, 106, 106, 0.10);
+  --red-border: rgba(233, 106, 106, 0.25);
+
+  --amber: #F4A261;
+  --amber-bg: rgba(244, 162, 97, 0.10);
+  --amber-border: rgba(244, 162, 97, 0.25);
+
+  --purple: #A78BFA;
+  --purple-bg: rgba(167, 139, 250, 0.10);
+  --purple-border: rgba(167, 139, 250, 0.25);
+
+  --cyan: #14B8A6;
+  --cyan-bg: rgba(20, 184, 166, 0.10);
+  --cyan-border: rgba(20, 184, 166, 0.25);
+
+  /* 阴影 — 暖棕色而不是黑色，营造 Light Layer */
+  --shadow-xs: 0 1px 2px rgba(95, 78, 53, 0.04);
+  --shadow-sm: 0 1px 3px rgba(95, 78, 53, 0.05), 0 1px 2px rgba(95, 78, 53, 0.03);
+  --shadow: 0 4px 12px rgba(95, 78, 53, 0.06), 0 1px 4px rgba(95, 78, 53, 0.04);
+  --shadow-lg: 0 12px 32px rgba(95, 78, 53, 0.10), 0 4px 12px rgba(95, 78, 53, 0.05);
+  /* 四、卡片阴影 0 8px 24px 暖棕 */
+  --shadow-card: 0 8px 24px rgba(95, 78, 53, 0.08), 0 1px 2px rgba(95, 78, 53, 0.04);
+  --shadow-card-hover: 0 14px 32px rgba(95, 78, 53, 0.12), 0 4px 8px rgba(95, 78, 53, 0.06);
 
   --r-sm: 8px;
   --r: 12px;
@@ -50,49 +75,52 @@
   --r-xl: 20px;
 }
 
-/* 暗色主题 */
+/* 暗色主题 — Slate Blue 深空科技风 */
 [data-theme="dark"] {
-  --bg: #0d0f14;
-  --surface: #13161e;
-  --surface2: #1a1e28;
-  --surface3: #22272e;
-  --border: rgba(255,255,255,0.07);
-  --border2: rgba(255,255,255,0.12);
+  --bg: #0F172A;
+  --surface: #1A2332;
+  --surface2: #22304A;
+  --surface3: #1C2535;
+  --chrome-bg: #131A26;
+  --topbar-bg: #172033;
+  --border: #2E3D56;
+  --border2: #3D4F6E;
 
-  --text: #e8eaf0;
-  --text2: #9ca3af;
-  --text3: #6b7280;
+  --text: #F8FAFC;
+  --text2: #CBD5E1;
+  --text3: #94A3B8;
 
-  --accent: #38bdf8;
-  --accent2: #7dd3fc;
-  --accent-bg: rgba(56,189,248,0.1);
-  --accent-border: rgba(56,189,248,0.2);
+  --accent: #4F8CFF;
+  --accent2: #6BA0FF;
+  --accent-bg: rgba(79, 140, 255, 0.12);
+  --accent-border: rgba(79, 140, 255, 0.35);
 
-  --green: #4ade80;
-  --green-bg: rgba(74,222,128,0.12);
-  --green-border: rgba(74,222,128,0.2);
+  --green: #22C55E;
+  --green-bg: rgba(34, 197, 94, 0.12);
+  --green-border: rgba(34, 197, 94, 0.25);
 
-  --red: #f87171;
-  --red-bg: rgba(248,113,113,0.12);
-  --red-border: rgba(248,113,113,0.2);
+  --red: #EF4444;
+  --red-bg: rgba(239, 68, 68, 0.12);
+  --red-border: rgba(239, 68, 68, 0.25);
 
-  --amber: #fbbf24;
-  --amber-bg: rgba(251,191,36,0.12);
-  --amber-border: rgba(251,191,36,0.2);
+  --amber: #F59E0B;
+  --amber-bg: rgba(245, 158, 11, 0.12);
+  --amber-border: rgba(245, 158, 11, 0.25);
 
-  --purple: #a78bfa;
-  --purple-bg: rgba(167,139,250,0.12);
-  --purple-border: rgba(167,139,250,0.2);
+  --purple: #A78BFA;
+  --purple-bg: rgba(167, 139, 250, 0.12);
+  --purple-border: rgba(167, 139, 250, 0.25);
 
-  --cyan: #22d3ee;
-  --cyan-bg: rgba(34,211,238,0.12);
-  --cyan-border: rgba(34,211,238,0.2);
+  --cyan: #38BDF8;
+  --cyan-bg: rgba(56, 189, 248, 0.12);
+  --cyan-border: rgba(56, 189, 248, 0.25);
 
-  --shadow-xs: 0 1px 2px rgba(0,0,0,.3);
-  --shadow-sm: 0 1px 4px rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.3);
-  --shadow: 0 4px 16px rgba(0,0,0,.5), 0 1px 4px rgba(0,0,0,.3);
-  --shadow-lg: 0 12px 40px rgba(0,0,0,.6), 0 4px 12px rgba(0,0,0,.4);
-  --shadow-card: 0 0 0 1px var(--border), 0 2px 8px rgba(0,0,0,.4);
+  --shadow-xs: 0 1px 2px rgba(0,0,0,.2);
+  --shadow-sm: 0 1px 4px rgba(0,0,0,.25), 0 1px 2px rgba(0,0,0,.2);
+  --shadow: 0 4px 12px rgba(0,0,0,.25);
+  --shadow-lg: 0 12px 28px rgba(0,0,0,.4);
+  --shadow-card: 0 0 0 1px var(--border), 0 2px 6px rgba(0,0,0,.2);
+  --shadow-card-hover: 0 10px 25px rgba(0,0,0,.35);
 }
 
 /* Base */
@@ -114,7 +142,7 @@ body {
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: #c4c7d0; }
+::-webkit-scrollbar-thumb:hover { background: #B8AE9C; }
 
 /* Custom utilities */
 .font-mono { font-family: 'JetBrains Mono', monospace; }
@@ -146,14 +174,14 @@ body {
 }
 .card-hover:hover {
   border-color: var(--accent-border);
-  box-shadow: 0 0 0 3px rgba(59,110,248,.08), var(--shadow);
+  box-shadow: 0 0 0 3px rgba(52, 199, 89, 0.08), var(--shadow);
   transform: translateY(-1px);
 }
 
 /* 在线状态脉冲动画 */
 @keyframes pulse {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(74,222,128,0.4); }
-  50% { opacity: 0.8; box-shadow: 0 0 0 4px rgba(74,222,128,0); }
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.4); }
+  50% { opacity: 0.8; box-shadow: 0 0 0 4px rgba(52, 199, 89, 0); }
 }
 
 .pulse-dot {

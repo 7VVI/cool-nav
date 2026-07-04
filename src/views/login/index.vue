@@ -94,17 +94,17 @@ async function handleLogin() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+  background: linear-gradient(135deg, #F8F5EF 0%, #F1EBDF 100%);
   padding: 20px;
 }
 
 .login-card {
   width: 100%;
   max-width: 380px;
-  background: white;
+  background: var(--surface);
   border-radius: 20px;
   padding: 40px 32px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 24px rgba(60, 40, 10, 0.10);
 }
 
 .logo-section {
@@ -116,7 +116,7 @@ async function handleLogin() {
   width: 64px;
   height: 64px;
   margin: 0 auto 16px;
-  background: linear-gradient(135deg, #3b6ef8 0%, #2563eb 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
   border-radius: 16px;
   display: flex;
   align-items: center;
@@ -127,13 +127,13 @@ async function handleLogin() {
 .logo-title {
   font-size: 22px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: var(--text);
   margin: 0 0 8px;
 }
 
 .logo-subtitle {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--text2);
   margin: 0;
 }
 
@@ -147,7 +147,7 @@ async function handleLogin() {
   display: block;
   font-size: 13px;
   font-weight: 600;
-  color: #374151;
+  color: var(--text2);
   margin-bottom: 8px;
 }
 
@@ -158,20 +158,22 @@ async function handleLogin() {
 .input-wrapper input {
   width: 100%;
   padding: 12px 44px 12px 14px;
-  border: 1.5px solid #e5e7eb;
+  border: 1.5px solid var(--border);
   border-radius: 10px;
   font-size: 14px;
   outline: none;
   transition: all 0.2s;
+  background: var(--surface);
+  color: var(--text);
 }
 
 .input-wrapper input:focus {
-  border-color: #3b6ef8;
-  box-shadow: 0 0 0 3px rgba(59, 110, 248, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-bg);
 }
 
 .input-wrapper input::placeholder {
-  color: #9ca3af;
+  color: var(--text3);
 }
 
 .toggle-password {
@@ -182,13 +184,13 @@ async function handleLogin() {
   padding: 4px;
   background: none;
   border: none;
-  color: #9ca3af;
+  color: var(--text3);
   cursor: pointer;
   transition: color 0.2s;
 }
 
 .toggle-password:hover {
-  color: #6b7280;
+  color: var(--text2);
 }
 
 .error-message {
@@ -196,11 +198,11 @@ async function handleLogin() {
   align-items: center;
   gap: 8px;
   padding: 12px 14px;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: var(--red-bg);
+  border: 1px solid var(--red);
   border-radius: 10px;
   font-size: 13px;
-  color: #dc2626;
+  color: var(--red);
 }
 
 .submit-btn {
@@ -210,7 +212,7 @@ async function handleLogin() {
   gap: 8px;
   width: 100%;
   padding: 14px;
-  background: linear-gradient(135deg, #3b6ef8 0%, #2563eb 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -222,7 +224,7 @@ async function handleLogin() {
 
 .submit-btn:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(59, 110, 248, 0.3);
+  box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3);
 }
 
 .submit-btn:disabled {
@@ -237,7 +239,7 @@ async function handleLogin() {
 
 .login-footer p {
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--text3);
   margin: 4px 0;
 }
 

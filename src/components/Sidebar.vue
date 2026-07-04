@@ -205,14 +205,8 @@ function toggleTagFilter(tagValue: string) {
     <div class="sidebar-logo" @click="toggleSidebar" title="点击折叠/展开">
       <div class="logo-icon">
         <svg width="28" height="28" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-          <rect width="48" height="48" rx="12" fill="#0f172a"></rect>
-          <defs>
-            <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#4f8cff"></stop>
-              <stop offset="100%" stop-color="#00e0ff"></stop>
-            </linearGradient>
-          </defs>
-          <path d="M12 24c0-6 4-10 10-10 3 0 6 1 7.5 3l-3 2.5c-1-1-2.5-1.5-4.5-1.5-3.5 0-6 2.5-6 6s2.5 6 6 6c2 0 3.5-.5 4.5-1.5l3 2.5c-1.5 2-4.5 3-7.5 3-6 0-10-4-10-10z" fill="url(#logoGrad)"></path>
+          <rect width="48" height="48" rx="12" fill="currentColor"></rect>
+          <path d="M12 24c0-6 4-10 10-10 3 0 6 1 7.5 3l-3 2.5c-1-1-2.5-1.5-4.5-1.5-3.5 0-6 2.5-6 6s2.5 6 6 6c2 0 3.5-.5 4.5-1.5l3 2.5c-1.5 2-4.5 3-7.5 3-6 0-10-4-10-10z" fill="#ffffff"></path>
         </svg>
       </div>
       <span class="logo-text">Nav Portal</span>
@@ -228,7 +222,7 @@ function toggleTagFilter(tagValue: string) {
         @click="selectGroup(firstGroup.id)"
         :title="firstGroup.name"
       >
-        <span class="group-dot" :style="{ background: firstGroup.color || '#3b6ef8' }"></span>
+        <span class="group-dot" :style="{ background: firstGroup.color || '#34C759' }"></span>
       </div>
     </div>
 
@@ -260,18 +254,18 @@ function toggleTagFilter(tagValue: string) {
             class="group-item"
             :class="{ active: store.currentGroupId === group.id }"
             :style="{
-              '--group-color': group.color || '#3b6ef8',
-              background: store.currentGroupId === group.id ? (group.color || '#3b6ef8') + '12' : undefined
+              '--group-color': group.color || '#34C759',
+              background: store.currentGroupId === group.id ? (group.color || '#34C759') + '12' : undefined
             }"
             @click="selectGroup(group.id)"
           >
-            <div class="group-icon-box" :style="store.currentGroupId === group.id ? { background: (group.color || '#3b6ef8') + '15', color: group.color || '#3b6ef8' } : {}">
+            <div class="group-icon-box" :style="store.currentGroupId === group.id ? { background: (group.color || '#34C759') + '15', color: group.color || '#34C759' } : {}">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                 <path :d="getGroupIconPath(group.icon, group.id)"/>
               </svg>
             </div>
-            <span class="group-name" :style="store.currentGroupId === group.id ? { color: group.color || '#3b6ef8' } : {}">{{ group.name }}</span>
-            <span v-if="group.serviceCount !== undefined" class="group-count" :style="store.currentGroupId === group.id ? { background: (group.color || '#3b6ef8') + '20', color: group.color || '#3b6ef8' } : {}">{{ group.serviceCount }}</span>
+            <span class="group-name" :style="store.currentGroupId === group.id ? { color: group.color || '#34C759' } : {}">{{ group.name }}</span>
+            <span v-if="group.serviceCount !== undefined" class="group-count" :style="store.currentGroupId === group.id ? { background: (group.color || '#34C759') + '20', color: group.color || '#34C759' } : {}">{{ group.serviceCount }}</span>
           </div>
           <div v-if="filteredGroups.length === 0" class="empty-state">未找到匹配的分组</div>
         </div>
@@ -308,18 +302,18 @@ function toggleTagFilter(tagValue: string) {
                 <div
                   :class="['group-item', { active: store.currentGroupId === group.id && !store.showAllGroups }]"
                   :style="{
-                    '--group-color': group.color || '#3b6ef8',
-                    background: store.currentGroupId === group.id && !store.showAllGroups ? (group.color || '#3b6ef8') + '12' : undefined
+                    '--group-color': group.color || '#34C759',
+                    background: store.currentGroupId === group.id && !store.showAllGroups ? (group.color || '#34C759') + '12' : undefined
                   }"
                   @click="selectGroup(group.id)"
                 >
-                  <div class="group-icon-box" :style="store.currentGroupId === group.id && !store.showAllGroups ? { background: (group.color || '#3b6ef8') + '15', color: group.color || '#3b6ef8' } : {}">
+                  <div class="group-icon-box" :style="store.currentGroupId === group.id && !store.showAllGroups ? { background: (group.color || '#34C759') + '15', color: group.color || '#34C759' } : {}">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                       <path :d="getGroupIconPath(group.icon, group.id)"/>
                     </svg>
                   </div>
-                  <span class="group-name" :style="store.currentGroupId === group.id && !store.showAllGroups ? { color: group.color || '#3b6ef8' } : {}">{{ group.name }}</span>
-                  <span v-if="group.serviceCount !== undefined" class="group-count" :style="store.currentGroupId === group.id && !store.showAllGroups ? { background: (group.color || '#3b6ef8') + '20', color: group.color || '#3b6ef8' } : {}">{{ group.serviceCount }}</span>
+                  <span class="group-name" :style="store.currentGroupId === group.id && !store.showAllGroups ? { color: group.color || '#34C759' } : {}">{{ group.name }}</span>
+                  <span v-if="group.serviceCount !== undefined" class="group-count" :style="store.currentGroupId === group.id && !store.showAllGroups ? { background: (group.color || '#34C759') + '20', color: group.color || '#34C759' } : {}">{{ group.serviceCount }}</span>
                   <div class="group-actions">
                     <button @click.stop="emit('editGroup', group)" class="action-btn" title="编辑">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -386,7 +380,7 @@ function toggleTagFilter(tagValue: string) {
   width: 220px;
   min-width: 220px;
   height: 100vh;
-  background: var(--surface);
+  background: var(--chrome-bg);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
@@ -446,6 +440,7 @@ function toggleTagFilter(tagValue: string) {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  color: var(--accent);
 }
 
 .logo-text {
@@ -579,7 +574,7 @@ function toggleTagFilter(tagValue: string) {
 }
 
 .group-item:hover {
-  background: var(--surface2);
+  background: var(--surface3);
 }
 
 .group-item.active {
@@ -593,7 +588,7 @@ function toggleTagFilter(tagValue: string) {
   left: -8px;
   top: 50%;
   transform: translateY(-50%);
-  width: 3px;
+  width: 4px;
   height: 20px;
   background: var(--group-color, var(--accent));
   border-radius: 0 3px 3px 0;
@@ -641,7 +636,7 @@ function toggleTagFilter(tagValue: string) {
 }
 
 .group-item.active .group-count {
-  background: rgba(59, 110, 248, 0.15);
+  background: var(--accent-bg);
   color: var(--accent);
 }
 
@@ -815,6 +810,6 @@ function toggleTagFilter(tagValue: string) {
 }
 
 .sidebar-content::-webkit-scrollbar-thumb:hover {
-  background: #c4c7d0;
+  background: #B8AE9C;
 }
 </style>

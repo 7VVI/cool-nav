@@ -62,12 +62,28 @@ const defaultAccount = computed(() => accounts.value.find(a => a.is_default) || 
 const displayUsername = computed(() => defaultAccount.value?.username || props.service.username);
 const displayPassword = computed(() => defaultAccount.value?.password || props.service.password);
 
-// 颜色池
+// 颜色池 — 用浅色起点，渐变时下限到深色
 const ACCENT_COLORS = [
-  '#4ade80', '#f472b6', '#fbbf24', '#38bdf8',
-  '#a78bfa', '#fb923c', '#34d399', '#f87171',
-  '#22d3ee', '#6366f1', '#ec4899', '#14b8a6'
+  '#4ADE80', '#60A5FA', '#A78BFA', '#FDBA74',
+  '#5EEAD4', '#F472B6', '#FBBF24', '#34D399',
+  '#22D3EE', '#FB923C', '#A3E635', '#EC4899'
 ];
+
+// 分类 → 渐变终点映射（按用户 spec）
+const CATEGORY_GRADIENTS: Record<string, [string, string]> = {
+  prod: ['#4ADE80', '#22C55E'],
+  production: ['#4ADE80', '#22C55E'],
+  dev: ['#60A5FA', '#3B82F6'],
+  develop: ['#60A5FA', '#3B82F6'],
+  test: ['#FBBF24', '#F59E0B'],
+  testing: ['#FBBF24', '#F59E0B'],
+  db: ['#A78BFA', '#8B5CF6'],
+  database: ['#A78BFA', '#8B5CF6'],
+  payment: ['#FDBA74', '#FB923C'],
+  pay: ['#FDBA74', '#FB923C'],
+  gateway: ['#5EEAD4', '#14B8A6'],
+  web: ['#F472B6', '#EC4899'],
+};
 
 // 根据ID生成颜色
 function generateColorFromId(id: number) {
@@ -79,15 +95,31 @@ const accentColor = computed(() => {
   return props.service.accent_color || generateColorFromId(props.service.id);
 });
 
-// 计算渐变色条
-const accentGradient = computed(() => {
+// 检测服务分类，返回渐变起止色
+const categoryGradient = computed((): [string, string] | null => {
+  const tags = props.service.tags || [];
+  for (const tagValue of tags) {
+    const key = tagValue.toLowerCase();
+    if (CATEGORY_GRADIENTS[key]) return CATEGORY_GRADIENTS[key];
+  }
+  return null;
+});
+
+// 卡片主色对（start 较浅，end 较深）—— 顶部色条用
+const categoryColors = computed<[string, string]>(() => {
+  if (categoryGradient.value) return categoryGradient.value;
   const color = accentColor.value;
-  // 转换为更深色用于渐变终点
   const r = parseInt(color.slice(1, 3), 16);
   const g = parseInt(color.slice(3, 5), 16);
   const b = parseInt(color.slice(5, 7), 16);
-  const darkerColor = `#${Math.max(0, r - 40).toString(16).padStart(2, '0')}${Math.max(0, g - 40).toString(16).padStart(2, '0')}${Math.max(0, b - 40).toString(16).padStart(2, '0')}`;
-  return `linear-gradient(90deg, ${color}, ${darkerColor})`;
+  const darker = `#${Math.max(0, r - 40).toString(16).padStart(2, '0')}${Math.max(0, g - 40).toString(16).padStart(2, '0')}${Math.max(0, b - 40).toString(16).padStart(2, '0')}`;
+  return [color, darker];
+});
+
+// 计算渐变色条
+const accentGradient = computed(() => {
+  const [start, end] = categoryColors.value;
+  return `linear-gradient(90deg, ${start}, ${end})`;
 });
 
 // Get service tags with full info
@@ -552,13 +584,19 @@ function handleCardClick() {
   border-color: var(--border2);
 }
 
+/* 暗色主题：Slate Blue 深空科技风 hover 效果 */
+[data-theme="dark"] .service-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+
 .card-selected {
   box-shadow: 0 0 0 2px var(--accent);
 }
 
-/* 渐变色条 */
+/* 渐变色条 — 顶部 4px 装饰线，按分类着色 */
 .accent-bar {
-  height: 3px;
+  height: 4px;
   width: 100%;
   flex-shrink: 0;
 }
@@ -632,8 +670,8 @@ function handleCardClick() {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(74,222,128,0.4); }
-  50% { opacity: 0.8; box-shadow: 0 0 0 4px rgba(74,222,128,0); }
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.4); }
+  50% { opacity: 0.8; box-shadow: 0 0 0 4px rgba(52, 199, 89, 0); }
 }
 
 /* Description */
@@ -756,13 +794,13 @@ function handleCardClick() {
 .action-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
-  background: rgba(56,189,248,0.08);
+  background: var(--accent-bg);
 }
 
 .del-btn:hover {
   border-color: var(--red);
   color: var(--red);
-  background: rgba(248,113,113,0.08);
+  background: var(--red-bg);
 }
 
 /* Account List */
