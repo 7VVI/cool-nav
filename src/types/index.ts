@@ -72,6 +72,7 @@ export interface SharedDoc {
   content_type: 'html' | 'md';
   size_bytes: number;
   views: number;
+  sort_order: number;
   created_at: string;
 }
 

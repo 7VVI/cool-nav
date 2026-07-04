@@ -28,10 +28,25 @@ export const useDocStore = defineStore('docs', () => {
     return res.data;
   }
 
+  async function updateDocName(id: number, name: string) {
+    const res = await docsApi.update(id, { name });
+    if (res.data) {
+      const doc = docs.value.find(d => d.id === id);
+      if (doc) {
+        doc.name = res.data.name;
+      }
+    }
+    return res.data;
+  }
+
   async function removeDoc(id: number) {
     await docsApi.remove(id);
     docs.value = docs.value.filter(d => d.id !== id);
   }
 
-  return { docs, loading, fetchDocs, addDoc, removeDoc };
+  async function reorderDocs(items: { id: number }[]) {
+    await docsApi.reorder(items);
+  }
+
+  return { docs, loading, fetchDocs, addDoc, updateDocName, removeDoc, reorderDocs };
 });

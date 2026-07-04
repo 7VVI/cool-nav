@@ -52,6 +52,44 @@ router.post('/', (req, res) => {
   }
 });
 
+// 重排文档
+router.put('/reorder', (req, res) => {
+  try {
+    const { items } = req.body || {};
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ success: false, message: 'items 必须为非空数组' });
+    }
+    sharedDocOps.reorder(items);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Failed to reorder docs:', error);
+    res.status(500).json({ success: false, message: '重排文档失败' });
+  }
+});
+
+// 更新文档名称
+router.put('/:id', (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ success: false, message: '无效的 ID' });
+    }
+    const { name } = req.body || {};
+    if (!name || typeof name !== 'string' || !name.trim()) {
+      return res.status(400).json({ success: false, message: '名称不能为空' });
+    }
+    const doc = sharedDocOps.getById(id);
+    if (!doc) {
+      return res.status(404).json({ success: false, message: '文档不存在' });
+    }
+    sharedDocOps.updateName(id, name.trim());
+    res.json({ success: true, data: { id, name: name.trim() } });
+  } catch (error) {
+    console.error('Failed to update doc:', error);
+    res.status(500).json({ success: false, message: '更新文档失败' });
+  }
+});
+
 // 删除文档
 router.delete('/:id', (req, res) => {
   try {

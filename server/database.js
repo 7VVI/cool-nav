@@ -509,12 +509,21 @@ db.exec(`
     content_type TEXT NOT NULL,
     size_bytes INTEGER NOT NULL DEFAULT 0,
     views INTEGER NOT NULL DEFAULT 0,
+    sort_order INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
   CREATE INDEX IF NOT EXISTS idx_shared_docs_code ON shared_docs(code);
-  CREATE INDEX IF NOT EXISTS idx_shared_docs_created ON shared_docs(created_at DESC);
 `);
+
+// 迁移：添加 sort_order 列到 shared_docs（如果不存在）
+const docCols = db.prepare("PRAGMA table_info(shared_docs)").all();
+if (!docCols.find(c => c.name === 'sort_order')) {
+  db.exec('ALTER TABLE shared_docs ADD COLUMN sort_order INTEGER DEFAULT 0');
+}
+
+// 创建排序索引（在确保列存在之后）
+db.exec(`CREATE INDEX IF NOT EXISTS idx_shared_docs_sort ON shared_docs(sort_order)`);
 
 // 短链文档操作
 const BASE62 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -527,7 +536,7 @@ function generateCode(len = 6) {
 }
 
 export const sharedDocOps = {
-  getAll: () => db.prepare('SELECT id, code, name, content_type, size_bytes, views, created_at FROM shared_docs ORDER BY created_at DESC').all(),
+  getAll: () => db.prepare('SELECT id, code, name, content_type, size_bytes, views, sort_order, created_at FROM shared_docs ORDER BY sort_order, id').all(),
 
   getById: (id) => db.prepare('SELECT * FROM shared_docs WHERE id = ?').get(id),
 
@@ -543,8 +552,10 @@ export const sharedDocOps = {
       }
     }
     if (!code) throw new Error('CODE_GEN_FAILED');
+    // 将新文档放在最前面：先将所有文档的 sort_order + 1
+    db.prepare('UPDATE shared_docs SET sort_order = sort_order + 1').run();
     const stmt = db.prepare(
-      'INSERT INTO shared_docs (code, name, content, content_type, size_bytes) VALUES (?, ?, ?, ?, ?)'
+      'INSERT INTO shared_docs (code, name, content, content_type, size_bytes, sort_order) VALUES (?, ?, ?, ?, ?, 0)'
     );
     const sizeBytes = Buffer.byteLength(data.content, 'utf8');
     const result = stmt.run(code, data.name, data.content, data.content_type, sizeBytes);
@@ -555,13 +566,30 @@ export const sharedDocOps = {
       content_type: data.content_type,
       size_bytes: sizeBytes,
       views: 0,
+      sort_order: 0,
       created_at: new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '')
     };
   },
 
   delete: (id) => db.prepare('DELETE FROM shared_docs WHERE id = ?').run(id),
 
-  incrementViews: (id) => db.prepare('UPDATE shared_docs SET views = views + 1 WHERE id = ?').run(id)
+  updateName: (id, name) => {
+    db.prepare('UPDATE shared_docs SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(name, id);
+    return { id, name };
+  },
+
+  incrementViews: (id) => db.prepare('UPDATE shared_docs SET views = views + 1 WHERE id = ?').run(id),
+
+  reorder: (items) => {
+    const stmt = db.prepare('UPDATE shared_docs SET sort_order = ? WHERE id = ?');
+    const transaction = db.transaction((items) => {
+      items.forEach((item, index) => {
+        stmt.run(index, item.id);
+      });
+    });
+    transaction(items);
+    return items;
+  }
 };
 
 export { generateAccentColor };

@@ -8,7 +8,13 @@ export const docsApi = {
   create: (data: SharedDocCreatePayload) =>
     request.post<any, ApiResponse<SharedDoc>>('/docs', data),
 
+  update: (id: number, data: { name: string }) =>
+    request.put<any, ApiResponse<{ id: number; name: string }>>(`/docs/${id}`, data),
+
   remove: (id: number) => request.delete<any, ApiResponse<void>>(`/docs/${id}`),
+
+  reorder: (items: { id: number }[]) =>
+    request.put<any, ApiResponse<void>>('/docs/reorder', { items }),
 
   download: async (id: number, filename: string) => {
     const res = await request.get(`/docs/${id}/download`, {

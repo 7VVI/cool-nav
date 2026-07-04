@@ -1,10 +1,38 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import draggable from 'vuedraggable';
 import { useDocStore } from '@/stores/docStore';
 import { docsApi } from '@/api/docs';
 import type { SharedDoc } from '@/types';
 
 const store = useDocStore();
+
+// Local mutable list for draggable
+const localDocs = ref<SharedDoc[]>([]);
+
+// Watch store docs to sync with local
+watch(
+  () => store.docs,
+  (newDocs) => {
+    // If item count changed (add/delete), reassign
+    if (newDocs.length !== localDocs.value.length) {
+      localDocs.value = [...newDocs];
+      return;
+    }
+    // If same set of IDs, just update data but keep order
+    const newIds = new Set(newDocs.map(d => d.id));
+    const localIds = new Set(localDocs.value.map(d => d.id));
+    if (newIds.size === localIds.size && [...newIds].every(id => localIds.has(id))) {
+      localDocs.value = localDocs.value.map(localDoc => {
+        const updated = newDocs.find(d => d.id === localDoc.id);
+        return updated || localDoc;
+      });
+    } else {
+      localDocs.value = [...newDocs];
+    }
+  },
+  { immediate: true, deep: true }
+);
 
 // Modal state
 const showModal = ref(false);
@@ -21,8 +49,8 @@ const dragOver = ref(false);
 // Filter
 const typeFilter = ref<'all' | 'html' | 'md'>('all');
 const filteredDocs = computed(() => {
-  if (typeFilter.value === 'all') return store.docs;
-  return store.docs.filter(d => d.content_type === typeFilter.value);
+  if (typeFilter.value === 'all') return localDocs.value;
+  return localDocs.value.filter(d => d.content_type === typeFilter.value);
 });
 
 // Toast
@@ -37,6 +65,60 @@ function showToast(msg: string) {
 onUnmounted(() => {
   if (toastTimer) clearTimeout(toastTimer);
 });
+
+// ============ Inline Edit ============
+const editingDocId = ref<number | null>(null);
+const editingName = ref('');
+const editInputRef = ref<HTMLInputElement | null>(null);
+
+function startEditName(doc: SharedDoc) {
+  editingDocId.value = doc.id;
+  editingName.value = doc.name;
+  // Focus input after render
+  setTimeout(() => {
+    editInputRef.value?.focus();
+    editInputRef.value?.select();
+  }, 0);
+}
+
+function cancelEditName() {
+  editingDocId.value = null;
+  editingName.value = '';
+}
+
+async function saveEditName(doc: SharedDoc) {
+  const newName = editingName.value.trim();
+  if (!newName) {
+    cancelEditName();
+    return;
+  }
+  if (newName === doc.name) {
+    cancelEditName();
+    return;
+  }
+  try {
+    await store.updateDocName(doc.id, newName);
+    // Update localDocs directly for immediate feedback
+    const localDoc = localDocs.value.find(d => d.id === doc.id);
+    if (localDoc) {
+      localDoc.name = newName;
+    }
+    showToast('名称已更新');
+  } catch (err) {
+    console.error(err);
+    showToast('更新失败');
+  }
+  cancelEditName();
+}
+
+function handleEditKeydown(e: KeyboardEvent, doc: SharedDoc) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    saveEditName(doc);
+  } else if (e.key === 'Escape') {
+    cancelEditName();
+  }
+}
 
 function openModal() {
   modalTab.value = 'upload';
@@ -63,13 +145,16 @@ function readFile(file: File) {
     uploadError.value = '仅支持 .html / .md 文件';
     return;
   }
+  // 去掉文件名后缀
+  const lastDotIndex = file.name.lastIndexOf('.');
+  const nameWithoutExt = lastDotIndex > 0 ? file.name.substring(0, lastDotIndex) : file.name;
   const reader = new FileReader();
   reader.onload = async (e) => {
     const content = String(e.target?.result || '');
     const contentType: 'html' | 'md' = ext === 'md' ? 'md' : 'html';
     isSaving.value = true;
     try {
-      await store.addDoc({ name: file.name, content, content_type: contentType });
+      await store.addDoc({ name: nameWithoutExt, content, content_type: contentType });
       showModal.value = false;
       showToast('已生成短链');
     } catch (err) {
@@ -121,6 +206,23 @@ async function handlePasteSubmit() {
 }
 
 // ============ Actions ============
+async function handleDocDragEnd() {
+  // Only reorder if filter is 'all' - filtering changes the displayed subset
+  if (typeFilter.value !== 'all') return;
+
+  const items = localDocs.value.map((doc, index) => ({
+    id: doc.id,
+    sort_order: index
+  }));
+
+  try {
+    await store.reorderDocs(items);
+  } catch (error) {
+    console.error('Failed to reorder docs:', error);
+    localDocs.value = [...store.docs];
+  }
+}
+
 async function copyLink(doc: SharedDoc) {
   try {
     await navigator.clipboard.writeText(doc.url);
@@ -212,17 +314,70 @@ onMounted(() => {
     <!-- List -->
     <div class="doc-list-area">
       <div v-if="store.loading" class="doc-empty">加载中...</div>
-      <div v-else-if="filteredDocs.length === 0" class="doc-empty">
+      <div v-else-if="localDocs.length === 0" class="doc-empty">
         <p style="font-size: 14px; font-weight: 500; color: var(--text2);">暂无文档</p>
         <p style="font-size: 12px;">点击右上角「新建文档」生成你的第一个短链</p>
       </div>
+      <div v-else-if="filteredDocs.length === 0" class="doc-empty">
+        <p style="font-size: 14px; font-weight: 500; color: var(--text2);">无匹配文档</p>
+        <p style="font-size: 12px;">当前筛选条件下没有文档</p>
+      </div>
+      <!-- Draggable mode when no filter -->
+      <draggable
+        v-if="typeFilter === 'all'"
+        v-model="localDocs"
+        item-key="id"
+        class="doc-grid"
+        ghost-class="doc-card-ghost"
+        :animation="200"
+        @end="handleDocDragEnd"
+      >
+        <template #item="{ element: doc }">
+          <div class="doc-card">
+            <div class="doc-card-header">
+              <span class="doc-type-badge" :class="doc.content_type">{{ doc.content_type === 'html' ? 'HTML' : 'MD' }}</span>
+              <span class="doc-size">{{ formatSize(doc.size_bytes) }}</span>
+            </div>
+            <div class="doc-card-name" v-if="editingDocId !== doc.id" @dblclick="startEditName(doc)" title="双击编辑名称">{{ doc.name }}</div>
+            <div v-else class="doc-card-name-edit">
+              <input
+                v-model="editingName"
+                class="doc-name-input"
+                @keydown="handleEditKeydown($event, doc)"
+                @blur="saveEditName(doc)"
+                @click.stop
+              />
+            </div>
+            <div class="doc-card-meta">
+              <span>👁 {{ doc.views }} 次</span>
+              <span>{{ formatTime(doc.created_at) }}</span>
+            </div>
+            <div class="doc-card-actions">
+              <button @click="copyLink(doc)" class="doc-action primary">复制链接</button>
+              <button @click="openPreview(doc)" class="doc-action">打开</button>
+              <button @click="downloadDoc(doc)" class="doc-action">下载</button>
+              <button @click="confirmDelete(doc)" class="doc-action delete">×</button>
+            </div>
+          </div>
+        </template>
+      </draggable>
+      <!-- Static mode when filter is active -->
       <div v-else class="doc-grid">
         <div v-for="doc in filteredDocs" :key="doc.id" class="doc-card">
           <div class="doc-card-header">
             <span class="doc-type-badge" :class="doc.content_type">{{ doc.content_type === 'html' ? 'HTML' : 'MD' }}</span>
             <span class="doc-size">{{ formatSize(doc.size_bytes) }}</span>
           </div>
-          <div class="doc-card-name" :title="doc.name">{{ doc.name }}</div>
+          <div class="doc-card-name" v-if="editingDocId !== doc.id" @dblclick="startEditName(doc)" title="双击编辑名称">{{ doc.name }}</div>
+          <div v-else class="doc-card-name-edit">
+            <input
+              v-model="editingName"
+              class="doc-name-input"
+              @keydown="handleEditKeydown($event, doc)"
+              @blur="saveEditName(doc)"
+              @click.stop
+            />
+          </div>
           <div class="doc-card-meta">
             <span>👁 {{ doc.views }} 次</span>
             <span>{{ formatTime(doc.created_at) }}</span>
@@ -403,11 +558,21 @@ onMounted(() => {
   flex-direction: column;
   gap: 8px;
   transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+  position: relative;
+  cursor: grab;
+}
+.doc-card:active {
+  cursor: grabbing;
 }
 .doc-card:hover {
   border-color: var(--border2);
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   transform: translateY(-1px);
+}
+.doc-card-ghost {
+  opacity: 0.4;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px var(--accent-bg) !important;
 }
 .doc-card-header {
   display: flex;
@@ -432,6 +597,30 @@ onMounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   min-height: 18px;
+  cursor: text;
+  border-radius: 4px;
+  padding: 1px 4px;
+  margin: -1px -4px;
+  transition: background 0.15s;
+}
+.doc-card-name:hover {
+  background: var(--surface2);
+}
+.doc-card-name-edit {
+  min-height: 18px;
+}
+.doc-name-input {
+  width: 100%;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 1px 4px;
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-bg);
+  font-family: inherit;
 }
 .doc-card-meta {
   display: flex;
