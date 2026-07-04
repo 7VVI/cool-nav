@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useDocStore } from '@/stores/docStore';
+import { docsApi } from '@/api/docs';
 import type { SharedDoc } from '@/types';
 
 const store = useDocStore();
@@ -14,6 +15,7 @@ const pasteForm = ref<{ name: string; content: string; content_type: 'html' | 'm
 const uploadError = ref('');
 const pasteError = ref('');
 const isSaving = ref(false);
+const docToDelete = ref<SharedDoc | null>(null);
 const dragOver = ref(false);
 
 // Filter
@@ -132,10 +134,31 @@ function openPreview(doc: SharedDoc) {
   window.open(doc.url, '_blank');
 }
 
-async function deleteDoc(doc: SharedDoc) {
-  if (!confirm(`确定删除「${doc.name}」？删除后短链立即失效。`)) return;
+async function downloadDoc(doc: SharedDoc) {
   try {
-    await store.removeDoc(doc.id);
+    const ext = doc.content_type === 'html' ? 'html' : 'md';
+    const filename = doc.name.toLowerCase().endsWith(`.${ext}`) ? doc.name : `${doc.name}.${ext}`;
+    await docsApi.download(doc.id!, filename);
+  } catch (err) {
+    console.error(err);
+    showToast('下载失败');
+  }
+}
+
+function confirmDelete(doc: SharedDoc) {
+  docToDelete.value = doc;
+}
+
+function cancelDelete() {
+  docToDelete.value = null;
+}
+
+async function executeDelete() {
+  const doc = docToDelete.value;
+  if (!doc) return;
+  docToDelete.value = null;
+  try {
+    await store.removeDoc(doc.id!);
     showToast('已删除');
   } catch (err) {
     showToast('删除失败');
@@ -207,7 +230,8 @@ onMounted(() => {
           <div class="doc-card-actions">
             <button @click="copyLink(doc)" class="doc-action primary">复制链接</button>
             <button @click="openPreview(doc)" class="doc-action">打开</button>
-            <button @click="deleteDoc(doc)" class="doc-action delete">×</button>
+            <button @click="downloadDoc(doc)" class="doc-action">下载</button>
+            <button @click="confirmDelete(doc)" class="doc-action delete">×</button>
           </div>
         </div>
       </div>
@@ -269,6 +293,26 @@ onMounted(() => {
             <button @click="closeModal" class="doc-btn-secondary">取消</button>
             <button @click="handlePasteSubmit" :disabled="isSaving" class="doc-btn-primary">生成短链</button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirm Modal -->
+    <div v-if="docToDelete" class="doc-modal-overlay" @click.self="cancelDelete">
+      <div class="doc-confirm-modal">
+        <div class="doc-confirm-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+          </svg>
+        </div>
+        <div class="doc-confirm-title">删除文档</div>
+        <div class="doc-confirm-message">
+          确定删除「<strong>{{ docToDelete.name }}</strong>」？<br>
+          删除后短链将立即失效，此操作不可恢复。
+        </div>
+        <div class="doc-confirm-actions">
+          <button @click="cancelDelete" class="doc-btn-secondary">取消</button>
+          <button @click="executeDelete" class="doc-btn-danger">确认删除</button>
         </div>
       </div>
     </div>
@@ -411,6 +455,7 @@ onMounted(() => {
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.15s;
+  white-space: nowrap;
 }
 .doc-action:hover {
   border-color: var(--border2);
@@ -601,6 +646,60 @@ onMounted(() => {
 }
 .doc-btn-primary:hover { opacity: 0.85; }
 .doc-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.doc-btn-danger {
+  padding: 7px 16px;
+  border-radius: 8px;
+  border: none;
+  background: var(--red);
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.doc-btn-danger:hover { opacity: 0.85; }
+
+/* Confirm Modal */
+.doc-confirm-modal {
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 28px 28px 22px;
+  text-align: center;
+  animation: docModalIn 0.18s ease;
+}
+.doc-confirm-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--red-bg);
+  color: var(--red);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+}
+.doc-confirm-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.doc-confirm-message {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.6;
+  margin-bottom: 22px;
+}
+.doc-confirm-message strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.doc-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
 
 .doc-error {
   margin: 8px 0 0;

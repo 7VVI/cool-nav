@@ -67,4 +67,32 @@ router.delete('/:id', (req, res) => {
   }
 });
 
+// 下载源文件
+router.get('/:id/download', (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ success: false, message: '无效的 ID' });
+    }
+    const doc = sharedDocOps.getById(id);
+    if (!doc) {
+      return res.status(404).json({ success: false, message: '文档不存在' });
+    }
+
+    const ext = doc.content_type === 'html' ? 'html' : 'md';
+    const contentType = doc.content_type === 'html'
+      ? 'text/html; charset=utf-8'
+      : 'text/markdown; charset=utf-8';
+    const filename = doc.name.toLowerCase().endsWith(`.${ext}`) ? doc.name : `${doc.name}.${ext}`;
+
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`);
+    res.setHeader('Content-Length', Buffer.byteLength(doc.content, 'utf8'));
+    res.send(doc.content);
+  } catch (error) {
+    console.error('Failed to download doc:', error);
+    res.status(500).json({ success: false, message: '下载失败' });
+  }
+});
+
 export default router;

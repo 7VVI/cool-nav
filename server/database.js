@@ -529,6 +529,8 @@ function generateCode(len = 6) {
 export const sharedDocOps = {
   getAll: () => db.prepare('SELECT id, code, name, content_type, size_bytes, views, created_at FROM shared_docs ORDER BY created_at DESC').all(),
 
+  getById: (id) => db.prepare('SELECT * FROM shared_docs WHERE id = ?').get(id),
+
   getByCode: (code) => db.prepare('SELECT * FROM shared_docs WHERE code = ?').get(code),
 
   create: (data) => {
