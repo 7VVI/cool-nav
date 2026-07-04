@@ -48,3 +48,35 @@ export interface ServiceAccount {
   created_at: string;
   updated_at: string;
 }
+
+export interface Todo {
+  id: number;
+  title: string;
+  desc: string;
+  priority: 'high' | 'medium' | 'low';
+  status: 'todo' | 'doing' | 'done';
+  tag: string;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+  done_at: string | null;
+}
+
+// ========== SharedDoc Types ==========
+
+export interface SharedDoc {
+  id: number;
+  code: string;
+  url: string;
+  name: string;
+  content_type: 'html' | 'md';
+  size_bytes: number;
+  views: number;
+  created_at: string;
+}
+
+export interface SharedDocCreatePayload {
+  name: string;
+  content: string;
+  content_type: 'html' | 'md';
+}

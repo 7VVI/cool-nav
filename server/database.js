@@ -122,6 +122,30 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_accounts_service ON service_accounts(service_id);
 `);
 
+// 创建待办事项表
+db.exec(`
+  CREATE TABLE IF NOT EXISTS todos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    desc TEXT DEFAULT '',
+    priority TEXT DEFAULT 'medium',
+    status TEXT DEFAULT 'todo',
+    tag TEXT DEFAULT '',
+    sort_order INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    done_at DATETIME DEFAULT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_todos_status ON todos(status);
+  CREATE INDEX IF NOT EXISTS idx_todos_sort ON todos(sort_order);
+`);
+
+// 迁移：添加 done_at 列（如果不存在）
+const todoCols = db.prepare("PRAGMA table_info(todos)").all();
+if (!todoCols.find(c => c.name === 'done_at')) {
+  db.exec('ALTER TABLE todos ADD COLUMN done_at DATETIME DEFAULT NULL');
+}
+
 // 插入默认标签（如果不存在）
 const defaultTags = [
   { name: '生产', value: 'production', color: '#059669', sort_order: 1 },
@@ -402,6 +426,140 @@ export const accountOps = {
   deleteByServiceId: (serviceId) => {
     return db.prepare('DELETE FROM service_accounts WHERE service_id = ?').run(serviceId);
   }
+};
+
+// 待办事项操作
+export const todoOps = {
+  getAll: () => db.prepare('SELECT * FROM todos ORDER BY sort_order, id').all(),
+
+  getById: (id) => db.prepare('SELECT * FROM todos WHERE id = ?').get(id),
+
+  create: (data) => {
+    const stmt = db.prepare(
+      'INSERT INTO todos (title, desc, priority, status, tag, sort_order) VALUES (?, ?, ?, ?, ?, ?)'
+    );
+    const maxSort = db.prepare('SELECT COALESCE(MAX(sort_order), -1) + 1 as next FROM todos').get().next;
+    const result = stmt.run(
+      data.title,
+      data.desc || '',
+      data.priority || 'medium',
+      data.status || 'todo',
+      data.tag || '',
+      data.sort_order ?? maxSort
+    );
+    return { id: result.lastInsertRowid, ...data, desc: data.desc || '', priority: data.priority || 'medium', status: data.status || 'todo', tag: data.tag || '' };
+  },
+
+  update: (id, data) => {
+    const existing = db.prepare('SELECT * FROM todos WHERE id = ?').get(id);
+    if (!existing) return null;
+    const newStatus = data.status ?? existing.status;
+    // Set done_at when moving to done, clear when moving away
+    let doneAt = existing.done_at;
+    if (newStatus === 'done' && existing.status !== 'done') {
+      doneAt = new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
+    } else if (newStatus !== 'done' && existing.status === 'done') {
+      doneAt = null;
+    }
+    const stmt = db.prepare(
+      'UPDATE todos SET title = ?, desc = ?, priority = ?, status = ?, tag = ?, updated_at = CURRENT_TIMESTAMP, done_at = ? WHERE id = ?'
+    );
+    stmt.run(
+      data.title ?? existing.title,
+      data.desc ?? existing.desc,
+      data.priority ?? existing.priority,
+      newStatus,
+      data.tag ?? existing.tag,
+      doneAt,
+      id
+    );
+    return { id, ...existing, ...data, done_at: doneAt };
+  },
+
+  delete: (id) => db.prepare('DELETE FROM todos WHERE id = ?').run(id),
+
+  batchUpdate: (items) => {
+    const getStmt = db.prepare('SELECT status, done_at FROM todos WHERE id = ?');
+    const stmt = db.prepare(
+      'UPDATE todos SET status = ?, sort_order = ?, updated_at = CURRENT_TIMESTAMP, done_at = ? WHERE id = ?'
+    );
+    const transaction = db.transaction((items) => {
+      items.forEach((item, index) => {
+        const existing = getStmt.get(item.id);
+        let doneAt = existing?.done_at ?? null;
+        if (item.status === 'done' && existing?.status !== 'done') {
+          doneAt = new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
+        } else if (item.status !== 'done' && existing?.status === 'done') {
+          doneAt = null;
+        }
+        stmt.run(item.status, item.sort_order ?? index, doneAt, item.id);
+      });
+    });
+    transaction(items);
+  }
+};
+
+// 创建短链文档表
+db.exec(`
+  CREATE TABLE IF NOT EXISTS shared_docs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    content TEXT NOT NULL,
+    content_type TEXT NOT NULL,
+    size_bytes INTEGER NOT NULL DEFAULT 0,
+    views INTEGER NOT NULL DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_shared_docs_code ON shared_docs(code);
+  CREATE INDEX IF NOT EXISTS idx_shared_docs_created ON shared_docs(created_at DESC);
+`);
+
+// 短链文档操作
+const BASE62 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+function generateCode(len = 6) {
+  let code = '';
+  for (let i = 0; i < len; i++) {
+    code += BASE62[Math.floor(Math.random() * BASE62.length)];
+  }
+  return code;
+}
+
+export const sharedDocOps = {
+  getAll: () => db.prepare('SELECT id, code, name, content_type, size_bytes, views, created_at FROM shared_docs ORDER BY created_at DESC').all(),
+
+  getByCode: (code) => db.prepare('SELECT * FROM shared_docs WHERE code = ?').get(code),
+
+  create: (data) => {
+    let code;
+    for (let i = 0; i < 5; i++) {
+      const candidate = generateCode(6);
+      if (!db.prepare('SELECT 1 FROM shared_docs WHERE code = ?').get(candidate)) {
+        code = candidate;
+        break;
+      }
+    }
+    if (!code) throw new Error('CODE_GEN_FAILED');
+    const stmt = db.prepare(
+      'INSERT INTO shared_docs (code, name, content, content_type, size_bytes) VALUES (?, ?, ?, ?, ?)'
+    );
+    const sizeBytes = Buffer.byteLength(data.content, 'utf8');
+    const result = stmt.run(code, data.name, data.content, data.content_type, sizeBytes);
+    return {
+      id: result.lastInsertRowid,
+      code,
+      name: data.name,
+      content_type: data.content_type,
+      size_bytes: sizeBytes,
+      views: 0,
+      created_at: new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '')
+    };
+  },
+
+  delete: (id) => db.prepare('DELETE FROM shared_docs WHERE id = ?').run(id),
+
+  incrementViews: (id) => db.prepare('UPDATE shared_docs SET views = views + 1 WHERE id = ?').run(id)
 };
 
 export { generateAccentColor };

@@ -6,35 +6,6 @@ import { tagsApi, type Tag } from '@/api/tags';
 import { accountsApi } from '@/api/accounts';
 import type { Service, ServiceAccount } from '@/types';
 
-const EMOJIS = [
-  '🖥️','🔧','📊','📦','🔒','🌐','💼','📁','🚀','⚙️',
-  '🔗','📋','🗄️','📡','💡','🔑','🏢','📈','🛠️','🎯',
-  '🔮','⚡','🧩','🌿','🚜','📄','📶','💧','💰','💵',
-  '🗺','📍','🗂','👁','📝','📰','📣','🏭','🧪','💻',
-  '🟢','🟡','🔐'
-];
-
-// Emoji 推荐映射表
-const EMOJI_RECOMMEND_MAP: Record<string, string> = {
-  'crm': '📊', '农机': '🚜', '文档': '📄', 'erp': '🏢',
-  'mqtt': '📶', '物联网': '📡', '水文': '💧', '成本': '💰',
-  '应收': '💵', '售后': '🔧', '平台': '🌐', '后台': '⚙️',
-  'admin': '🔐', 'api': '🔗', '日志': '🗂', '监控': '👁',
-  '地图': '🗺', 'gps': '📍', '定位': '🎯', '博客': '📝',
-  '文章': '📰', '媒体': '📣', 'fms': '📦', '仓库': '🏭',
-  '测试': '🧪', '开发': '💻', '生产': '🟢', '预生产': '🟡',
-};
-
-function recommendEmoji(name: string): string {
-  const lowerName = name.toLowerCase();
-  for (const [keyword, emoji] of Object.entries(EMOJI_RECOMMEND_MAP)) {
-    if (lowerName.includes(keyword.toLowerCase())) {
-      return emoji;
-    }
-  }
-  return '🖥️';
-}
-
 const props = defineProps<{
   show: boolean;
   service?: Service | null;
@@ -58,7 +29,6 @@ const formData = ref({
   accent_color: ''
 });
 
-const selectedEmoji = ref(EMOJIS[0]);
 const showPassword = ref(false);
 const selectedTags = ref<string[]>([]);
 
@@ -301,7 +271,6 @@ watch(() => props.show, (newVal) => {
         icon: props.service.icon || '',
         accent_color: props.service.accent_color || ''
       };
-      selectedEmoji.value = props.service.icon || EMOJIS[0];
       selectedTags.value = props.service.tags || [];
       loadAccounts(props.service.id);
     } else {
@@ -313,7 +282,6 @@ watch(() => props.show, (newVal) => {
         icon: '',
         accent_color: ''
       };
-      selectedEmoji.value = EMOJIS[0];
       selectedTags.value = [];
       serviceAccounts.value = [];
     }
@@ -325,17 +293,6 @@ watch(() => props.show, (newVal) => {
       setTimeout(() => document.addEventListener('click', handleClickOutside), 0);
     } else {
       document.removeEventListener('click', handleClickOutside);
-    }
-  }
-});
-
-// 监听名称变化，自动推荐 emoji
-watch(() => formData.value.name, (newName) => {
-  if (newName && !isEditing.value) {
-    // 新增服务时，根据名称自动推荐
-    const recommended = recommendEmoji(newName);
-    if (!selectedEmoji.value || selectedEmoji.value === EMOJIS[0]) {
-      selectedEmoji.value = recommended;
     }
   }
 });
@@ -458,7 +415,7 @@ async function handleSubmit() {
     username: defaultAccount?.username || null,
     password: defaultAccount?.password || null,
     description: formData.value.description.trim() || null,
-    icon: selectedEmoji.value || null,
+    icon: null,
     tags: selectedTags.value,
     accent_color: formData.value.accent_color.trim() || null
   };
@@ -507,26 +464,6 @@ async function handleSubmit() {
       <form @submit.prevent="handleSubmit" class="flex flex-col flex-1 min-h-0">
         <!-- Scrollable content -->
         <div class="px-6 py-5 overflow-y-auto flex-1">
-        <!-- Icon Picker -->
-        <div class="mb-4">
-          <label class="block text-xs font-semibold mb-2" style="color: var(--text2)">图标</label>
-          <div class="flex gap-1 flex-wrap">
-            <button
-              v-for="emoji in EMOJIS"
-              :key="emoji"
-              type="button"
-              @click="selectedEmoji = emoji"
-              class="w-8.5 h-8.5 rounded-lg border flex items-center justify-center text-[17px] transition-all"
-              :style="{
-                borderColor: selectedEmoji === emoji ? 'var(--accent)' : 'var(--border)',
-                background: selectedEmoji === emoji ? 'var(--accent-bg)' : 'var(--surface2)'
-              }"
-            >
-              {{ emoji }}
-            </button>
-          </div>
-        </div>
-
         <!-- Tags -->
         <div class="mb-4">
           <div class="flex items-center justify-between mb-2">
