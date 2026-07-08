@@ -39,7 +39,7 @@
 
 | 短链文档 | 文档查看 |
 |---------|---------|
-| ![短链文档](imgs/duanlian.png) | ![文档查看器](imgs/view.png) |
+| ![短链文档]([imgs/duanlian.png](https://github.com/7VVI/cool-nav/blob/main/imgs/duanlian.png)) | ![文档查看器](imgs/view.png) |
 
 ## 技术栈
 
