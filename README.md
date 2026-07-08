@@ -126,53 +126,31 @@ docker run -d \
   internal-nav:latest
 ```
 
-## API 接口
-
-### 鉴权接口
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | `/api/auth/login` | 登录验证（body: `{ secret: string }`） |
-| POST | `/api/auth/verify` | 验证 token |
-| GET | `/api/auth/check` | 检查登录状态 |
-
-### 分组管理
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/groups` | 获取所有分组 |
-| POST | `/api/groups` | 创建分组 |
-| PUT | `/api/groups/:id` | 更新分组 |
-| DELETE | `/api/groups/:id` | 删除分组 |
-| PUT | `/api/groups/reorder` | 重新排序 |
+## 系统页面
 
 ### 服务管理
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/services` | 获取服务列表 (支持 `group_id` 和 `search` 参数) |
-| GET | `/api/services/:id` | 获取单个服务 |
-| POST | `/api/services` | 创建服务 |
-| PUT | `/api/services/:id` | 更新服务 |
-| DELETE | `/api/services/:id` | 删除服务 |
-| PUT | `/api/services/reorder` | 重新排序 |
+服务管理是系统的核心模块，用于统一管理企业内部各类系统的访问入口和登录凭据。支持树形分组、拖拽排序、标签分类、卡片/列表双视图切换，以及批量选择和导入导出功能。
 
-### 标签管理
+![服务管理](imgs/nav.png)
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/tags` | 获取所有标签 |
-| POST | `/api/tags` | 创建标签 |
-| PUT | `/api/tags/:id` | 更新标签 |
-| DELETE | `/api/tags/:id` | 删除标签 |
+### 待办清单
 
-### 导入导出
+待办清单提供看板式的任务管理功能，支持「待处理 → 进行中 → 已完成」三栏拖拽流转。可按优先级筛选（全部/高优先/中优先/低优先），实时显示任务统计和完成进度，支持子任务、标签和备注。
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/export/json` | 导出为 JSON |
-| GET | `/api/export/markdown` | 导出为 Markdown |
-| POST | `/api/import` | 导入 JSON 数据 |
+![待办清单](imgs/daiban.png)
+
+### 短链文档
+
+短链文档模块用于管理和分享 HTML/Markdown 文档。上传文档后自动生成短链接，支持复制链接、在线预览、源文件下载。文档卡片显示文件大小、访问次数和上传时间，可按类型筛选（全部/HTML/Markdown）。
+
+![短链文档](imgs/duanlian.png)
+
+### 文档查看器
+
+文档查看器支持在线预览 Markdown 和 HTML 文档内容。自动解析 Markdown 语法并渲染为美观的排版，支持代码高亮、表格、列表等富文本展示，提供完整的文档阅读体验。
+
+![文档查看器](imgs/view.png)
 
 ## 项目结构
 
