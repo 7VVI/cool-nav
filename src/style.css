@@ -11,13 +11,13 @@
   --topbar-h: 52px;
 
   /* 整体背景 */
-  --bg: #F8F5EF;
+  --bg: #F0F0F0;
   /* 左侧菜单（Sidebar） */
-  --chrome-bg: #F9F6F2;
+  --chrome-bg: #F4F4F4;
   /* 顶部栏（Topbar） */
-  --topbar-bg: #FAF7F2;
+  --topbar-bg: #F4F4F4;
   /* 中间卡片背景 */
-  --surface: #FAF8F8;
+  --surface: #F8F8F8;
   /* 二级表面（hover / badge bg） */
   --surface2: #F2ECE3;
   /* 三级表面 */

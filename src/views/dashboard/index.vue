@@ -1153,6 +1153,7 @@ function formatTodoTime(dateStr: string) {
   align-items: center;
   gap: 18px;
   padding: 12px 24px;
+  background: var(--surface);
 }
 
 .todo-stat-item {
@@ -1192,6 +1193,8 @@ function formatTodoTime(dateStr: string) {
   align-items: center;
   gap: 10px;
   padding: 0 24px 12px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
 }
 
 .todo-filter-btn {

@@ -426,11 +426,6 @@ function toggleTagFilter(tagValue: string) {
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
   cursor: pointer;
-  transition: background 0.15s;
-}
-
-.sidebar-logo:hover {
-  background: var(--surface2);
 }
 
 .logo-icon {
@@ -574,7 +569,7 @@ function toggleTagFilter(tagValue: string) {
 }
 
 .group-item:hover {
-  background: var(--surface3);
+  background: color-mix(in srgb, var(--group-color, var(--accent)) 8%, transparent);
 }
 
 .group-item.active {

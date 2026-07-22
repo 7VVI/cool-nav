@@ -514,6 +514,7 @@ onMounted(() => {
   padding: 12px 24px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
+  background: var(--surface);
 }
 .doc-filter-btn {
   padding: 5px 14px;
